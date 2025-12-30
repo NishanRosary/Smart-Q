@@ -53,7 +53,7 @@ const LandingPage = ({ onNavigate }) => {
       <section className="hero-section">
         <div className="hero-content">
           <h1 className="hero-title">Smart Queue Management with Live Crowd Prediction</h1>
-          <p className="hero-subtitle">
+          <p className="hero-subtitle" style={{ opacity: 1, color: '#FFFFFF' }}>
             Experience seamless queue management with real-time crowd predictions. 
             Join queues, track your position, and manage your time efficiently.
           </p>
@@ -223,8 +223,8 @@ const LandingPage = ({ onNavigate }) => {
         marginBottom: '2rem'
       }}>
         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-          <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Why Choose Smart'Q?</h2>
-          <p style={{ fontSize: '1.125rem', opacity: 0.95 }}>
+          <h2 style={{ fontSize: '2rem', marginBottom: '1rem', color: '#FFFFFF' }}>Why Choose Smart'Q?</h2>
+          <p style={{ fontSize: '1.125rem', opacity: 1, color: '#FFFFFF' }}>
             Experience the difference with our comprehensive queue management solution
           </p>
         </div>
@@ -236,48 +236,48 @@ const LandingPage = ({ onNavigate }) => {
         }}>
           <div style={{ padding: '1.5rem' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>⚡</div>
-            <h3 style={{ marginBottom: '0.75rem' }}>Real-Time Updates</h3>
-            <p style={{ opacity: 0.95 }}>
+            <h3 style={{ marginBottom: '0.75rem', color: '#FFFFFF' }}>Real-Time Updates</h3>
+            <p style={{ opacity: 1, color: '#FFFFFF' }}>
               Get instant notifications about your queue position and estimated wait times, 
               allowing you to plan your time effectively.
             </p>
           </div>
           <div style={{ padding: '1.5rem' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📊</div>
-            <h3 style={{ marginBottom: '0.75rem' }}>Crowd Prediction</h3>
-            <p style={{ opacity: 0.95 }}>
+            <h3 style={{ marginBottom: '0.75rem', color: '#FFFFFF' }}>Crowd Prediction</h3>
+            <p style={{ opacity: 1, color: '#FFFFFF' }}>
               AI-powered crowd level predictions help you choose the best time to visit, 
               reducing your waiting time significantly.
             </p>
           </div>
           <div style={{ padding: '1.5rem' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📱</div>
-            <h3 style={{ marginBottom: '0.75rem' }}>QR Code Booking</h3>
-            <p style={{ opacity: 0.95 }}>
+            <h3 style={{ marginBottom: '0.75rem', color: '#FFFFFF' }}>QR Code Booking</h3>
+            <p style={{ opacity: 1, color: '#FFFFFF' }}>
               Quick and easy slot booking through QR codes. Scan and join queues instantly 
               without any hassle.
             </p>
           </div>
           <div style={{ padding: '1.5rem' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🎯</div>
-            <h3 style={{ marginBottom: '0.75rem' }}>Event Scheduling</h3>
-            <p style={{ opacity: 0.95 }}>
+            <h3 style={{ marginBottom: '0.75rem', color: '#FFFFFF' }}>Event Scheduling</h3>
+            <p style={{ opacity: 1, color: '#FFFFFF' }}>
               View and book slots for upcoming events in advance, ensuring you never miss 
               important appointments.
             </p>
           </div>
           <div style={{ padding: '1.5rem' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🔒</div>
-            <h3 style={{ marginBottom: '0.75rem' }}>Secure & Reliable</h3>
-            <p style={{ opacity: 0.95 }}>
+            <h3 style={{ marginBottom: '0.75rem', color: '#FFFFFF' }}>Secure & Reliable</h3>
+            <p style={{ opacity: 1, color: '#FFFFFF' }}>
               Your data is protected with enterprise-grade security. Our system is reliable 
               and available 24/7.
             </p>
           </div>
           <div style={{ padding: '1.5rem' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>💼</div>
-            <h3 style={{ marginBottom: '0.75rem' }}>Enterprise Ready</h3>
-            <p style={{ opacity: 0.95 }}>
+            <h3 style={{ marginBottom: '0.75rem', color: '#FFFFFF' }}>Enterprise Ready</h3>
+            <p style={{ opacity: 1, color: '#FFFFFF' }}>
               Scalable solution for organizations of all sizes. Easy integration with 
               existing systems and workflows.
             </p>
@@ -297,8 +297,8 @@ const LandingPage = ({ onNavigate }) => {
         marginBottom: '2rem'
       }}>
         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-          <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>🤖 Powered by Machine Learning</h2>
-          <p style={{ fontSize: '1.125rem', opacity: 0.95 }}>
+          <h2 style={{ fontSize: '2rem', marginBottom: '1rem', color: '#FFFFFF' }}>🤖 Powered by Machine Learning</h2>
+          <p style={{ fontSize: '1.125rem', opacity: 1, color: '#FFFFFF' }}>
             Advanced AI algorithms for accurate predictions and optimal queue management
           </p>
         </div>
@@ -310,48 +310,48 @@ const LandingPage = ({ onNavigate }) => {
         }}>
           <div style={{ padding: '1.5rem' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🔮</div>
-            <h3 style={{ marginBottom: '0.75rem' }}>Peak Time Prediction</h3>
-            <p style={{ opacity: 0.95 }}>
+            <h3 style={{ marginBottom: '0.75rem', color: '#FFFFFF' }}>Peak Time Prediction</h3>
+            <p style={{ opacity: 1, color: '#FFFFFF' }}>
               Our ML models analyze historical patterns to predict peak hours with 92% accuracy, 
               helping you avoid long waits.
             </p>
           </div>
           <div style={{ padding: '1.5rem' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>⏱️</div>
-            <h3 style={{ marginBottom: '0.75rem' }}>Wait Time Forecasting</h3>
-            <p style={{ opacity: 0.95 }}>
+            <h3 style={{ marginBottom: '0.75rem', color: '#FFFFFF' }}>Wait Time Forecasting</h3>
+            <p style={{ opacity: 1, color: '#FFFFFF' }}>
               Real-time wait time predictions using machine learning algorithms trained on 
               millions of queue interactions.
             </p>
           </div>
           <div style={{ padding: '1.5rem' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>👥</div>
-            <h3 style={{ marginBottom: '0.75rem' }}>Crowd Level AI</h3>
-            <p style={{ opacity: 0.95 }}>
+            <h3 style={{ marginBottom: '0.75rem', color: '#FFFFFF' }}>Crowd Level AI</h3>
+            <p style={{ opacity: 1, color: '#FFFFFF' }}>
               Advanced neural networks predict crowd levels hours in advance, enabling 
               better planning and resource allocation.
             </p>
           </div>
           <div style={{ padding: '1.5rem' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📈</div>
-            <h3 style={{ marginBottom: '0.75rem' }}>Pattern Recognition</h3>
-            <p style={{ opacity: 0.95 }}>
+            <h3 style={{ marginBottom: '0.75rem', color: '#FFFFFF' }}>Pattern Recognition</h3>
+            <p style={{ opacity: 1, color: '#FFFFFF' }}>
               Deep learning models identify patterns in queue behavior, optimizing 
               service flow and reducing bottlenecks.
             </p>
           </div>
           <div style={{ padding: '1.5rem' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🎯</div>
-            <h3 style={{ marginBottom: '0.75rem' }}>Optimal Scheduling</h3>
-            <p style={{ opacity: 0.95 }}>
+            <h3 style={{ marginBottom: '0.75rem', color: '#FFFFFF' }}>Optimal Scheduling</h3>
+            <p style={{ opacity: 1, color: '#FFFFFF' }}>
               AI recommends the best times to visit based on predicted wait times, 
               crowd levels, and your preferences.
             </p>
           </div>
           <div style={{ padding: '1.5rem' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🔄</div>
-            <h3 style={{ marginBottom: '0.75rem' }}>Continuous Learning</h3>
-            <p style={{ opacity: 0.95 }}>
+            <h3 style={{ marginBottom: '0.75rem', color: '#FFFFFF' }}>Continuous Learning</h3>
+            <p style={{ opacity: 1, color: '#FFFFFF' }}>
               Our models continuously learn and improve from new data, ensuring 
               predictions become more accurate over time.
             </p>
@@ -361,11 +361,12 @@ const LandingPage = ({ onNavigate }) => {
         <div style={{
           marginTop: '3rem',
           padding: '2rem',
-          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+          backgroundColor: 'rgba(255, 255, 255, 0.15)',
           borderRadius: '12px',
-          textAlign: 'center'
+          textAlign: 'center',
+          border: '1px solid rgba(255, 255, 255, 0.2)'
         }}>
-          <h3 style={{ marginBottom: '1rem' }}>ML Model Performance</h3>
+          <h3 style={{ marginBottom: '1rem', color: '#FFFFFF' }}>ML Model Performance</h3>
           <div style={{
             display: 'flex',
             justifyContent: 'center',
@@ -373,16 +374,16 @@ const LandingPage = ({ onNavigate }) => {
             flexWrap: 'wrap'
           }}>
             <div>
-              <div style={{ fontSize: '2rem', fontWeight: 700 }}>92%</div>
-              <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>Model Accuracy</div>
+              <div style={{ fontSize: '2rem', fontWeight: 700, color: '#FFFFFF' }}>92%</div>
+              <div style={{ fontSize: '0.875rem', opacity: 1, color: '#FFFFFF' }}>Model Accuracy</div>
             </div>
             <div>
-              <div style={{ fontSize: '2rem', fontWeight: 700 }}>88%</div>
-              <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>Avg Prediction Accuracy</div>
+              <div style={{ fontSize: '2rem', fontWeight: 700, color: '#FFFFFF' }}>88%</div>
+              <div style={{ fontSize: '0.875rem', opacity: 1, color: '#FFFFFF' }}>Avg Prediction Accuracy</div>
             </div>
             <div>
-              <div style={{ fontSize: '2rem', fontWeight: 700 }}>156</div>
-              <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>Predictions Today</div>
+              <div style={{ fontSize: '2rem', fontWeight: 700, color: '#FFFFFF' }}>156</div>
+              <div style={{ fontSize: '0.875rem', opacity: 1, color: '#FFFFFF' }}>Predictions Today</div>
             </div>
           </div>
         </div>
@@ -458,28 +459,28 @@ const LandingPage = ({ onNavigate }) => {
           gap: '2rem'
         }}>
           <div>
-            <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem' }}>Smart'Q</h3>
-            <p style={{ color: '#CBD5E1', lineHeight: '1.6' }}>
+            <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', color: '#FFFFFF', fontWeight: 700 }}>Smart'Q</h3>
+            <p style={{ color: '#E2E8F0', lineHeight: '1.6', fontSize: '0.9375rem' }}>
               Revolutionizing queue management with intelligent technology. 
               Making every service interaction seamless and efficient.
             </p>
           </div>
 
           <div>
-            <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem' }}>Quick Links</h3>
-            <ul style={{ listStyle: 'none', padding: 0, color: '#CBD5E1' }}>
+            <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', color: '#FFFFFF', fontWeight: 700 }}>Quick Links</h3>
+            <ul style={{ listStyle: 'none', padding: 0 }}>
               <li style={{ marginBottom: '0.5rem' }}>
-                <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('landing'); }} style={{ color: '#CBD5E1', textDecoration: 'none' }}>
+                <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('landing'); }} style={{ color: '#E2E8F0', textDecoration: 'none', fontSize: '0.9375rem', fontWeight: 500 }}>
                   Home
                 </a>
               </li>
               <li style={{ marginBottom: '0.5rem' }}>
-                <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('login'); }} style={{ color: '#CBD5E1', textDecoration: 'none' }}>
+                <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('login'); }} style={{ color: '#E2E8F0', textDecoration: 'none', fontSize: '0.9375rem', fontWeight: 500 }}>
                   Login
                 </a>
               </li>
               <li style={{ marginBottom: '0.5rem' }}>
-                <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('join-queue'); }} style={{ color: '#CBD5E1', textDecoration: 'none' }}>
+                <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('join-queue'); }} style={{ color: '#E2E8F0', textDecoration: 'none', fontSize: '0.9375rem', fontWeight: 500 }}>
                   Join Queue
                 </a>
               </li>
@@ -487,21 +488,21 @@ const LandingPage = ({ onNavigate }) => {
           </div>
 
           <div>
-            <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem' }}>Contact Us</h3>
-            <div style={{ color: '#CBD5E1', lineHeight: '2' }}>
+            <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', color: '#FFFFFF', fontWeight: 700 }}>Contact Us</h3>
+            <div style={{ lineHeight: '2' }}>
               <p style={{ margin: '0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span>📧</span>
-                <a href="mailto:info@smartq.com" style={{ color: '#CBD5E1', textDecoration: 'none' }}>
+                <span style={{ color: '#E2E8F0' }}>📧</span>
+                <a href="mailto:info@smartq.com" style={{ color: '#E2E8F0', textDecoration: 'none', fontSize: '0.9375rem', fontWeight: 500 }}>
                   info@smartq.com
                 </a>
               </p>
               <p style={{ margin: '0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span>📞</span>
-                <a href="tel:+1234567890" style={{ color: '#CBD5E1', textDecoration: 'none' }}>
+                <span style={{ color: '#E2E8F0' }}>📞</span>
+                <a href="tel:+1234567890" style={{ color: '#E2E8F0', textDecoration: 'none', fontSize: '0.9375rem', fontWeight: 500 }}>
                   +1 (234) 567-890
                 </a>
               </p>
-              <p style={{ margin: '0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <p style={{ margin: '0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#E2E8F0', fontSize: '0.9375rem' }}>
                 <span>📍</span>
                 <span>123 Innovation Street, Tech City, TC 12345</span>
               </p>
@@ -509,14 +510,14 @@ const LandingPage = ({ onNavigate }) => {
           </div>
 
           <div>
-            <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem' }}>Follow Us</h3>
+            <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', color: '#FFFFFF', fontWeight: 700 }}>Follow Us</h3>
             <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-              <a href="#" style={{ color: '#CBD5E1', fontSize: '1.5rem', textDecoration: 'none' }}>📘</a>
-              <a href="#" style={{ color: '#CBD5E1', fontSize: '1.5rem', textDecoration: 'none' }}>📷</a>
-              <a href="#" style={{ color: '#CBD5E1', fontSize: '1.5rem', textDecoration: 'none' }}>🐦</a>
-              <a href="#" style={{ color: '#CBD5E1', fontSize: '1.5rem', textDecoration: 'none' }}>💼</a>
+              <a href="#" style={{ color: '#E2E8F0', fontSize: '1.5rem', textDecoration: 'none', transition: 'color 0.2s', display: 'inline-block' }}>📘</a>
+              <a href="#" style={{ color: '#E2E8F0', fontSize: '1.5rem', textDecoration: 'none', transition: 'color 0.2s', display: 'inline-block' }}>📷</a>
+              <a href="#" style={{ color: '#E2E8F0', fontSize: '1.5rem', textDecoration: 'none', transition: 'color 0.2s', display: 'inline-block' }}>🐦</a>
+              <a href="#" style={{ color: '#E2E8F0', fontSize: '1.5rem', textDecoration: 'none', transition: 'color 0.2s', display: 'inline-block' }}>💼</a>
             </div>
-            <p style={{ color: '#CBD5E1', marginTop: '1.5rem', fontSize: '0.875rem' }}>
+            <p style={{ color: '#E2E8F0', marginTop: '1.5rem', fontSize: '0.875rem' }}>
               © 2024 Smart'Q. All rights reserved.
             </p>
           </div>
