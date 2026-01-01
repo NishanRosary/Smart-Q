@@ -4,7 +4,7 @@ import { mlPredictions } from '../../data/mockData';
 import '../../styles/admin.css';
 import '../../styles/global.css';
 
-const Predictions = ({ onNavigate, currentPage }) => {
+const Predictions = ({ onNavigate, goBack, currentPage }) => {
   const getPredictionColor = (level) => {
     switch (level) {
       case 'High':
@@ -29,7 +29,7 @@ const Predictions = ({ onNavigate, currentPage }) => {
 
   return (
     <div className="admin-layout">
-      <Sidebar currentPage={currentPage} onNavigate={onNavigate} />
+      <Sidebar currentPage={currentPage} onNavigate={onNavigate} goBack={goBack} />
       <main className="admin-main">
         <div className="admin-header">
           <h1>ML-Powered Predictions</h1>

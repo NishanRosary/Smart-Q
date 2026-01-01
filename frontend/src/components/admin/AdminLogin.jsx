@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import '../../styles/admin.css';
 import '../../styles/global.css';
 
-const AdminLogin = ({ onNavigate }) => {
+const AdminLogin = ({ onNavigate, goBack, currentPage }) => {
   const [formData, setFormData] = useState({
     username: '',
     password: ''

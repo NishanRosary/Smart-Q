@@ -4,7 +4,7 @@ import QRCodeDisplay from '../shared/QRCodeDisplay';
 import { getEvents, customerQueueStatus, mlPredictions } from '../../data/mockData';
 import '../../styles/customer.css';
 
-const CustomerDashboard = ({ onNavigate }) => {
+const CustomerDashboard = ({ onNavigate, goBack, currentPage }) => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showQRModal, setShowQRModal] = useState(false);
   const events = getEvents();
@@ -38,7 +38,7 @@ const CustomerDashboard = ({ onNavigate }) => {
 
   return (
     <div>
-      <Header onNavigate={onNavigate} />
+      <Header onNavigate={onNavigate} goBack={goBack} currentPage={currentPage} />
       <div className="dashboard-container">
         {/* Queue Status Section */}
         <div className="dashboard-section">

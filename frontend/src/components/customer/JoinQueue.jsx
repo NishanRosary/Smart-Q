@@ -4,7 +4,7 @@ import QRCodeDisplay from '../shared/QRCodeDisplay';
 import { services } from '../../data/mockData';
 import '../../styles/customer.css';
 
-const JoinQueue = ({ onNavigate, eventData }) => {
+const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
   const [selectedService, setSelectedService] = useState(eventData?.title || '');
   const [showToken, setShowToken] = useState(false);
   const [tokenNumber] = useState(`T${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`);
@@ -18,7 +18,7 @@ const JoinQueue = ({ onNavigate, eventData }) => {
 
   return (
     <div>
-      <Header onNavigate={onNavigate} />
+      <Header onNavigate={onNavigate} goBack={goBack} currentPage={currentPage} />
       <div className="join-queue-container">
         <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>Join Queue</h2>
         

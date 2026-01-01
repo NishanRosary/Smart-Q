@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Header from '../shared/Header';
 import '../../styles/customer.css';
 
-const CustomerLogin = ({ onNavigate }) => {
+const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
   const [loginType, setLoginType] = useState('email');
   const [formData, setFormData] = useState({
     email: '',
@@ -27,7 +27,7 @@ const CustomerLogin = ({ onNavigate }) => {
 
   return (
     <div>
-      <Header onNavigate={onNavigate} />
+      <Header onNavigate={onNavigate} goBack={goBack} currentPage={currentPage} />
       <div className="login-container">
         <div className="login-card">
           <h2 className="login-title">Customer Login</h2>

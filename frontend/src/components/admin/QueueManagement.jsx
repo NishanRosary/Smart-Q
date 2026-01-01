@@ -4,7 +4,7 @@ import { queueData } from '../../data/mockData';
 import '../../styles/admin.css';
 import '../../styles/global.css';
 
-const QueueManagement = ({ onNavigate, currentPage }) => {
+const QueueManagement = ({ onNavigate, goBack, currentPage }) => {
   const getStatusBadge = (status) => {
     switch (status) {
       case 'Waiting':
@@ -20,7 +20,7 @@ const QueueManagement = ({ onNavigate, currentPage }) => {
 
   return (
     <div className="admin-layout">
-      <Sidebar currentPage={currentPage} onNavigate={onNavigate} />
+      <Sidebar currentPage={currentPage} onNavigate={onNavigate} goBack={goBack} />
       <main className="admin-main">
         <div className="admin-header">
           <h1>Queue Management</h1>

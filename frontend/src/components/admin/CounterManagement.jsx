@@ -4,7 +4,7 @@ import { counterData } from '../../data/mockData';
 import '../../styles/admin.css';
 import '../../styles/global.css';
 
-const CounterManagement = ({ onNavigate, currentPage }) => {
+const CounterManagement = ({ onNavigate, goBack, currentPage }) => {
   const getStatusBadge = (status) => {
     return status === 'Active' ? (
       <span className="badge badge-green">Active</span>
@@ -15,7 +15,7 @@ const CounterManagement = ({ onNavigate, currentPage }) => {
 
   return (
     <div className="admin-layout">
-      <Sidebar currentPage={currentPage} onNavigate={onNavigate} />
+      <Sidebar currentPage={currentPage} onNavigate={onNavigate} goBack={goBack} />
       <main className="admin-main">
         <div className="admin-header">
           <h1>Counter Management</h1>

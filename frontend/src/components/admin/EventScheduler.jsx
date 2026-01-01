@@ -5,7 +5,7 @@ import { getAllEvents, addEvent, organizationTypes } from '../../data/mockData';
 import '../../styles/admin.css';
 import '../../styles/global.css';
 
-const EventScheduler = ({ onNavigate, currentPage }) => {
+const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
   const [formData, setFormData] = useState({
     organizationType: '',
     title: '',
@@ -42,7 +42,7 @@ const EventScheduler = ({ onNavigate, currentPage }) => {
 
   return (
     <div className="admin-layout">
-      <Sidebar currentPage={currentPage} onNavigate={onNavigate} />
+      <Sidebar currentPage={currentPage} onNavigate={onNavigate} goBack={goBack} />
       <main className="admin-main">
         <div className="admin-header">
           <h1>Event Scheduler</h1>

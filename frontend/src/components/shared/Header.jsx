@@ -1,12 +1,32 @@
 import React from 'react';
 import '../../styles/customer.css';
 
-const Header = ({ onNavigate }) => {
+const Header = ({ onNavigate, goBack, currentPage }) => {
+  const showBackButton = currentPage && currentPage !== 'landing';
+
   return (
     <header className="customer-header">
       <div className="customer-header-content">
-        <div className="logo" onClick={() => onNavigate('landing')} style={{ cursor: 'pointer' }}>
-          Smart'Q
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          {showBackButton && goBack && (
+            <button 
+              className="btn-secondary" 
+              onClick={goBack}
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.5rem',
+                padding: '0.5rem 1rem',
+                fontSize: '0.875rem'
+              }}
+              title="Go back"
+            >
+              <span>←</span> Back
+            </button>
+          )}
+          <div className="logo" onClick={() => onNavigate('landing')} style={{ cursor: 'pointer' }}>
+            Smart'Q
+          </div>
         </div>
         <nav style={{ display: 'flex', gap: '1rem' }}>
           <button className="btn-secondary" onClick={() => onNavigate('landing')}>

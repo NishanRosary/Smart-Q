@@ -22,10 +22,28 @@ function App() {
   const [currentPage, setCurrentPage] = useState('landing');
   const [pageData, setPageData] = useState(null);
   const [backendStatus, setBackendStatus] = useState('');
+  const [navigationHistory, setNavigationHistory] = useState([]);
 
   const navigate = (page, data = null) => {
+    // Add current page to history before navigating (unless it's the same page)
+    if (page !== currentPage) {
+      setNavigationHistory(prev => [...prev, currentPage]);
+    }
     setCurrentPage(page);
     setPageData(data);
+  };
+
+  const goBack = () => {
+    if (navigationHistory.length > 0) {
+      const previousPage = navigationHistory[navigationHistory.length - 1];
+      setNavigationHistory(prev => prev.slice(0, -1));
+      setCurrentPage(previousPage);
+      setPageData(null);
+    } else {
+      // If no history, go to landing page
+      setCurrentPage('landing');
+      setPageData(null);
+    }
   };
 
   useEffect(() => {
@@ -44,36 +62,36 @@ function App() {
     switch (currentPage) {
       // Customer Pages
       case 'landing':
-        return <LandingPage onNavigate={navigate} />;
+        return <LandingPage onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
       case 'login':
-        return <CustomerLogin onNavigate={navigate} />;
+        return <CustomerLogin onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
       case 'customer-dashboard':
-        return <CustomerDashboard onNavigate={navigate} />;
+        return <CustomerDashboard onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
       case 'join-queue':
-        return <JoinQueue onNavigate={navigate} eventData={pageData} />;
+        return <JoinQueue onNavigate={navigate} goBack={goBack} currentPage={currentPage} eventData={pageData} />;
       case 'welcome':
-        return <WelcomePage onNavigate={navigate} />;
+        return <WelcomePage onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
       
       // Admin Pages
       case 'admin-login':
-        return <AdminLogin onNavigate={navigate} />;
+        return <AdminLogin onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
       case 'admin-dashboard':
-        return <AdminDashboard onNavigate={navigate} currentPage={currentPage} />;
+        return <AdminDashboard onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
       case 'event-scheduler':
-        return <EventScheduler onNavigate={navigate} currentPage={currentPage} />;
+        return <EventScheduler onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
       case 'queue-management':
-        return <QueueManagement onNavigate={navigate} currentPage={currentPage} />;
+        return <QueueManagement onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
       case 'counter-management':
-        return <CounterManagement onNavigate={navigate} currentPage={currentPage} />;
+        return <CounterManagement onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
       case 'analytics':
-        return <Analytics onNavigate={navigate} currentPage={currentPage} />;
+        return <Analytics onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
       case 'predictions':
-        return <Predictions onNavigate={navigate} currentPage={currentPage} />;
+        return <Predictions onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
       case 'settings':
-        return <AdminDashboard onNavigate={navigate} currentPage={currentPage} />;
+        return <AdminDashboard onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
       
       default:
-        return <LandingPage onNavigate={navigate} />;
+        return <LandingPage onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
     }
   };
 

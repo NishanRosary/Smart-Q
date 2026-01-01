@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Header from '../shared/Header';
 import '../../styles/customer.css';
 
-const LandingPage = ({ onNavigate }) => {
+const LandingPage = ({ onNavigate, goBack, currentPage }) => {
   const [openFaq, setOpenFaq] = useState(null);
 
   const toggleFaq = (index) => {
@@ -47,7 +47,7 @@ const LandingPage = ({ onNavigate }) => {
 
   return (
     <div>
-      <Header onNavigate={onNavigate} />
+      <Header onNavigate={onNavigate} goBack={goBack} currentPage={currentPage} />
       
       {/* Hero Section */}
       <section className="hero-section">

@@ -4,12 +4,12 @@ import { analyticsData, mlPredictions } from '../../data/mockData';
 import '../../styles/admin.css';
 import '../../styles/global.css';
 
-const Analytics = ({ onNavigate, currentPage }) => {
+const Analytics = ({ onNavigate, goBack, currentPage }) => {
   const maxValue = Math.max(...analyticsData.queueTrends.map(d => d.value));
 
   return (
     <div className="admin-layout">
-      <Sidebar currentPage={currentPage} onNavigate={onNavigate} />
+      <Sidebar currentPage={currentPage} onNavigate={onNavigate} goBack={goBack} />
       <main className="admin-main">
         <div className="admin-header">
           <h1>Analytics & Reports</h1>

@@ -4,7 +4,7 @@ import { summaryStats, mlPredictions } from '../../data/mockData';
 import '../../styles/admin.css';
 import '../../styles/global.css';
 
-const AdminDashboard = ({ onNavigate, currentPage }) => {
+const AdminDashboard = ({ onNavigate, goBack, currentPage }) => {
   const stats = [
     { label: 'Total Queues', value: summaryStats.totalQueues, icon: '📋', color: '#3B82F6' },
     { label: 'Active Counters', value: summaryStats.activeCounters, icon: '🏢', color: '#10B981' },
@@ -15,7 +15,7 @@ const AdminDashboard = ({ onNavigate, currentPage }) => {
 
   return (
     <div className="admin-layout">
-      <Sidebar currentPage={currentPage} onNavigate={onNavigate} />
+      <Sidebar currentPage={currentPage} onNavigate={onNavigate} goBack={goBack} />
       <main className="admin-main">
         <div className="admin-header">
           <h1>Dashboard Overview</h1>
