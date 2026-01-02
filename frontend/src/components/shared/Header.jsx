@@ -29,14 +29,14 @@ const Header = ({ onNavigate, goBack, currentPage }) => {
           </div>
         </div>
         <nav style={{ display: 'flex', gap: '1rem' }}>
-          <button className="btn-secondary" onClick={() => onNavigate('landing')}>
+          <button className="nav-button" onClick={() => onNavigate('landing')}>
             Home
           </button>
-          <button className="btn-secondary" onClick={() => onNavigate('login')}>
+          <button className="nav-button" onClick={() => onNavigate('login')}>
             Login
           </button>
           <button 
-            className="btn-secondary" 
+            className="nav-button" 
             onClick={() => onNavigate('admin-login')}
             style={{ fontSize: '0.875rem' }}
           >

@@ -249,13 +249,13 @@ button:focus {
   padding: var(--spacing-xl);
   box-shadow: var(--shadow-md);
   transition: all var(--transition-base);
-  border: 1px solid var(--color-gray-200);
+  border: 2px solid rgb(11, 61, 122);
 }
 
 .card:hover {
   box-shadow: var(--shadow-lg);
   transform: translateY(-2px);
-  border-color: var(--color-gray-300);
+  border-color: rgb(11, 61, 122);
 }
 
 /* Status Badges - High Contrast */

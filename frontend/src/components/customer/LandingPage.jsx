@@ -53,7 +53,7 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
       <section className="hero-section">
         <div className="hero-content">
           <h1 className="hero-title">Smart Queue Management with Live Crowd Prediction</h1>
-          <p className="hero-subtitle" style={{ opacity: 1, color: '#FFFFFF' }}>
+          <p className="hero-subtitle">
             Experience seamless queue management with real-time crowd predictions. 
             Join queues, track your position, and manage your time efficiently.
           </p>
@@ -72,23 +72,29 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
             </button>
           </div>
         </div>
-        <div style={{ 
-          marginTop: '3rem', 
-          display: 'flex', 
-          justifyContent: 'center',
-          opacity: 0.9
-        }}>
+        <div className="hero-image-wrapper">
           <div style={{
-            width: '600px',
-            height: '300px',
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: '16px',
             display: 'flex',
-            alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '4rem'
+            alignItems: 'center',
+            width: '100%',
+            maxWidth: '600px',
+            height: '400px',
+            margin: '0 auto',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)'
           }}>
-            📱 Smart'Q
+            <img 
+              src="/smartq-logo.jpg" 
+              alt="Smart'Q Logo" 
+              style={{ 
+                width: '100%', 
+                height: '100%', 
+                objectFit: 'cover', 
+                borderRadius: '16px' 
+              }} 
+            />
           </div>
         </div>
       </section>
@@ -216,15 +222,14 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
         padding: '4rem 2rem',
         maxWidth: '1200px',
         margin: '0 auto',
-        background: 'linear-gradient(135deg, #1E40AF 0%, #1E3A8A 100%)',
-        color: '#FFFFFF',
-        borderRadius: '16px',
+        backgroundColor: '#FFFFFF',
+        color: '#0F172A',
         marginTop: '2rem',
         marginBottom: '2rem'
       }}>
         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-          <h2 style={{ fontSize: '2rem', marginBottom: '1rem', color: '#FFFFFF' }}>Why Choose Smart'Q?</h2>
-          <p style={{ fontSize: '1.125rem', opacity: 1, color: '#FFFFFF' }}>
+          <h2 style={{ fontSize: '2rem', marginBottom: '1rem', color: '#0F172A' }}>Why Choose Smart'Q?</h2>
+          <p style={{ fontSize: '1.125rem', color: '#475569' }}>
             Experience the difference with our comprehensive queue management solution
           </p>
         </div>
@@ -234,50 +239,50 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
           gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
           gap: '2rem'
         }}>
-          <div style={{ padding: '1.5rem' }}>
+          <div className="card" style={{ padding: '1.5rem' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>⚡</div>
-            <h3 style={{ marginBottom: '0.75rem', color: '#FFFFFF' }}>Real-Time Updates</h3>
-            <p style={{ opacity: 1, color: '#FFFFFF' }}>
+            <h3 style={{ marginBottom: '0.75rem', color: '#0F172A' }}>Real-Time Updates</h3>
+            <p style={{ color: '#475569' }}>
               Get instant notifications about your queue position and estimated wait times, 
               allowing you to plan your time effectively.
             </p>
           </div>
-          <div style={{ padding: '1.5rem' }}>
+          <div className="card" style={{ padding: '1.5rem' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📊</div>
-            <h3 style={{ marginBottom: '0.75rem', color: '#FFFFFF' }}>Crowd Prediction</h3>
-            <p style={{ opacity: 1, color: '#FFFFFF' }}>
+            <h3 style={{ marginBottom: '0.75rem', color: '#0F172A' }}>Crowd Prediction</h3>
+            <p style={{ color: '#475569' }}>
               AI-powered crowd level predictions help you choose the best time to visit, 
               reducing your waiting time significantly.
             </p>
           </div>
-          <div style={{ padding: '1.5rem' }}>
+          <div className="card" style={{ padding: '1.5rem' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📱</div>
-            <h3 style={{ marginBottom: '0.75rem', color: '#FFFFFF' }}>QR Code Booking</h3>
-            <p style={{ opacity: 1, color: '#FFFFFF' }}>
+            <h3 style={{ marginBottom: '0.75rem', color: '#0F172A' }}>QR Code Booking</h3>
+            <p style={{ color: '#475569' }}>
               Quick and easy slot booking through QR codes. Scan and join queues instantly 
               without any hassle.
             </p>
           </div>
-          <div style={{ padding: '1.5rem' }}>
+          <div className="card" style={{ padding: '1.5rem' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🎯</div>
-            <h3 style={{ marginBottom: '0.75rem', color: '#FFFFFF' }}>Event Scheduling</h3>
-            <p style={{ opacity: 1, color: '#FFFFFF' }}>
+            <h3 style={{ marginBottom: '0.75rem', color: '#0F172A' }}>Event Scheduling</h3>
+            <p style={{ color: '#475569' }}>
               View and book slots for upcoming events in advance, ensuring you never miss 
               important appointments.
             </p>
           </div>
-          <div style={{ padding: '1.5rem' }}>
+          <div className="card" style={{ padding: '1.5rem' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🔒</div>
-            <h3 style={{ marginBottom: '0.75rem', color: '#FFFFFF' }}>Secure & Reliable</h3>
-            <p style={{ opacity: 1, color: '#FFFFFF' }}>
+            <h3 style={{ marginBottom: '0.75rem', color: '#0F172A' }}>Secure & Reliable</h3>
+            <p style={{ color: '#475569' }}>
               Your data is protected with enterprise-grade security. Our system is reliable 
               and available 24/7.
             </p>
           </div>
-          <div style={{ padding: '1.5rem' }}>
+          <div className="card" style={{ padding: '1.5rem' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>💼</div>
-            <h3 style={{ marginBottom: '0.75rem', color: '#FFFFFF' }}>Enterprise Ready</h3>
-            <p style={{ opacity: 1, color: '#FFFFFF' }}>
+            <h3 style={{ marginBottom: '0.75rem', color: '#0F172A' }}>Enterprise Ready</h3>
+            <p style={{ color: '#475569' }}>
               Scalable solution for organizations of all sizes. Easy integration with 
               existing systems and workflows.
             </p>
@@ -290,15 +295,14 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
         padding: '4rem 2rem',
         maxWidth: '1200px',
         margin: '0 auto',
-        background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
-        color: '#FFFFFF',
-        borderRadius: '16px',
+        backgroundColor: '#FFFFFF',
+        color: '#0F172A',
         marginTop: '2rem',
         marginBottom: '2rem'
       }}>
         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-          <h2 style={{ fontSize: '2rem', marginBottom: '1rem', color: '#FFFFFF' }}>🤖 Powered by Machine Learning</h2>
-          <p style={{ fontSize: '1.125rem', opacity: 1, color: '#FFFFFF' }}>
+          <h2 style={{ fontSize: '2rem', marginBottom: '1rem', color: '#0F172A' }}>🤖 Powered by Machine Learning</h2>
+          <p style={{ fontSize: '1.125rem', color: '#475569' }}>
             Advanced AI algorithms for accurate predictions and optimal queue management
           </p>
         </div>
@@ -308,65 +312,62 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
           gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
           gap: '2rem'
         }}>
-          <div style={{ padding: '1.5rem' }}>
+          <div className="card" style={{ padding: '1.5rem' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🔮</div>
-            <h3 style={{ marginBottom: '0.75rem', color: '#FFFFFF' }}>Peak Time Prediction</h3>
-            <p style={{ opacity: 1, color: '#FFFFFF' }}>
+            <h3 style={{ marginBottom: '0.75rem', color: '#0F172A' }}>Peak Time Prediction</h3>
+            <p style={{ color: '#475569' }}>
               Our ML models analyze historical patterns to predict peak hours with 92% accuracy, 
               helping you avoid long waits.
             </p>
           </div>
-          <div style={{ padding: '1.5rem' }}>
+          <div className="card" style={{ padding: '1.5rem' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>⏱️</div>
-            <h3 style={{ marginBottom: '0.75rem', color: '#FFFFFF' }}>Wait Time Forecasting</h3>
-            <p style={{ opacity: 1, color: '#FFFFFF' }}>
+            <h3 style={{ marginBottom: '0.75rem', color: '#0F172A' }}>Wait Time Forecasting</h3>
+            <p style={{ color: '#475569' }}>
               Real-time wait time predictions using machine learning algorithms trained on 
               millions of queue interactions.
             </p>
           </div>
-          <div style={{ padding: '1.5rem' }}>
+          <div className="card" style={{ padding: '1.5rem' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>👥</div>
-            <h3 style={{ marginBottom: '0.75rem', color: '#FFFFFF' }}>Crowd Level AI</h3>
-            <p style={{ opacity: 1, color: '#FFFFFF' }}>
+            <h3 style={{ marginBottom: '0.75rem', color: '#0F172A' }}>Crowd Level AI</h3>
+            <p style={{ color: '#475569' }}>
               Advanced neural networks predict crowd levels hours in advance, enabling 
               better planning and resource allocation.
             </p>
           </div>
-          <div style={{ padding: '1.5rem' }}>
+          <div className="card" style={{ padding: '1.5rem' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📈</div>
-            <h3 style={{ marginBottom: '0.75rem', color: '#FFFFFF' }}>Pattern Recognition</h3>
-            <p style={{ opacity: 1, color: '#FFFFFF' }}>
+            <h3 style={{ marginBottom: '0.75rem', color: '#0F172A' }}>Pattern Recognition</h3>
+            <p style={{ color: '#475569' }}>
               Deep learning models identify patterns in queue behavior, optimizing 
               service flow and reducing bottlenecks.
             </p>
           </div>
-          <div style={{ padding: '1.5rem' }}>
+          <div className="card" style={{ padding: '1.5rem' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🎯</div>
-            <h3 style={{ marginBottom: '0.75rem', color: '#FFFFFF' }}>Optimal Scheduling</h3>
-            <p style={{ opacity: 1, color: '#FFFFFF' }}>
+            <h3 style={{ marginBottom: '0.75rem', color: '#0F172A' }}>Optimal Scheduling</h3>
+            <p style={{ color: '#475569' }}>
               AI recommends the best times to visit based on predicted wait times, 
               crowd levels, and your preferences.
             </p>
           </div>
-          <div style={{ padding: '1.5rem' }}>
+          <div className="card" style={{ padding: '1.5rem' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🔄</div>
-            <h3 style={{ marginBottom: '0.75rem', color: '#FFFFFF' }}>Continuous Learning</h3>
-            <p style={{ opacity: 1, color: '#FFFFFF' }}>
+            <h3 style={{ marginBottom: '0.75rem', color: '#0F172A' }}>Continuous Learning</h3>
+            <p style={{ color: '#475569' }}>
               Our models continuously learn and improve from new data, ensuring 
               predictions become more accurate over time.
             </p>
           </div>
         </div>
 
-        <div style={{
+        <div className="card" style={{
           marginTop: '3rem',
           padding: '2rem',
-          backgroundColor: 'rgba(255, 255, 255, 0.15)',
-          borderRadius: '12px',
-          textAlign: 'center',
-          border: '1px solid rgba(255, 255, 255, 0.2)'
+          textAlign: 'center'
         }}>
-          <h3 style={{ marginBottom: '1rem', color: '#FFFFFF' }}>ML Model Performance</h3>
+          <h3 style={{ marginBottom: '1rem', color: '#0F172A' }}>ML Model Performance</h3>
           <div style={{
             display: 'flex',
             justifyContent: 'center',
@@ -374,16 +375,16 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
             flexWrap: 'wrap'
           }}>
             <div>
-              <div style={{ fontSize: '2rem', fontWeight: 700, color: '#FFFFFF' }}>92%</div>
-              <div style={{ fontSize: '0.875rem', opacity: 1, color: '#FFFFFF' }}>Model Accuracy</div>
+              <div style={{ fontSize: '2rem', fontWeight: 700, color: '#1E40AF' }}>92%</div>
+              <div style={{ fontSize: '0.875rem', color: '#475569' }}>Model Accuracy</div>
             </div>
             <div>
-              <div style={{ fontSize: '2rem', fontWeight: 700, color: '#FFFFFF' }}>88%</div>
-              <div style={{ fontSize: '0.875rem', opacity: 1, color: '#FFFFFF' }}>Avg Prediction Accuracy</div>
+              <div style={{ fontSize: '2rem', fontWeight: 700, color: '#1E40AF' }}>88%</div>
+              <div style={{ fontSize: '0.875rem', color: '#475569' }}>Avg Prediction Accuracy</div>
             </div>
             <div>
-              <div style={{ fontSize: '2rem', fontWeight: 700, color: '#FFFFFF' }}>156</div>
-              <div style={{ fontSize: '0.875rem', opacity: 1, color: '#FFFFFF' }}>Predictions Today</div>
+              <div style={{ fontSize: '2rem', fontWeight: 700, color: '#1E40AF' }}>156</div>
+              <div style={{ fontSize: '0.875rem', color: '#475569' }}>Predictions Today</div>
             </div>
           </div>
         </div>
@@ -446,7 +447,7 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
 
       {/* Contact & Footer Section */}
       <footer style={{
-        backgroundColor: '#0F172A',
+        backgroundColor: 'rgb(11, 61, 122)',
         color: '#FFFFFF',
         padding: '3rem 2rem',
         marginTop: '4rem'
@@ -460,9 +461,8 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
         }}>
           <div>
             <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', color: '#FFFFFF', fontWeight: 700 }}>Smart'Q</h3>
-            <p style={{ color: '#E2E8F0', lineHeight: '1.6', fontSize: '0.9375rem' }}>
-              Revolutionizing queue management with intelligent technology. 
-              Making every service interaction seamless and efficient.
+            <p style={{ color: 'white', lineHeight: '1.6', fontSize: '0.9375rem' }}>
+            Smarter queue management powered by intelligent technology—delivering seamless and efficient service experiences.
             </p>
           </div>
 
@@ -493,34 +493,113 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
               <p style={{ margin: '0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <span style={{ color: '#E2E8F0' }}>📧</span>
                 <a href="mailto:info@smartq.com" style={{ color: '#E2E8F0', textDecoration: 'none', fontSize: '0.9375rem', fontWeight: 500 }}>
-                  info@smartq.com
+                  hello@smartq.app
                 </a>
               </p>
               <p style={{ margin: '0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <span style={{ color: '#E2E8F0' }}>📞</span>
                 <a href="tel:+1234567890" style={{ color: '#E2E8F0', textDecoration: 'none', fontSize: '0.9375rem', fontWeight: 500 }}>
-                  +1 (234) 567-890
+                  +91 9048415225
                 </a>
               </p>
               <p style={{ margin: '0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#E2E8F0', fontSize: '0.9375rem' }}>
                 <span>📍</span>
-                <span>123 Innovation Street, Tech City, TC 12345</span>
+                <span>St Joseph's University, Bangalore</span>
               </p>
             </div>
           </div>
 
           <div>
             <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', color: '#FFFFFF', fontWeight: 700 }}>Follow Us</h3>
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-              <a href="#" style={{ color: '#E2E8F0', fontSize: '1.5rem', textDecoration: 'none', transition: 'color 0.2s', display: 'inline-block' }}>📘</a>
-              <a href="#" style={{ color: '#E2E8F0', fontSize: '1.5rem', textDecoration: 'none', transition: 'color 0.2s', display: 'inline-block' }}>📷</a>
-              <a href="#" style={{ color: '#E2E8F0', fontSize: '1.5rem', textDecoration: 'none', transition: 'color 0.2s', display: 'inline-block' }}>🐦</a>
-              <a href="#" style={{ color: '#E2E8F0', fontSize: '1.5rem', textDecoration: 'none', transition: 'color 0.2s', display: 'inline-block' }}>💼</a>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem' }}>
+              <a 
+                href="mailto:hello@smartq.app" 
+                style={{ 
+                  color: '#E2E8F0', 
+                  fontSize: '0.9375rem', 
+                  textDecoration: 'none', 
+                  transition: 'color 0.2s', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.5rem',
+                  fontWeight: 500
+                }}
+                onMouseOver={(e) => e.target.style.color = '#FFFFFF'}
+                onMouseOut={(e) => e.target.style.color = '#E2E8F0'}
+              >
+                <span>📧</span> Email
+              </a>
+              <a 
+                href="https://instagram.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{ 
+                  color: '#E2E8F0', 
+                  fontSize: '0.9375rem', 
+                  textDecoration: 'none', 
+                  transition: 'color 0.2s', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.5rem',
+                  fontWeight: 500
+                }}
+                onMouseOver={(e) => e.target.style.color = '#FFFFFF'}
+                onMouseOut={(e) => e.target.style.color = '#E2E8F0'}
+              >
+                <span>📷</span> Instagram
+              </a>
+              <a 
+                href="https://linkedin.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{ 
+                  color: '#E2E8F0', 
+                  fontSize: '0.9375rem', 
+                  textDecoration: 'none', 
+                  transition: 'color 0.2s', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.5rem',
+                  fontWeight: 500
+                }}
+                onMouseOver={(e) => e.target.style.color = '#FFFFFF'}
+                onMouseOut={(e) => e.target.style.color = '#E2E8F0'}
+              >
+                <span>💼</span> LinkedIn
+              </a>
+              <a 
+                href="https://github.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{ 
+                  color: '#E2E8F0', 
+                  fontSize: '0.9375rem', 
+                  textDecoration: 'none', 
+                  transition: 'color 0.2s', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.5rem',
+                  fontWeight: 500
+                }}
+                onMouseOver={(e) => e.target.style.color = '#FFFFFF'}
+                onMouseOut={(e) => e.target.style.color = '#E2E8F0'}
+              >
+                <span>💻</span> GitHub
+              </a>
             </div>
-            <p style={{ color: '#E2E8F0', marginTop: '1.5rem', fontSize: '0.875rem' }}>
-              © 2024 Smart'Q. All rights reserved.
-            </p>
           </div>
+        </div>
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          paddingTop: '2rem',
+          marginTop: '2rem',
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+          textAlign: 'center'
+        }}>
+          <p style={{ color: '#E2E8F0', fontSize: '0.875rem', margin: 0 }}>
+            © 2024 Smart'Q. All rights reserved.
+          </p>
         </div>
       </footer>
     </div>

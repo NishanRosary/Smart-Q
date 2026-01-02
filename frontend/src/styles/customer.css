@@ -2,7 +2,7 @@
 
 .customer-header {
   background-color: var(--color-white);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   padding: var(--spacing-md) var(--spacing-xl);
   position: sticky;
   top: 0;
@@ -17,21 +17,47 @@
   justify-content: space-between;
 }
 
+.nav-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 12px;
+  font-weight: 600;
+  border: 2px solid rgb(11, 61, 122);
+  background: transparent;
+  color: rgb(11, 61, 122);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav-button:hover {
+  background: rgb(11, 61, 122);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(11, 61, 122, 0.3);
+}
+
 .logo {
   font-family: var(--font-heading);
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1.375rem;
+  font-weight: 800;
   color: var(--color-primary);
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
+  letter-spacing: 0.5px;
 }
 
 .hero-section {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  background: rgb(11, 61, 122);
   color: var(--color-white);
-  padding: var(--spacing-3xl) var(--spacing-xl);
+  min-height: 90vh;
+  padding: 100px 20px;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3rem;
 }
 
 .hero-content {
@@ -47,9 +73,10 @@
 }
 
 .hero-subtitle {
-  font-size: 1.25rem;
+  font-size: 18px;
   margin-bottom: var(--spacing-2xl);
-  opacity: 0.95;
+  opacity: 0.9;
+  color: var(--color-white);
 }
 
 .hero-buttons {
@@ -60,30 +87,128 @@
 }
 
 .hero-button {
-  padding: var(--spacing-md) var(--spacing-xl);
-  font-size: 1.1rem;
-  border-radius: var(--radius-lg);
+  padding: 14px 28px;
+  font-size: 16px;
+  border-radius: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .hero-button-primary {
-  background-color: var(--color-white);
-  color: var(--color-primary);
+  background: #ffffff;
+  color: #1e40af;
 }
 
 .hero-button-primary:hover {
-  background-color: var(--color-gray-100);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-xl);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
 
 .hero-button-secondary {
-  background-color: transparent;
-  color: var(--color-white);
-  border: 2px solid var(--color-white);
+  background: transparent;
+  color: white;
+  border: 2px solid #fff;
 }
 
 .hero-button-secondary:hover {
   background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.hero-image-wrapper {
+  width: 100%;
+  max-width: 600px;
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .hero-section {
+    flex-direction: row;
+    align-items: center;
+    gap: 4rem;
+    padding: 80px 40px;
+  }
+  
+  .hero-content {
+    flex: 1;
+    text-align: left;
+    max-width: 600px;
+  }
+  
+  .hero-buttons {
+    justify-content: flex-start;
+  }
+  
+  .hero-image-wrapper {
+    flex: 1;
+    max-width: 600px;
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    min-height: 100vh;
+    padding: 60px 20px;
+  }
+  
+  .hero-title {
+    font-size: 2rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 16px;
+  }
+  
+  .hero-image-wrapper {
+    max-width: 100%;
+  }
+}
+
+.trust-section {
+  background-color: var(--color-white);
+  padding: 4rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.trust-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.trust-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 100%);
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+  transition: all 0.2s ease;
+}
+
+.trust-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.trust-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.trust-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-gray-900);
 }
 
 .login-container {
