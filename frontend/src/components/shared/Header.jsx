@@ -1,4 +1,5 @@
 import React from 'react';
+import { ArrowLeft } from 'lucide-react';
 import '../../styles/customer.css';
 
 const Header = ({ onNavigate, goBack, currentPage }) => {
@@ -9,19 +10,19 @@ const Header = ({ onNavigate, goBack, currentPage }) => {
       <div className="customer-header-content">
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           {showBackButton && goBack && (
-            <button 
-              className="btn-secondary" 
+            <button
+              className="btn-secondary"
               onClick={goBack}
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
+              style={{
+                display: 'flex',
+                alignItems: 'center',
                 gap: '0.5rem',
                 padding: '0.5rem 1rem',
                 fontSize: '0.875rem'
               }}
               title="Go back"
             >
-              <span>←</span> Back
+              <ArrowLeft size={16} /> Back
             </button>
           )}
           <div className="logo" onClick={() => onNavigate('landing')} style={{ cursor: 'pointer' }}>
@@ -35,8 +36,8 @@ const Header = ({ onNavigate, goBack, currentPage }) => {
           <button className="nav-button" onClick={() => onNavigate('login')}>
             Login
           </button>
-          <button 
-            className="nav-button" 
+          <button
+            className="nav-button"
             onClick={() => onNavigate('admin-login')}
             style={{ fontSize: '0.875rem' }}
           >

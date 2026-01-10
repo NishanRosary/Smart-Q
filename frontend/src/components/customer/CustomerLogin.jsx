@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import Header from '../shared/Header';
 import '../../styles/customer.css';
 
@@ -302,7 +303,7 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
               e.preventDefault();
               onNavigate('landing');
             }} style={{ fontSize: '0.875rem', color: '#64748B', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span>←</span> Back to Home
+              <ArrowLeft size={16} /> Back to Home
             </a>
           </div>
         </div>

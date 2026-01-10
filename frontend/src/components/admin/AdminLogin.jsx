@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import '../../styles/admin.css';
 import '../../styles/global.css';
 
@@ -186,7 +187,7 @@ const AdminLogin = ({ onNavigate, goBack, currentPage }) => {
             onMouseOver={(e) => e.target.style.color = '#1E40AF'}
             onMouseOut={(e) => /**/ e.target.style.color = '#64748B'}
           >
-            <span>←</span> Return to Public Site
+            <ArrowLeft size={16} /> Return to Public Site
           </a>
         </div>
       </div>

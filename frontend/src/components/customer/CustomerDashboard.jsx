@@ -3,6 +3,17 @@ import Header from '../shared/Header';
 import QRCodeDisplay from '../shared/QRCodeDisplay';
 import { getEvents, customerQueueStatus, mlPredictions } from '../../data/mockData';
 import '../../styles/customer.css';
+import {
+  Brain,
+  Clock,
+  AlertTriangle,
+  BarChart2,
+  Calendar,
+  MapPin,
+  Smartphone,
+  QrCode,
+  Info
+} from 'lucide-react';
 
 const CustomerDashboard = ({ onNavigate, goBack, currentPage }) => {
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -45,10 +56,10 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage }) => {
           <div className="queue-status-card">
             <div className="queue-position">{customerQueueStatus.position}</div>
             <div className="queue-label">Your Position in Queue</div>
-            
+
             <div className="progress-bar-container">
-              <div 
-                className="progress-bar" 
+              <div
+                className="progress-bar"
                 style={{ width: `${(customerQueueStatus.position / 50) * 100}%` }}
               ></div>
             </div>
@@ -78,7 +89,9 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage }) => {
 
         {/* ML Predictions Section */}
         <div className="dashboard-section">
-          <h2 className="section-title">🤖 AI-Powered Predictions</h2>
+          <h2 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <Brain size={32} color="#4F46E5" /> AI-Powered Predictions
+          </h2>
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
@@ -90,7 +103,9 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage }) => {
               background: 'linear-gradient(135deg, #F0F9FF 0%, #FFFFFF 100%)',
               border: '2px solid #3B82F6'
             }}>
-              <h3 style={{ marginBottom: '1rem', color: '#1F2937' }}>⏰ Best Times to Visit</h3>
+              <h3 style={{ marginBottom: '1rem', color: '#1F2937', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Clock size={20} /> Best Times to Visit
+              </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {mlPredictions.optimalVisitTimes.map((item, index) => (
                   <div key={index} style={{
@@ -116,7 +131,9 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage }) => {
               background: 'linear-gradient(135deg, #FEF3C7 0%, #FFFFFF 100%)',
               border: '2px solid #F59E0B'
             }}>
-              <h3 style={{ marginBottom: '1rem', color: '#1F2937' }}>⚠️ Peak Times to Avoid</h3>
+              <h3 style={{ marginBottom: '1rem', color: '#1F2937', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <AlertTriangle size={20} color="#DC2626" /> Peak Times to Avoid
+              </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {mlPredictions.peakTimes.filter(p => p.prediction === 'High').slice(0, 3).map((item, index) => (
                   <div key={index} style={{
@@ -142,7 +159,9 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage }) => {
               background: 'linear-gradient(135deg, #D1FAE5 0%, #FFFFFF 100%)',
               border: '2px solid #10B981'
             }}>
-              <h3 style={{ marginBottom: '1rem', color: '#1F2937' }}>📊 Wait Time Forecast</h3>
+              <h3 style={{ marginBottom: '1rem', color: '#1F2937', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <BarChart2 size={20} /> Wait Time Forecast
+              </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {mlPredictions.waitTimePredictions.map((item, index) => (
                   <div key={index} style={{
@@ -189,40 +208,40 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage }) => {
                 <h3 className="event-title">{event.title}</h3>
                 <div className="event-details">
                   <div className="event-detail-item">
-                    <span>📅</span>
-                    <span>{new Date(event.date).toLocaleDateString('en-US', { 
-                      weekday: 'short', 
-                      year: 'numeric', 
-                      month: 'short', 
-                      day: 'numeric' 
+                    <span><Calendar size={16} /></span>
+                    <span>{new Date(event.date).toLocaleDateString('en-US', {
+                      weekday: 'short',
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
                     })}</span>
                   </div>
                   <div className="event-detail-item">
-                    <span>🕐</span>
+                    <span><Clock size={16} /></span>
                     <span>{event.time}</span>
                   </div>
                   <div className="event-detail-item">
-                    <span>📍</span>
+                    <span><MapPin size={16} /></span>
                     <span>{event.location}</span>
                   </div>
                   <div className="event-detail-item">
-                    <span>📊</span>
+                    <span><Info size={16} /></span>
                     <span>Status: {event.status}</span>
                   </div>
                 </div>
                 <div className="event-actions">
-                  <button 
+                  <button
                     className="btn-primary"
                     onClick={() => handleJoinQueue(event)}
                     style={{ flex: 1 }}
                   >
                     Join Queue
                   </button>
-                  <button 
+                  <button
                     className="btn-secondary"
                     onClick={() => handleQRClick(event)}
                   >
-                    📱 QR Code
+                    <QrCode size={16} /> QR Code
                   </button>
                 </div>
               </div>
@@ -235,7 +254,7 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage }) => {
       {showQRModal && selectedEvent && (
         <div className="qr-code-modal" onClick={() => setShowQRModal(false)}>
           <div className="qr-code-modal-content" onClick={(e) => e.stopPropagation()}>
-            <button 
+            <button
               className="qr-code-modal-close"
               onClick={() => setShowQRModal(false)}
             >

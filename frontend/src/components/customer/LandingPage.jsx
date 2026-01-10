@@ -1,6 +1,39 @@
 import React, { useState } from 'react';
 import Header from '../shared/Header';
 import '../../styles/customer.css';
+import {
+  Building2,
+  Landmark,
+  Cpu,
+  GraduationCap,
+  ShoppingBag,
+  Stethoscope,
+  Clock,
+  Users,
+  Calendar,
+  Target,
+  Lightbulb,
+  Rocket,
+  Zap,
+  BarChart2,
+  Smartphone,
+  CalendarDays,
+  ShieldCheck,
+  Briefcase,
+  Brain,
+  Hourglass,
+  LineChart,
+  CalendarCheck,
+  RefreshCw,
+  ChevronDown,
+  ChevronUp,
+  Mail,
+  Phone,
+  MapPin,
+  Instagram,
+  Linkedin,
+  Github
+} from 'lucide-react';
 
 const LandingPage = ({ onNavigate, goBack, currentPage }) => {
   const [openFaq, setOpenFaq] = useState(null);
@@ -10,12 +43,12 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
   };
 
   const companies = [
-    { name: 'City General Hospital', logo: '🏥', industry: 'Healthcare' },
-    { name: 'National Bank', logo: '🏦', industry: 'Banking' },
-    { name: 'Tech Corp', logo: '💼', industry: 'Technology' },
-    { name: 'Regional Passport Office', logo: '🏛️', industry: 'Government' },
-    { name: 'Metro University', logo: '🎓', industry: 'Education' },
-    { name: 'Prime Retail', logo: '🛍️', industry: 'Retail' }
+    { name: 'City General Hospital', logo: <Stethoscope size={48} color="#2563EB" />, industry: 'Healthcare' },
+    { name: 'National Bank', logo: <Landmark size={48} color="#2563EB" />, industry: 'Banking' },
+    { name: 'Tech Corp', logo: <Cpu size={48} color="#2563EB" />, industry: 'Technology' },
+    { name: 'Regional Passport Office', logo: <Building2 size={48} color="#2563EB" />, industry: 'Government' },
+    { name: 'Metro University', logo: <GraduationCap size={48} color="#2563EB" />, industry: 'Education' },
+    { name: 'Prime Retail', logo: <ShoppingBag size={48} color="#2563EB" />, industry: 'Retail' }
   ];
 
   const faqs = [
@@ -48,23 +81,23 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
   return (
     <div>
       <Header onNavigate={onNavigate} goBack={goBack} currentPage={currentPage} />
-      
+
       {/* Hero Section */}
       <section className="hero-section">
         <div className="hero-content">
           <h1 className="hero-title">Smart Queue Management with Live Crowd Prediction</h1>
           <p className="hero-subtitle">
-            Experience seamless queue management with real-time crowd predictions. 
+            Experience seamless queue management with real-time crowd predictions.
             Join queues, track your position, and manage your time efficiently.
           </p>
           <div className="hero-buttons">
-            <button 
+            <button
               className="hero-button hero-button-primary"
               onClick={() => onNavigate('join-queue')}
             >
               Join Queue
             </button>
-            <button 
+            <button
               className="hero-button hero-button-secondary"
               onClick={() => onNavigate('login')}
             >
@@ -85,24 +118,24 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
             overflow: 'hidden',
             boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)'
           }}>
-            <img 
-              src="/smartq-logo.jpg" 
-              alt="Smart'Q Logo" 
-              style={{ 
-                width: '100%', 
-                height: '100%', 
-                objectFit: 'cover', 
-                borderRadius: '16px' 
-              }} 
+            <img
+              src="/smartq-logo.jpg"
+              alt="Smart'Q Logo"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                borderRadius: '16px'
+              }}
             />
           </div>
         </div>
       </section>
 
       {/* Key Features Section */}
-      <section style={{ 
-        padding: '4rem 2rem', 
-        maxWidth: '1200px', 
+      <section style={{
+        padding: '4rem 2rem',
+        maxWidth: '1200px',
         margin: '0 auto',
         textAlign: 'center',
         backgroundColor: '#FFFFFF'
@@ -115,23 +148,29 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
           marginTop: '2rem'
         }}>
           <div className="card">
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⏱️</div>
+            <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
+              <Clock size={48} color="#3B82F6" />
+            </div>
             <h3>Real-time Tracking</h3>
             <p>Track your position in the queue and estimated waiting time in real-time.</p>
           </div>
           <div className="card">
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>👥</div>
+            <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
+              <Users size={48} color="#3B82F6" />
+            </div>
             <h3>Crowd Prediction</h3>
             <p>Get live predictions about crowd levels to plan your visit better.</p>
           </div>
           <div className="card">
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📅</div>
+            <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
+              <Calendar size={48} color="#3B82F6" />
+            </div>
             <h3>Event Scheduling</h3>
             <p>View and book slots for upcoming events and appointments.</p>
           </div>
         </div>
       </section>
-      
+
       {/* About Section */}
       <section style={{
         padding: '4rem 2rem',
@@ -155,26 +194,32 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
           marginTop: '2rem'
         }}>
           <div className="card">
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎯</div>
+            <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
+              <Target size={48} color="#3B82F6" />
+            </div>
             <h3>Our Mission</h3>
             <p>
-              To eliminate waiting time uncertainty and transform the queue experience 
+              To eliminate waiting time uncertainty and transform the queue experience
               for both customers and service providers through smart technology.
             </p>
           </div>
           <div className="card">
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>💡</div>
+            <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
+              <Lightbulb size={48} color="#3B82F6" />
+            </div>
             <h3>Our Vision</h3>
             <p>
-              To become the leading queue management solution, making every service 
+              To become the leading queue management solution, making every service
               interaction seamless, efficient, and customer-friendly.
             </p>
           </div>
           <div className="card">
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🚀</div>
+            <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
+              <Rocket size={48} color="#3B82F6" />
+            </div>
             <h3>Innovation</h3>
             <p>
-              Leveraging real-time data analytics and AI-powered predictions to 
+              Leveraging real-time data analytics and AI-powered predictions to
               optimize queue flow and enhance customer satisfaction.
             </p>
           </div>
@@ -209,7 +254,7 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
               padding: '2rem',
               transition: 'transform 0.2s ease'
             }}>
-              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>{company.logo}</div>
+              <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>{company.logo}</div>
               <h3 style={{ marginBottom: '0.5rem', color: '#0F172A' }}>{company.name}</h3>
               <p style={{ color: '#475569', fontSize: '0.875rem' }}>{company.industry}</p>
             </div>
@@ -240,50 +285,62 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
           gap: '2rem'
         }}>
           <div className="card" style={{ padding: '1.5rem' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>⚡</div>
+            <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
+              <Zap size={40} color="#3B82F6" />
+            </div>
             <h3 style={{ marginBottom: '0.75rem', color: '#0F172A' }}>Real-Time Updates</h3>
             <p style={{ color: '#475569' }}>
-              Get instant notifications about your queue position and estimated wait times, 
+              Get instant notifications about your queue position and estimated wait times,
               allowing you to plan your time effectively.
             </p>
           </div>
           <div className="card" style={{ padding: '1.5rem' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📊</div>
+            <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
+              <BarChart2 size={40} color="#3B82F6" />
+            </div>
             <h3 style={{ marginBottom: '0.75rem', color: '#0F172A' }}>Crowd Prediction</h3>
             <p style={{ color: '#475569' }}>
-              AI-powered crowd level predictions help you choose the best time to visit, 
+              AI-powered crowd level predictions help you choose the best time to visit,
               reducing your waiting time significantly.
             </p>
           </div>
           <div className="card" style={{ padding: '1.5rem' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📱</div>
+            <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
+              <Smartphone size={40} color="#3B82F6" />
+            </div>
             <h3 style={{ marginBottom: '0.75rem', color: '#0F172A' }}>QR Code Booking</h3>
             <p style={{ color: '#475569' }}>
-              Quick and easy slot booking through QR codes. Scan and join queues instantly 
+              Quick and easy slot booking through QR codes. Scan and join queues instantly
               without any hassle.
             </p>
           </div>
           <div className="card" style={{ padding: '1.5rem' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🎯</div>
+            <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
+              <CalendarDays size={40} color="#3B82F6" />
+            </div>
             <h3 style={{ marginBottom: '0.75rem', color: '#0F172A' }}>Event Scheduling</h3>
             <p style={{ color: '#475569' }}>
-              View and book slots for upcoming events in advance, ensuring you never miss 
+              View and book slots for upcoming events in advance, ensuring you never miss
               important appointments.
             </p>
           </div>
           <div className="card" style={{ padding: '1.5rem' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🔒</div>
+            <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
+              <ShieldCheck size={40} color="#3B82F6" />
+            </div>
             <h3 style={{ marginBottom: '0.75rem', color: '#0F172A' }}>Secure & Reliable</h3>
             <p style={{ color: '#475569' }}>
-              Your data is protected with enterprise-grade security. Our system is reliable 
+              Your data is protected with enterprise-grade security. Our system is reliable
               and available 24/7.
             </p>
           </div>
           <div className="card" style={{ padding: '1.5rem' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>💼</div>
+            <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
+              <Briefcase size={40} color="#3B82F6" />
+            </div>
             <h3 style={{ marginBottom: '0.75rem', color: '#0F172A' }}>Enterprise Ready</h3>
             <p style={{ color: '#475569' }}>
-              Scalable solution for organizations of all sizes. Easy integration with 
+              Scalable solution for organizations of all sizes. Easy integration with
               existing systems and workflows.
             </p>
           </div>
@@ -313,50 +370,62 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
           gap: '2rem'
         }}>
           <div className="card" style={{ padding: '1.5rem' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🔮</div>
+            <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
+              <Brain size={40} color="#3B82F6" />
+            </div>
             <h3 style={{ marginBottom: '0.75rem', color: '#0F172A' }}>Peak Time Prediction</h3>
             <p style={{ color: '#475569' }}>
-              Our ML models analyze historical patterns to predict peak hours with 92% accuracy, 
+              Our ML models analyze historical patterns to predict peak hours with 92% accuracy,
               helping you avoid long waits.
             </p>
           </div>
           <div className="card" style={{ padding: '1.5rem' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>⏱️</div>
+            <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
+              <Hourglass size={40} color="#3B82F6" />
+            </div>
             <h3 style={{ marginBottom: '0.75rem', color: '#0F172A' }}>Wait Time Forecasting</h3>
             <p style={{ color: '#475569' }}>
-              Real-time wait time predictions using machine learning algorithms trained on 
+              Real-time wait time predictions using machine learning algorithms trained on
               millions of queue interactions.
             </p>
           </div>
           <div className="card" style={{ padding: '1.5rem' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>👥</div>
+            <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
+              <Users size={40} color="#3B82F6" />
+            </div>
             <h3 style={{ marginBottom: '0.75rem', color: '#0F172A' }}>Crowd Level AI</h3>
             <p style={{ color: '#475569' }}>
-              Advanced neural networks predict crowd levels hours in advance, enabling 
+              Advanced neural networks predict crowd levels hours in advance, enabling
               better planning and resource allocation.
             </p>
           </div>
           <div className="card" style={{ padding: '1.5rem' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📈</div>
+            <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
+              <LineChart size={40} color="#3B82F6" />
+            </div>
             <h3 style={{ marginBottom: '0.75rem', color: '#0F172A' }}>Pattern Recognition</h3>
             <p style={{ color: '#475569' }}>
-              Deep learning models identify patterns in queue behavior, optimizing 
+              Deep learning models identify patterns in queue behavior, optimizing
               service flow and reducing bottlenecks.
             </p>
           </div>
           <div className="card" style={{ padding: '1.5rem' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🎯</div>
+            <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
+              <CalendarCheck size={40} color="#3B82F6" />
+            </div>
             <h3 style={{ marginBottom: '0.75rem', color: '#0F172A' }}>Optimal Scheduling</h3>
             <p style={{ color: '#475569' }}>
-              AI recommends the best times to visit based on predicted wait times, 
+              AI recommends the best times to visit based on predicted wait times,
               crowd levels, and your preferences.
             </p>
           </div>
           <div className="card" style={{ padding: '1.5rem' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🔄</div>
+            <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
+              <RefreshCw size={40} color="#3B82F6" />
+            </div>
             <h3 style={{ marginBottom: '0.75rem', color: '#0F172A' }}>Continuous Learning</h3>
             <p style={{ color: '#475569' }}>
-              Our models continuously learn and improve from new data, ensuring 
+              Our models continuously learn and improve from new data, ensuring
               predictions become more accurate over time.
             </p>
           </div>
@@ -421,14 +490,7 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
                 <h3 style={{ margin: 0, color: '#0F172A', fontSize: '1.125rem' }}>
                   {faq.question}
                 </h3>
-                <span style={{
-                  fontSize: '1.5rem',
-                  color: '#1E40AF',
-                  transition: 'transform 0.2s ease',
-                  transform: openFaq === index ? 'rotate(180deg)' : 'rotate(0deg)'
-                }}>
-                  ▼
-                </span>
+                {openFaq === index ? <ChevronUp size={24} color="#1E40AF" /> : <ChevronDown size={24} color="#1E40AF" />}
               </div>
               {openFaq === index && (
                 <p style={{
@@ -443,7 +505,7 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
             </div>
           ))}
         </div>
-      </section>
+      </section >
 
       {/* Contact & Footer Section */}
       <footer style={{
@@ -462,7 +524,7 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
           <div>
             <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', color: '#FFFFFF', fontWeight: 700 }}>Smart'Q</h3>
             <p style={{ color: 'white', lineHeight: '1.6', fontSize: '0.9375rem' }}>
-            Smarter queue management powered by intelligent technology—delivering seamless and efficient service experiences.
+              Smarter queue management powered by intelligent technology—delivering seamless and efficient service experiences.
             </p>
           </div>
 
@@ -491,19 +553,19 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
             <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', color: '#FFFFFF', fontWeight: 700 }}>Contact Us</h3>
             <div style={{ lineHeight: '2' }}>
               <p style={{ margin: '0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ color: '#E2E8F0' }}>📧</span>
+                <span style={{ color: '#E2E8F0' }}><Mail size={16} /></span>
                 <a href="mailto:info@smartq.com" style={{ color: '#E2E8F0', textDecoration: 'none', fontSize: '0.9375rem', fontWeight: 500 }}>
                   hello@smartq.app
                 </a>
               </p>
               <p style={{ margin: '0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ color: '#E2E8F0' }}>📞</span>
+                <span style={{ color: '#E2E8F0' }}><Phone size={16} /></span>
                 <a href="tel:+1234567890" style={{ color: '#E2E8F0', textDecoration: 'none', fontSize: '0.9375rem', fontWeight: 500 }}>
                   +91 9048415225
                 </a>
               </p>
               <p style={{ margin: '0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#E2E8F0', fontSize: '0.9375rem' }}>
-                <span>📍</span>
+                <span><MapPin size={16} /></span>
                 <span>St Joseph's University, Bangalore</span>
               </p>
             </div>
@@ -512,79 +574,79 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
           <div>
             <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', color: '#FFFFFF', fontWeight: 700 }}>Follow Us</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem' }}>
-              <a 
-                href="mailto:hello@smartq.app" 
-                style={{ 
-                  color: '#E2E8F0', 
-                  fontSize: '0.9375rem', 
-                  textDecoration: 'none', 
-                  transition: 'color 0.2s', 
-                  display: 'flex', 
-                  alignItems: 'center', 
+              <a
+                href="mailto:hello@smartq.app"
+                style={{
+                  color: '#E2E8F0',
+                  fontSize: '0.9375rem',
+                  textDecoration: 'none',
+                  transition: 'color 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
                   gap: '0.5rem',
                   fontWeight: 500
                 }}
                 onMouseOver={(e) => e.target.style.color = '#FFFFFF'}
                 onMouseOut={(e) => e.target.style.color = '#E2E8F0'}
               >
-                <span>📧</span> Email
+                <span><Mail size={16} /></span> Email
               </a>
-              <a 
-                href="https://instagram.com" 
-                target="_blank" 
+              <a
+                href="https://instagram.com"
+                target="_blank"
                 rel="noopener noreferrer"
-                style={{ 
-                  color: '#E2E8F0', 
-                  fontSize: '0.9375rem', 
-                  textDecoration: 'none', 
-                  transition: 'color 0.2s', 
-                  display: 'flex', 
-                  alignItems: 'center', 
+                style={{
+                  color: '#E2E8F0',
+                  fontSize: '0.9375rem',
+                  textDecoration: 'none',
+                  transition: 'color 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
                   gap: '0.5rem',
                   fontWeight: 500
                 }}
                 onMouseOver={(e) => e.target.style.color = '#FFFFFF'}
                 onMouseOut={(e) => e.target.style.color = '#E2E8F0'}
               >
-                <span>📷</span> Instagram
+                <span><Instagram size={16} /></span> Instagram
               </a>
-              <a 
-                href="https://linkedin.com" 
-                target="_blank" 
+              <a
+                href="https://linkedin.com"
+                target="_blank"
                 rel="noopener noreferrer"
-                style={{ 
-                  color: '#E2E8F0', 
-                  fontSize: '0.9375rem', 
-                  textDecoration: 'none', 
-                  transition: 'color 0.2s', 
-                  display: 'flex', 
-                  alignItems: 'center', 
+                style={{
+                  color: '#E2E8F0',
+                  fontSize: '0.9375rem',
+                  textDecoration: 'none',
+                  transition: 'color 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
                   gap: '0.5rem',
                   fontWeight: 500
                 }}
                 onMouseOver={(e) => e.target.style.color = '#FFFFFF'}
                 onMouseOut={(e) => e.target.style.color = '#E2E8F0'}
               >
-                <span>💼</span> LinkedIn
+                <span><Linkedin size={16} /></span> LinkedIn
               </a>
-              <a 
-                href="https://github.com" 
-                target="_blank" 
+              <a
+                href="https://github.com"
+                target="_blank"
                 rel="noopener noreferrer"
-                style={{ 
-                  color: '#E2E8F0', 
-                  fontSize: '0.9375rem', 
-                  textDecoration: 'none', 
-                  transition: 'color 0.2s', 
-                  display: 'flex', 
-                  alignItems: 'center', 
+                style={{
+                  color: '#E2E8F0',
+                  fontSize: '0.9375rem',
+                  textDecoration: 'none',
+                  transition: 'color 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
                   gap: '0.5rem',
                   fontWeight: 500
                 }}
                 onMouseOver={(e) => e.target.style.color = '#FFFFFF'}
                 onMouseOut={(e) => e.target.style.color = '#E2E8F0'}
               >
-                <span>💻</span> GitHub
+                <span><Github size={16} /></span> GitHub
               </a>
             </div>
           </div>
@@ -601,8 +663,8 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
             © 2024 Smart'Q. All rights reserved.
           </p>
         </div>
-      </footer>
-    </div>
+      </footer >
+    </div >
   );
 };
 
