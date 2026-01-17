@@ -1,4 +1,14 @@
 import React from 'react';
+import {
+  ClipboardList,
+  Building2,
+  Calendar,
+  Users,
+  Clock,
+  TrendingUp,
+  Brain,
+  ArrowRight
+} from 'lucide-react';
 import Sidebar from '../shared/Sidebar';
 import { summaryStats, mlPredictions } from '../../data/mockData';
 import '../../styles/admin.css';
@@ -6,11 +16,11 @@ import '../../styles/global.css';
 
 const AdminDashboard = ({ onNavigate, goBack, currentPage }) => {
   const stats = [
-    { label: 'Total Queues', value: summaryStats.totalQueues, icon: '📋', color: '#3B82F6' },
-    { label: 'Active Counters', value: summaryStats.activeCounters, icon: '🏢', color: '#10B981' },
-    { label: 'Pending Events', value: summaryStats.pendingEvents, icon: '📅', color: '#F59E0B' },
-    { label: 'Total Customers', value: summaryStats.totalCustomers, icon: '👥', color: '#8B5CF6' },
-    { label: 'Avg Wait Time', value: `${summaryStats.averageWaitTime} min`, icon: '⏱️', color: '#EF4444' }
+    { label: 'Total Queues', value: summaryStats.totalQueues, icon: <ClipboardList size={24} />, color: '#3B82F6' },
+    { label: 'Active Counters', value: summaryStats.activeCounters, icon: <Building2 size={24} />, color: '#10B981' },
+    { label: 'Pending Events', value: summaryStats.pendingEvents, icon: <Calendar size={24} />, color: '#F59E0B' },
+    { label: 'Total Customers', value: summaryStats.totalCustomers, icon: <Users size={24} />, color: '#8B5CF6' },
+    { label: 'Avg Wait Time', value: `${summaryStats.averageWaitTime} min`, icon: <Clock size={24} />, color: '#EF4444' }
   ];
 
   return (
@@ -26,7 +36,7 @@ const AdminDashboard = ({ onNavigate, goBack, currentPage }) => {
             <div key={index} className="summary-card">
               <div className="summary-card-header">
                 <span className="summary-card-title">{stat.label}</span>
-                <div 
+                <div
                   className="summary-card-icon"
                   style={{ backgroundColor: `${stat.color}20`, color: stat.color }}
                 >
@@ -39,55 +49,57 @@ const AdminDashboard = ({ onNavigate, goBack, currentPage }) => {
           ))}
         </div>
 
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', 
-          gap: '1.5rem' 
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+          gap: '1.5rem'
         }}>
           <div className="card">
             <h3 style={{ marginBottom: '1rem' }}>Quick Actions</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <button 
+              <button
                 className="btn-primary"
                 onClick={() => onNavigate('event-scheduler')}
-                style={{ width: '100%', justifyContent: 'flex-start' }}
+                style={{ width: '100%', justifyContent: 'flex-start', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
               >
-                📅 Schedule New Event
+                <Calendar size={18} /> Schedule New Event
               </button>
-              <button 
+              <button
                 className="btn-primary"
                 onClick={() => onNavigate('queue-management')}
-                style={{ width: '100%', justifyContent: 'flex-start' }}
+                style={{ width: '100%', justifyContent: 'flex-start', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
               >
-                📋 Manage Queues
+                <ClipboardList size={18} /> Manage Queues
               </button>
-              <button 
+              <button
                 className="btn-primary"
                 onClick={() => onNavigate('counter-management')}
-                style={{ width: '100%', justifyContent: 'flex-start' }}
+                style={{ width: '100%', justifyContent: 'flex-start', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
               >
-                🏢 Manage Counters
+                <Building2 size={18} /> Manage Counters
               </button>
-              <button 
+              <button
                 className="btn-primary"
                 onClick={() => onNavigate('analytics')}
-                style={{ width: '100%', justifyContent: 'flex-start' }}
+                style={{ width: '100%', justifyContent: 'flex-start', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
               >
-                📈 View Analytics
+                <TrendingUp size={18} /> View Analytics
               </button>
-              <button 
+              <button
                 className="btn-primary"
                 onClick={() => onNavigate('predictions')}
-                style={{ width: '100%', justifyContent: 'flex-start' }}
+                style={{ width: '100%', justifyContent: 'flex-start', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
               >
-                🔮 ML Predictions
+                <Brain size={18} /> ML Predictions
               </button>
             </div>
           </div>
 
           {/* ML Predictions Preview */}
           <div className="card">
-            <h3 style={{ marginBottom: '1rem' }}>🔮 ML Predictions Preview</h3>
+            <h3 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Brain size={20} color="#8B5CF6" /> ML Predictions Preview
+            </h3>
             <div style={{ marginBottom: '1rem', fontSize: '0.875rem', color: '#6B7280' }}>
               Next Peak Time: <strong>{mlPredictions.peakTimes[0].hour}</strong> ({mlPredictions.peakTimes[0].prediction})
             </div>
@@ -120,12 +132,12 @@ const AdminDashboard = ({ onNavigate, goBack, currentPage }) => {
                 </div>
               ))}
             </div>
-            <button 
+            <button
               className="btn-secondary"
               onClick={() => onNavigate('predictions')}
               style={{ width: '100%', marginTop: '1rem' }}
             >
-              View All Predictions →
+              View All Predictions <ArrowRight size={16} />
             </button>
           </div>
 

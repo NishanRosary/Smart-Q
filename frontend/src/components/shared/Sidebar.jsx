@@ -1,15 +1,25 @@
 import React from 'react';
+import {
+  LayoutDashboard,
+  ClipboardList,
+  Calendar,
+  Building2,
+  TrendingUp,
+  Brain,
+  Settings,
+  ArrowLeft
+} from 'lucide-react';
 import '../../styles/admin.css';
 
 const Sidebar = ({ currentPage, onNavigate, goBack }) => {
   const navItems = [
-    { id: 'admin-dashboard', label: 'Dashboard', icon: '📊' },
-    { id: 'queue-management', label: 'Queue Management', icon: '📋' },
-    { id: 'event-scheduler', label: 'Event Scheduler', icon: '📅' },
-    { id: 'counter-management', label: 'Counters', icon: '🏢' },
-    { id: 'analytics', label: 'Analytics', icon: '📈' },
-    { id: 'predictions', label: 'Predictions', icon: '🔮' },
-    { id: 'settings', label: 'Settings', icon: '⚙️' }
+    { id: 'admin-dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
+    { id: 'queue-management', label: 'Queue Management', icon: <ClipboardList size={20} /> },
+    { id: 'event-scheduler', label: 'Event Scheduler', icon: <Calendar size={20} /> },
+    { id: 'counter-management', label: 'Counters', icon: <Building2 size={20} /> },
+    { id: 'analytics', label: 'Analytics', icon: <TrendingUp size={20} /> },
+    { id: 'predictions', label: 'Predictions', icon: <Brain size={20} /> },
+    { id: 'settings', label: 'Settings', icon: <Settings size={20} /> }
   ];
 
   const showBackButton = currentPage && currentPage !== 'admin-dashboard' && currentPage !== 'admin-login';
@@ -46,7 +56,7 @@ const Sidebar = ({ currentPage, onNavigate, goBack }) => {
             }}
             title="Go back"
           >
-            <span>←</span> Back
+            <ArrowLeft size={16} /> Back
           </button>
         </div>
       )}
