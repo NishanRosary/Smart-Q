@@ -12,7 +12,7 @@
 
 # 
 
-# \## 📌 Problem Statement
+# \##  Problem Statement
 
 # 
 
@@ -30,7 +30,7 @@
 
 # 
 
-# \## 🎯 Objectives
+# \##  Objectives
 
 # 
 
@@ -54,7 +54,7 @@
 
 # 
 
-# \## 🧠 System Overview
+# \##  System Overview
 
 # 
 
@@ -86,7 +86,7 @@
 
 # 
 
-# \## 🏗️ Architecture Overview
+# \##  Architecture Overview
 
 # 
 
@@ -110,7 +110,7 @@
 
 # 
 
-# \## 🛠️ Technologies Used
+# \##  Technologies Used
 
 # 
 
@@ -158,7 +158,7 @@
 
 # 
 
-# \## ⚙️ Core Features
+# \##  Core Features
 
 # 
 
@@ -192,7 +192,7 @@
 
 # 
 
-# \## 📊 Analytics \& Prediction
+# \##  Analytics \& Prediction
 
 # 
 
@@ -200,15 +200,15 @@
 
 # 
 
-# \- ⏱️ **Predict Waiting Time** - Estimate how long a customer will wait based on position, service type, and time patterns
+# \-  **Predict Waiting Time** - Estimate how long a customer will wait based on position, service type, and time patterns
 
-# \- 📈 **Predict Queue Length** - Forecast crowd/queue size for specific times
+# \-  **Predict Queue Length** - Forecast crowd/queue size for specific times
 
-# \- 👥 **Predict No-Show Probability** - Estimate likelihood of no-shows
+# \-  **Predict No-Show Probability** - Estimate likelihood of no-shows
 
-# \- 🕒 **Suggest Best Time to Visit** - Recommend optimal visit times with lowest wait
+# \-  **Suggest Best Time to Visit** - Recommend optimal visit times with lowest wait
 
-# \- ⚠️ **Predict Peak Hours** - Identify busy periods and queue density
+# \-  **Predict Peak Hours** - Identify busy periods and queue density
 
 # 
 
@@ -273,7 +273,7 @@
 
 # 
 
-# \## 🔮 Future Scope
+# \##  Future Scope
 
 # 
 
@@ -295,7 +295,7 @@
 
 # 
 
-# \## 🎓 Academic Significance
+# \##  Academic Significance
 
 # 
 
@@ -317,7 +317,7 @@
 
 # 
 
-# \## 👨‍🎓 Project Team
+# \##  Project Team
 
 # 
 
@@ -339,7 +339,7 @@
 
 # 
 
-# \## 📜 Conclusion
+# \##  Conclusion
 
 # 
 
