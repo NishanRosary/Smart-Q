@@ -8,12 +8,12 @@ import "../../styles/global.css";
 const QueueManagement = ({ onNavigate, goBack, currentPage }) => {
   const [queueData, setQueueData] = useState([]);
 
-  // Fetch initial queue + listen for real-time updates
+  // Fetch initial queue data + listen for real-time updates
   useEffect(() => {
     axios
       .get("http://localhost:5000/api/queue")
       .then((res) => setQueueData(res.data))
-      .catch((err) => console.error(err));
+      .catch((err) => console.error("Error fetching queue:", err));
 
     socket.on("queueUpdated", (updatedQueue) => {
       setQueueData(updatedQueue);
@@ -23,6 +23,23 @@ const QueueManagement = ({ onNavigate, goBack, currentPage }) => {
       socket.off("queueUpdated");
     };
   }, []);
+
+  // Admin actions
+  const startQueue = async (id) => {
+    try {
+      await axios.put(`http://localhost:5000/api/queue/${id}/start`);
+    } catch (error) {
+      console.error("Error starting queue:", error);
+    }
+  };
+
+  const completeQueue = async (id) => {
+    try {
+      await axios.put(`http://localhost:5000/api/queue/${id}/complete`);
+    } catch (error) {
+      console.error("Error completing queue:", error);
+    }
+  };
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -81,22 +98,21 @@ const QueueManagement = ({ onNavigate, goBack, currentPage }) => {
                 <th>Service</th>
                 <th>Status</th>
                 <th>Joined At</th>
+                <th>Actions</th>
               </tr>
             </thead>
 
             <tbody>
               {queueData.length === 0 ? (
                 <tr>
-                  <td colSpan="4" style={{ textAlign: "center", padding: "1rem" }}>
+                  <td colSpan="5" style={{ textAlign: "center", padding: "1rem" }}>
                     No active queues
                   </td>
                 </tr>
               ) : (
                 queueData.map((queue) => (
                   <tr key={queue._id}>
-                    <td
-                      style={{ fontWeight: 600, color: "#3B82F6" }}
-                    >
+                    <td style={{ fontWeight: 600, color: "#3B82F6" }}>
                       T{queue.tokenNumber}
                     </td>
                     <td>{queue.service}</td>
@@ -106,6 +122,25 @@ const QueueManagement = ({ onNavigate, goBack, currentPage }) => {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}
+                    </td>
+                    <td>
+                      {queue.status === "waiting" && (
+                        <button
+                          className="action-btn btn-primary"
+                          onClick={() => startQueue(queue._id)}
+                        >
+                          Start
+                        </button>
+                      )}
+
+                      {queue.status === "serving" && (
+                        <button
+                          className="action-btn btn-danger"
+                          onClick={() => completeQueue(queue._id)}
+                        >
+                          Complete
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))
