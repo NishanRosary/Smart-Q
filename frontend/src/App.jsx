@@ -1,106 +1,46 @@
-import React, { useState, useEffect } from 'react';
-import { checkBackendHealth } from './services/api';
-import './styles/global.css';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import "./styles/global.css";
 
-// Customer Components
-import LandingPage from './components/customer/LandingPage';
-import CustomerLogin from './components/customer/CustomerLogin';
-import CustomerDashboard from './components/customer/CustomerDashboard';
-import JoinQueue from './components/customer/JoinQueue';
-import WelcomePage from './components/customer/WelcomePage';
+// Customer
+import LandingPage from "./components/customer/LandingPage";
+import CustomerLogin from "./components/customer/CustomerLogin";
+import CustomerDashboard from "./components/customer/CustomerDashboard";
+import JoinQueue from "./components/customer/JoinQueue";
+import WelcomePage from "./components/customer/WelcomePage";
 
-// Admin Components
-import AdminLogin from './components/admin/AdminLogin';
-import AdminDashboard from './components/admin/AdminDashboard';
-import EventScheduler from './components/admin/EventScheduler';
-import QueueManagement from './components/admin/QueueManagement';
-import CounterManagement from './components/admin/CounterManagement';
-import Analytics from './components/admin/Analytics';
-import Predictions from './components/admin/Predictions';
+// Admin
+import AdminLogin from "./components/admin/AdminLogin";
+import AdminDashboard from "./components/admin/AdminDashboard";
+import QueueManagement from "./components/admin/QueueManagement";
+import EventScheduler from "./components/admin/EventScheduler";
+import CounterManagement from "./components/admin/CounterManagement";
+import Analytics from "./components/admin/Analytics";
+import Predictions from "./components/admin/Predictions";
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('landing');
-  const [pageData, setPageData] = useState(null);
-  const [backendStatus, setBackendStatus] = useState('');
-  const [navigationHistory, setNavigationHistory] = useState([]);
+  return (
+    <BrowserRouter>
+      <Routes>
 
-  const navigate = (page, data = null) => {
-    // Add current page to history before navigating (unless it's the same page)
-    if (page !== currentPage) {
-      setNavigationHistory(prev => [...prev, currentPage]);
-    }
-    setCurrentPage(page);
-    setPageData(data);
-  };
+        {/* Customer */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<CustomerLogin />} />
+        <Route path="/customer-dashboard" element={<CustomerDashboard />} />
+        <Route path="/join-queue" element={<JoinQueue />} />
+        <Route path="/welcome" element={<WelcomePage />} />
 
-  const goBack = () => {
-    if (navigationHistory.length > 0) {
-      const previousPage = navigationHistory[navigationHistory.length - 1];
-      setNavigationHistory(prev => prev.slice(0, -1));
-      setCurrentPage(previousPage);
-      setPageData(null);
-    } else {
-      // If no history, go to landing page
-      setCurrentPage('landing');
-      setPageData(null);
-    }
-  };
+        {/* Admin */}
+        <Route path="/admin" element={<AdminLogin />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/queue-management" element={<QueueManagement />} />
+        <Route path="/admin/event-scheduler" element={<EventScheduler />} />
+        <Route path="/admin/counters" element={<CounterManagement />} />
+        <Route path="/admin/analytics" element={<Analytics />} />
+        <Route path="/admin/predictions" element={<Predictions />} />
 
-  useEffect(() => {
-  checkBackendHealth()
-    .then((data) => {
-      console.log(data.message);
-      setBackendStatus(data.message);
-    })
-    .catch(() => {
-      console.error("Backend not reachable");
-      setBackendStatus("Backend not reachable ❌");
-    });
-}, []);
-
-  const renderPage = () => {
-    switch (currentPage) {
-      // Customer Pages
-      case 'landing':
-        return <LandingPage onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
-      case 'login':
-        return <CustomerLogin onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
-      case 'customer-dashboard':
-        return <CustomerDashboard onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
-      case 'join-queue':
-        return <JoinQueue onNavigate={navigate} goBack={goBack} currentPage={currentPage} eventData={pageData} />;
-      case 'welcome':
-        return <WelcomePage onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
-      
-      // Admin Pages
-      case 'admin-login':
-        return <AdminLogin onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
-      case 'admin-dashboard':
-        return <AdminDashboard onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
-      case 'event-scheduler':
-        return <EventScheduler onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
-      case 'queue-management':
-        return <QueueManagement onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
-      case 'counter-management':
-        return <CounterManagement onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
-      case 'analytics':
-        return <Analytics onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
-      case 'predictions':
-        return <Predictions onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
-      case 'settings':
-        return <AdminDashboard onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
-      
-      default:
-        return <LandingPage onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
-    }
-  };
-
-  return ( 
-  <div className="App">
-     {renderPage()} 
-     </div>
-      );
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App;
-
