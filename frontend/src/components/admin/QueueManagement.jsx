@@ -1,18 +1,54 @@
-import React from 'react';
-import Sidebar from '../shared/Sidebar';
-import { queueData } from '../../data/mockData';
-import '../../styles/admin.css';
-import '../../styles/global.css';
+import React, { useEffect, useState } from "react";
+import Sidebar from "../shared/Sidebar";
+import axios from "axios";
+import socket from "../../socket";
+import "../../styles/admin.css";
+import "../../styles/global.css";
 
 const QueueManagement = ({ onNavigate, goBack, currentPage }) => {
+  const [queueData, setQueueData] = useState([]);
+
+  // Fetch initial queue data + listen for real-time updates
+  useEffect(() => {
+    axios
+      .get("http://localhost:5000/api/queue")
+      .then((res) => setQueueData(res.data))
+      .catch((err) => console.error("Error fetching queue:", err));
+
+    socket.on("queueUpdated", (updatedQueue) => {
+      setQueueData(updatedQueue);
+    });
+
+    return () => {
+      socket.off("queueUpdated");
+    };
+  }, []);
+
+  // Admin actions
+  const startQueue = async (id) => {
+    try {
+      await axios.put(`http://localhost:5000/api/queue/${id}/start`);
+    } catch (error) {
+      console.error("Error starting queue:", error);
+    }
+  };
+
+  const completeQueue = async (id) => {
+    try {
+      await axios.put(`http://localhost:5000/api/queue/${id}/complete`);
+    } catch (error) {
+      console.error("Error completing queue:", error);
+    }
+  };
+
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'Waiting':
-        return <span className="badge badge-yellow">Waiting</span>;
-      case 'In Progress':
-        return <span className="badge badge-green">In Progress</span>;
-      case 'Completed':
-        return <span className="badge badge-red">Completed</span>;
+      case "waiting":
+        return <span className="badge badge-yellow">WAITING</span>;
+      case "serving":
+        return <span className="badge badge-green">IN PROGRESS</span>;
+      case "completed":
+        return <span className="badge badge-red">COMPLETED</span>;
       default:
         return <span className="badge badge-yellow">{status}</span>;
     }
@@ -20,23 +56,37 @@ const QueueManagement = ({ onNavigate, goBack, currentPage }) => {
 
   return (
     <div className="admin-layout">
-      <Sidebar currentPage={currentPage} onNavigate={onNavigate} goBack={goBack} />
+      <Sidebar
+        currentPage={currentPage}
+        onNavigate={onNavigate}
+        goBack={goBack}
+      />
+
       <main className="admin-main">
         <div className="admin-header">
           <h1>Queue Management</h1>
         </div>
 
-        <div className="card" style={{ marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="card" style={{ marginBottom: "1.5rem" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
             <div>
               <h3 style={{ margin: 0 }}>Active Queues</h3>
-              <p style={{ margin: '0.5rem 0 0 0', color: '#6B7280', fontSize: '0.875rem' }}>
+              <p
+                style={{
+                  margin: "0.5rem 0 0 0",
+                  color: "#6B7280",
+                  fontSize: "0.875rem",
+                }}
+              >
                 Manage and monitor all queue entries
               </p>
             </div>
-            <button className="btn-primary">
-              + Add to Queue
-            </button>
           </div>
         </div>
 
@@ -45,36 +95,56 @@ const QueueManagement = ({ onNavigate, goBack, currentPage }) => {
             <thead>
               <tr>
                 <th>Token Number</th>
-                <th>Customer Name</th>
                 <th>Service</th>
-                <th>Joined At</th>
                 <th>Status</th>
+                <th>Joined At</th>
                 <th>Actions</th>
               </tr>
             </thead>
+
             <tbody>
-              {queueData.map((queue, index) => (
-                <tr key={index}>
-                  <td style={{ fontWeight: 600, color: '#3B82F6' }}>{queue.tokenNumber}</td>
-                  <td>{queue.customerName}</td>
-                  <td>{queue.service}</td>
-                  <td>{queue.joinedAt}</td>
-                  <td>{getStatusBadge(queue.status)}</td>
-                  <td>
-                    <div className="action-buttons">
-                      <button className="action-btn btn-primary" style={{ fontSize: '0.75rem' }}>
-                        View
-                      </button>
-                      <button className="action-btn btn-secondary" style={{ fontSize: '0.75rem' }}>
-                        Edit
-                      </button>
-                      <button className="action-btn btn-danger" style={{ fontSize: '0.75rem' }}>
-                        Remove
-                      </button>
-                    </div>
+              {queueData.length === 0 ? (
+                <tr>
+                  <td colSpan="5" style={{ textAlign: "center", padding: "1rem" }}>
+                    No active queues
                   </td>
                 </tr>
-              ))}
+              ) : (
+                queueData.map((queue) => (
+                  <tr key={queue._id}>
+                    <td style={{ fontWeight: 600, color: "#3B82F6" }}>
+                      T{queue.tokenNumber}
+                    </td>
+                    <td>{queue.service}</td>
+                    <td>{getStatusBadge(queue.status)}</td>
+                    <td>
+                      {new Date(queue.createdAt).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </td>
+                    <td>
+                      {queue.status === "waiting" && (
+                        <button
+                          className="action-btn btn-primary"
+                          onClick={() => startQueue(queue._id)}
+                        >
+                          Start
+                        </button>
+                      )}
+
+                      {queue.status === "serving" && (
+                        <button
+                          className="action-btn btn-danger"
+                          onClick={() => completeQueue(queue._id)}
+                        >
+                          Complete
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -84,4 +154,3 @@ const QueueManagement = ({ onNavigate, goBack, currentPage }) => {
 };
 
 export default QueueManagement;
-

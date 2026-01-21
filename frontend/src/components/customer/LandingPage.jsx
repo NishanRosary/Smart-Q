@@ -358,7 +358,7 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
         marginBottom: '2rem'
       }}>
         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-          <h2 style={{ fontSize: '2rem', marginBottom: '1rem', color: '#0F172A' }}>🤖 Powered by Machine Learning</h2>
+          <h2 style={{ fontSize: '2rem', marginBottom: '1rem', color: '#0F172A' }}>Powered by Machine Learning</h2>
           <p style={{ fontSize: '1.125rem', color: '#475569' }}>
             Advanced AI algorithms for accurate predictions and optimal queue management
           </p>
@@ -559,9 +559,9 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
                 </a>
               </p>
               <p style={{ margin: '0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ color: '#E2E8F0' }}><Phone size={16} /></span>
+                <span style={{ color: '#E2E8F0' }}>📞</span>
                 <a href="tel:+1234567890" style={{ color: '#E2E8F0', textDecoration: 'none', fontSize: '0.9375rem', fontWeight: 500 }}>
-                  +91 9048415225
+                  +91 1234567890
                 </a>
               </p>
               <p style={{ margin: '0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#E2E8F0', fontSize: '0.9375rem' }}>

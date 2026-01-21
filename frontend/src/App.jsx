@@ -1,33 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import { checkBackendHealth } from './services/api';
-import './styles/global.css';
+import React, { useState, useEffect } from "react";
+import { checkBackendHealth } from "./services/api";
+import "./styles/global.css";
 
 // Customer Components
-import LandingPage from './components/customer/LandingPage';
-import CustomerLogin from './components/customer/CustomerLogin';
-import CustomerDashboard from './components/customer/CustomerDashboard';
-import JoinQueue from './components/customer/JoinQueue';
-import WelcomePage from './components/customer/WelcomePage';
+import LandingPage from "./components/customer/LandingPage";
+import CustomerLogin from "./components/customer/CustomerLogin";
+import CustomerDashboard from "./components/customer/CustomerDashboard";
+import JoinQueue from "./components/customer/JoinQueue";
+import WelcomePage from "./components/customer/WelcomePage";
 
 // Admin Components
-import AdminLogin from './components/admin/AdminLogin';
-import AdminDashboard from './components/admin/AdminDashboard';
-import EventScheduler from './components/admin/EventScheduler';
-import QueueManagement from './components/admin/QueueManagement';
-import CounterManagement from './components/admin/CounterManagement';
-import Analytics from './components/admin/Analytics';
-import Predictions from './components/admin/Predictions';
+import AdminLogin from "./components/admin/AdminLogin";
+import AdminDashboard from "./components/admin/AdminDashboard";
+import EventScheduler from "./components/admin/EventScheduler";
+import QueueManagement from "./components/admin/QueueManagement";
+import CounterManagement from "./components/admin/CounterManagement";
+import Analytics from "./components/admin/Analytics";
+import Predictions from "./components/admin/Predictions";
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('landing');
+  const [currentPage, setCurrentPage] = useState("landing");
   const [pageData, setPageData] = useState(null);
-  const [backendStatus, setBackendStatus] = useState('');
   const [navigationHistory, setNavigationHistory] = useState([]);
+  const [backendStatus, setBackendStatus] = useState("");
 
   const navigate = (page, data = null) => {
-    // Add current page to history before navigating (unless it's the same page)
     if (page !== currentPage) {
-      setNavigationHistory(prev => [...prev, currentPage]);
+      setNavigationHistory((prev) => [...prev, currentPage]);
     }
     setCurrentPage(page);
     setPageData(data);
@@ -36,71 +35,74 @@ function App() {
   const goBack = () => {
     if (navigationHistory.length > 0) {
       const previousPage = navigationHistory[navigationHistory.length - 1];
-      setNavigationHistory(prev => prev.slice(0, -1));
+      setNavigationHistory((prev) => prev.slice(0, -1));
       setCurrentPage(previousPage);
       setPageData(null);
     } else {
-      // If no history, go to landing page
-      setCurrentPage('landing');
+      setCurrentPage("landing");
       setPageData(null);
     }
   };
 
   useEffect(() => {
-  checkBackendHealth()
-    .then((data) => {
-      console.log(data.message);
-      setBackendStatus(data.message);
-    })
-    .catch(() => {
-      console.error("Backend not reachable");
-      setBackendStatus("Backend not reachable ❌");
-    });
-}, []);
+    checkBackendHealth()
+      .then((data) => setBackendStatus(data.message))
+      .catch(() => setBackendStatus("Backend not reachable ❌"));
+  }, []);
 
   const renderPage = () => {
     switch (currentPage) {
-      // Customer Pages
-      case 'landing':
+      // Customer
+      case "landing":
         return <LandingPage onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
-      case 'login':
+
+      case "login":
         return <CustomerLogin onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
-      case 'customer-dashboard':
+
+      case "customer-dashboard":
         return <CustomerDashboard onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
-      case 'join-queue':
-        return <JoinQueue onNavigate={navigate} goBack={goBack} currentPage={currentPage} eventData={pageData} />;
-      case 'welcome':
+
+      case "join-queue":
+        return (
+          <JoinQueue
+            onNavigate={navigate}
+            goBack={goBack}
+            currentPage={currentPage}
+            eventData={pageData}
+          />
+        );
+
+      case "welcome":
         return <WelcomePage onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
-      
-      // Admin Pages
-      case 'admin-login':
+
+      // Admin
+      case "admin-login":
         return <AdminLogin onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
-      case 'admin-dashboard':
+
+      case "admin-dashboard":
         return <AdminDashboard onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
-      case 'event-scheduler':
+
+      case "event-scheduler":
         return <EventScheduler onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
-      case 'queue-management':
+
+      case "queue-management":
         return <QueueManagement onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
-      case 'counter-management':
+
+      case "counter-management":
         return <CounterManagement onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
-      case 'analytics':
+
+      case "analytics":
         return <Analytics onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
-      case 'predictions':
+
+      case "predictions":
         return <Predictions onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
-      case 'settings':
-        return <AdminDashboard onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
-      
+
       default:
         return <LandingPage onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
     }
   };
 
-  return ( 
-  <div className="App">
-     {renderPage()} 
-     </div>
-      );
+  return <div className="App">{renderPage()}</div>;
 }
 
 export default App;
-
