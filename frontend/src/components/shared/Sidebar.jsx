@@ -22,45 +22,15 @@ const Sidebar = ({ currentPage, onNavigate, goBack }) => {
     { id: 'settings', label: 'Settings', icon: <Settings size={20} /> }
   ];
 
-  const showBackButton = currentPage && currentPage !== 'admin-dashboard' && currentPage !== 'admin-login';
+  const showBackButton = currentPage && currentPage !== 'admin-login';
 
   return (
     <aside className="admin-sidebar">
       <div className="admin-sidebar-header">
         <div className="admin-sidebar-title">Smart'Q Admin</div>
       </div>
-      {showBackButton && goBack && (
-        <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
-          <button
-            onClick={goBack}
-            style={{
-              width: '100%',
-              padding: '0.5rem',
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              borderRadius: '6px',
-              color: '#FFFFFF',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem',
-              fontSize: '0.875rem',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseOver={(e) => {
-              e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-            }}
-            onMouseOut={(e) => {
-              e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-            }}
-            title="Go back"
-          >
-            <ArrowLeft size={16} /> Back
-          </button>
-        </div>
-      )}
-      <nav>
+
+      <nav style={{ flex: 1, overflowY: 'auto' }}>
         <ul className="admin-nav">
           {navItems.map(item => (
             <li key={item.id} className="admin-nav-item">
@@ -79,6 +49,40 @@ const Sidebar = ({ currentPage, onNavigate, goBack }) => {
           ))}
         </ul>
       </nav>
+      {showBackButton && goBack && (
+        <div style={{ paddingTop: '1rem', borderTop: '1px solid #E5E7EB', marginTop: 'auto' }}>
+          <button
+            onClick={goBack}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              backgroundColor: '#F3F4F6',
+              border: '1px solid #E5E7EB',
+              borderRadius: '8px',
+              color: '#374151',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              fontSize: '0.875rem',
+              fontWeight: 500,
+              transition: 'all 0.2s ease'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = '#E5E7EB';
+              e.currentTarget.style.color = '#111827';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = '#F3F4F6';
+              e.currentTarget.style.color = '#374151';
+            }}
+            title="Go back"
+          >
+            <ArrowLeft size={16} /> Back
+          </button>
+        </div>
+      )}
     </aside>
   );
 };
