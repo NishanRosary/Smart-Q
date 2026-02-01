@@ -80,7 +80,7 @@ const QueueManagement = ({ onNavigate, goBack, currentPage }) => {
               <p
                 style={{
                   margin: "0.5rem 0 0 0",
-                  color: "#6B7280",
+                  color: "var(--color-gray-500)",
                   fontSize: "0.875rem",
                 }}
               >
@@ -112,7 +112,7 @@ const QueueManagement = ({ onNavigate, goBack, currentPage }) => {
               ) : (
                 queueData.map((queue) => (
                   <tr key={queue._id}>
-                    <td style={{ fontWeight: 600, color: "#3B82F6" }}>
+                    <td style={{ fontWeight: 600, color: "var(--color-primary)" }}>
                       T{queue.tokenNumber}
                     </td>
                     <td>{queue.service}</td>

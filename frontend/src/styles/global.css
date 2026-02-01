@@ -2,82 +2,182 @@
 
 /* CSS Variables - Professional Color Palette with High Contrast */
 :root {
-  /* Status Colors - High Contrast for Accessibility */
-  --color-green: #047857;
-  --color-green-light: #10B981;
-  --color-green-bg: #D1FAE5;
-  --color-yellow: #B45309;
-  --color-yellow-light: #F59E0B;
-  --color-yellow-bg: #FEF3C7;
-  --color-red: #B91C1C;
-  --color-red-light: #EF4444;
-  --color-red-bg: #FEE2E2;
-  
-  /* Neutral Colors - Professional Gray Scale */
-  --color-white: #FFFFFF;
-  --color-gray-50: #F8FAFC;
-  --color-gray-100: #F1F5F9;
-  --color-gray-200: #E2E8F0;
-  --color-gray-300: #CBD5E1;
-  --color-gray-400: #94A3B8;
-  --color-gray-500: #64748B;
-  --color-gray-600: #475569;
-  --color-gray-700: #334155;
-  --color-gray-800: #1E293B;
-  --color-gray-900: #0F172A;
-  
-  /* Primary Colors - Professional Blue */
-  --color-primary: #1E40AF;
-  --color-primary-dark: #1E3A8A;
-  --color-primary-light: #3B82F6;
-  --color-primary-lighter: #60A5FA;
-  --color-primary-bg: #EFF6FF;
-  
+  /* Primitives - Color Palette */
+  --palette-white: #FFFFFF;
+  --palette-slate-50: #F8FAFC;
+  --palette-slate-100: #F1F5F9;
+  --palette-slate-200: #E2E8F0;
+  --palette-slate-300: #CBD5E1;
+  --palette-slate-400: #94A3B8;
+  --palette-slate-500: #64748B;
+  --palette-slate-600: #475569;
+  --palette-slate-700: #334155;
+  --palette-slate-800: #1E293B;
+  --palette-slate-900: #0F172A;
+  --palette-slate-950: #020617;
+
+  --palette-blue-50: #eff6ff;
+  --palette-blue-500: #3b82f6;
+  --palette-blue-600: #2563eb;
+  --palette-blue-800: #1e40af;
+  --palette-blue-900: #1e3a8a;
+
+  --palette-green-600: #059669;
+  --palette-green-700: #047857;
+  --palette-green-100: #d1fae5;
+
+  --palette-red-600: #dc2626;
+  --palette-red-700: #b91c1c;
+  --palette-red-100: #fee2e2;
+
+  --palette-yellow-600: #d97706;
+  --palette-yellow-700: #b45309;
+  --palette-yellow-100: #fef3c7;
+
   /* Typography */
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-heading: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  
+
   /* Font Sizes - Professional Scale */
-  --font-xs: 0.75rem;    /* 12px */
-  --font-sm: 0.875rem;   /* 14px */
-  --font-base: 1rem;     /* 16px */
-  --font-lg: 1.125rem;   /* 18px */
-  --font-xl: 1.25rem;    /* 20px */
-  --font-2xl: 1.5rem;    /* 24px */
-  --font-3xl: 1.875rem;  /* 30px */
-  --font-4xl: 2.25rem;   /* 36px */
-  --font-5xl: 3rem;      /* 48px */
-  
+  --font-xs: 0.75rem;
+  /* 12px */
+  --font-sm: 0.875rem;
+  /* 14px */
+  --font-base: 1rem;
+  /* 16px */
+  --font-lg: 1.125rem;
+  /* 18px */
+  --font-xl: 1.25rem;
+  /* 20px */
+  --font-2xl: 1.5rem;
+  /* 24px */
+  --font-3xl: 1.875rem;
+  /* 30px */
+  --font-4xl: 2.25rem;
+  /* 36px */
+  --font-5xl: 3rem;
+  /* 48px */
+
   /* Spacing */
-  --spacing-xs: 0.25rem;   /* 4px */
-  --spacing-sm: 0.5rem;    /* 8px */
-  --spacing-md: 1rem;      /* 16px */
-  --spacing-lg: 1.5rem;    /* 24px */
-  --spacing-xl: 2rem;      /* 32px */
-  --spacing-2xl: 3rem;     /* 48px */
-  --spacing-3xl: 4rem;     /* 64px */
-  
+  --spacing-xs: 0.25rem;
+  /* 4px */
+  --spacing-sm: 0.5rem;
+  /* 8px */
+  --spacing-md: 1rem;
+  /* 16px */
+  --spacing-lg: 1.5rem;
+  /* 24px */
+  --spacing-xl: 2rem;
+  /* 32px */
+  --spacing-2xl: 3rem;
+  /* 48px */
+  --spacing-3xl: 4rem;
+  /* 64px */
+
   /* Border Radius */
   --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-xl: 16px;
   --radius-2xl: 20px;
-  
+
+  /* Max Width */
+  --max-width: 1440px;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 200ms ease;
+  --transition-slow: 300ms ease;
+}
+
+/* Light Theme (Default) */
+:root,
+[data-theme='light'] {
+  --color-white: var(--palette-white);
+  --color-gray-50: var(--palette-slate-50);
+  --color-gray-100: var(--palette-slate-100);
+  --color-gray-200: var(--palette-slate-200);
+  --color-gray-300: var(--palette-slate-300);
+  --color-gray-400: var(--palette-slate-400);
+  --color-gray-500: var(--palette-slate-500);
+  --color-gray-600: var(--palette-slate-600);
+  --color-gray-700: var(--palette-slate-700);
+  --color-gray-800: var(--palette-slate-800);
+  --color-gray-900: var(--palette-slate-900);
+
+  --color-primary: var(--palette-blue-800);
+  --color-primary-dark: var(--palette-blue-900);
+  --color-primary-light: var(--palette-blue-600);
+  --color-primary-lighter: #60A5FA;
+  --color-primary-bg: var(--palette-blue-50);
+
+  --color-green: var(--palette-green-700);
+  --color-green-light: #10B981;
+  --color-green-bg: var(--palette-green-100);
+
+  --color-red: var(--palette-red-700);
+  --color-red-light: #EF4444;
+  --color-red-bg: var(--palette-red-100);
+
+  --color-yellow: var(--palette-yellow-700);
+  --color-yellow-light: #F59E0B;
+  --color-yellow-bg: var(--palette-yellow-100);
+
+  /* Semantic Background Colors */
+  --bg-primary: var(--palette-white);
+  --bg-secondary: var(--palette-slate-50);
+
   /* Shadows - Professional Depth */
   --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.1), 0 2px 4px -1px rgba(15, 23, 42, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.1), 0 4px 6px -2px rgba(15, 23, 42, 0.05);
   --shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 10px 10px -5px rgba(15, 23, 42, 0.04);
   --shadow-2xl: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
-  
-  /* Max Width */
-  --max-width: 1440px;
-  
-  /* Transitions */
-  --transition-fast: 150ms ease;
-  --transition-base: 200ms ease;
-  --transition-slow: 300ms ease;
+}
+
+/* Dark Theme (Professional) */
+[data-theme='dark'] {
+  /* Semantic Inversion for Dark Mode */
+  --color-white: var(--palette-slate-800);
+  --color-gray-50: var(--palette-slate-900);
+  --color-gray-100: var(--palette-slate-800);
+  --color-gray-200: var(--palette-slate-700);
+  --color-gray-300: var(--palette-slate-600);
+  --color-gray-400: var(--palette-slate-500);
+  --color-gray-500: var(--palette-slate-400);
+  --color-gray-600: var(--palette-slate-300);
+  --color-gray-700: var(--palette-slate-200);
+  --color-gray-800: var(--palette-slate-100);
+  --color-gray-900: var(--palette-slate-50);
+
+  --color-primary: var(--palette-blue-500);
+  --color-primary-dark: var(--palette-blue-600);
+  --color-primary-light: var(--palette-blue-400);
+  --color-primary-lighter: var(--palette-blue-500);
+  --color-primary-bg: rgba(30, 64, 175, 0.15);
+
+  --color-green: #34D399;
+  --color-green-light: #6EE7B7;
+  --color-green-bg: rgba(6, 95, 70, 0.3);
+
+  --color-red: #F87171;
+  --color-red-light: #FCA5A5;
+  --color-red-bg: rgba(185, 28, 28, 0.3);
+
+  --color-yellow: #FBBF24;
+  --color-yellow-light: #FCD34D;
+  --color-yellow-bg: rgba(180, 83, 9, 0.3);
+
+  /* Semantic Background Colors */
+  --bg-primary: var(--palette-slate-900);
+  --bg-secondary: var(--palette-slate-950);
+
+  /* Shadows - Optimized for Dark Mode */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
 }
 
 /* Reset & Base Styles */
@@ -97,14 +197,19 @@ body {
   font-size: var(--font-base);
   line-height: 1.6;
   color: var(--color-gray-900);
-  background-color: var(--color-white);
+  background-color: var(--bg-secondary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-weight: 400;
 }
 
 /* Typography - Professional Hierarchy */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-heading);
   font-weight: 700;
   line-height: 1.2;
@@ -225,7 +330,7 @@ button:focus {
 }
 
 .btn-success:hover {
-  background-color: #047857;
+  background-color: var(--color-green);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
@@ -237,7 +342,7 @@ button:focus {
 }
 
 .btn-danger:hover {
-  background-color: #991B1B;
+  background-color: var(--color-red);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
@@ -289,7 +394,9 @@ button:focus {
 }
 
 /* Form Elements - Professional Design */
-input, select, textarea {
+input,
+select,
+textarea {
   font-family: var(--font-body);
   font-size: var(--font-base);
   padding: var(--spacing-sm) var(--spacing-md);
@@ -302,13 +409,16 @@ input, select, textarea {
   line-height: 1.5;
 }
 
-input:focus, select:focus, textarea:focus {
+input:focus,
+select:focus,
+textarea:focus {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px var(--color-primary-bg);
 }
 
-input::placeholder, textarea::placeholder {
+input::placeholder,
+textarea::placeholder {
   color: var(--color-gray-400);
 }
 
@@ -341,15 +451,37 @@ label {
   text-align: right;
 }
 
-.mt-sm { margin-top: var(--spacing-sm); }
-.mt-md { margin-top: var(--spacing-md); }
-.mt-lg { margin-top: var(--spacing-lg); }
-.mt-xl { margin-top: var(--spacing-xl); }
+.mt-sm {
+  margin-top: var(--spacing-sm);
+}
 
-.mb-sm { margin-bottom: var(--spacing-sm); }
-.mb-md { margin-bottom: var(--spacing-md); }
-.mb-lg { margin-bottom: var(--spacing-lg); }
-.mb-xl { margin-bottom: var(--spacing-xl); }
+.mt-md {
+  margin-top: var(--spacing-md);
+}
+
+.mt-lg {
+  margin-top: var(--spacing-lg);
+}
+
+.mt-xl {
+  margin-top: var(--spacing-xl);
+}
+
+.mb-sm {
+  margin-bottom: var(--spacing-sm);
+}
+
+.mb-md {
+  margin-bottom: var(--spacing-md);
+}
+
+.mb-lg {
+  margin-bottom: var(--spacing-lg);
+}
+
+.mb-xl {
+  margin-bottom: var(--spacing-xl);
+}
 
 .flex {
   display: flex;
@@ -388,19 +520,19 @@ label {
   html {
     font-size: 14px;
   }
-  
+
   h1 {
     font-size: var(--font-4xl);
   }
-  
+
   h2 {
     font-size: var(--font-3xl);
   }
-  
+
   h3 {
     font-size: var(--font-2xl);
   }
-  
+
   .container {
     padding: 0 var(--spacing-md);
   }
@@ -410,11 +542,11 @@ label {
   html {
     font-size: 14px;
   }
-  
+
   h1 {
     font-size: var(--font-3xl);
   }
-  
+
   h2 {
     font-size: var(--font-2xl);
   }

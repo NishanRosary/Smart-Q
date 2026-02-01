@@ -382,8 +382,8 @@
 }
 
 .success-message {
-  background-color: #D1FAE5;
-  color: #065F46;
+  background-color: var(--color-green-bg);
+  color: var(--color-green);
   padding: var(--spacing-md);
   border-radius: var(--radius-md);
   margin-bottom: var(--spacing-lg);

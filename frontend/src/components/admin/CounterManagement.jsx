@@ -35,7 +35,7 @@ const CounterManagement = ({ onNavigate, goBack, currentPage }) => {
                 </div>
               </div>
               <div className="counter-info">
-                <div style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '0.5rem' }}>
+                <div style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)', marginBottom: '0.5rem' }}>
                   Service Type: {counter.serviceType}
                 </div>
                 {counter.currentToken ? (

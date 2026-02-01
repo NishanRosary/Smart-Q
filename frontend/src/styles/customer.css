@@ -31,7 +31,7 @@
 
 .nav-button:hover {
   background: rgb(11, 61, 122);
-  color: #ffffff;
+  color: var(--color-white);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(11, 61, 122, 0.3);
 }
@@ -97,8 +97,8 @@
 }
 
 .hero-button-primary {
-  background: #ffffff;
-  color: #1e40af;
+  background: var(--color-white);
+  color: var(--color-primary);
 }
 
 .hero-button-primary:hover {
@@ -189,9 +189,9 @@
   align-items: center;
   gap: 1rem;
   padding: 1.5rem;
-  background: linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 100%);
+  background: linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-white) 100%);
   border-radius: 12px;
-  border: 1px solid #E2E8F0;
+  border: 1px solid var(--color-gray-200);
   transition: all 0.2s ease;
 }
 
@@ -422,7 +422,7 @@
 }
 
 .token-card {
-  background: linear-gradient(135deg, var(--color-green) 0%, #059669 100%);
+  background: linear-gradient(135deg, var(--color-green) 0%, var(--palette-green-600) 100%);
   color: var(--color-white);
   border-radius: var(--radius-lg);
   padding: var(--spacing-2xl);

@@ -90,7 +90,7 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage }) => {
         {/* ML Predictions Section */}
         <div className="dashboard-section">
           <h2 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <Brain size={32} color="#4F46E5" /> AI-Powered Predictions
+            <Brain size={32} color="var(--color-primary)" /> AI-Powered Predictions
           </h2>
           <div style={{
             display: 'grid',
@@ -100,25 +100,25 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage }) => {
           }}>
             {/* Optimal Visit Times */}
             <div className="card" style={{
-              background: 'linear-gradient(135deg, #F0F9FF 0%, #FFFFFF 100%)',
-              border: '2px solid #3B82F6'
+              background: 'linear-gradient(135deg, var(--color-primary-bg) 0%, var(--color-white) 100%)',
+              border: '2px solid var(--color-primary)'
             }}>
-              <h3 style={{ marginBottom: '1rem', color: '#1F2937', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <h3 style={{ marginBottom: '1rem', color: 'var(--color-gray-900)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Clock size={20} /> Best Times to Visit
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {mlPredictions.optimalVisitTimes.map((item, index) => (
                   <div key={index} style={{
                     padding: '1rem',
-                    backgroundColor: '#FFFFFF',
+                    backgroundColor: 'var(--color-white)',
                     borderRadius: '8px',
-                    border: '1px solid #E5E7EB'
+                    border: '1px solid var(--color-gray-200)'
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                       <span style={{ fontWeight: 600 }}>{item.time}</span>
                       <span className="badge badge-green">{item.score}% Score</span>
                     </div>
-                    <div style={{ fontSize: '0.875rem', color: '#6B7280' }}>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>
                       Wait: {item.waitTime} min • Crowd: {item.crowdLevel}
                     </div>
                   </div>
@@ -128,25 +128,25 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage }) => {
 
             {/* Peak Time Warnings */}
             <div className="card" style={{
-              background: 'linear-gradient(135deg, #FEF3C7 0%, #FFFFFF 100%)',
-              border: '2px solid #F59E0B'
+              background: 'linear-gradient(135deg, var(--color-yellow-bg) 0%, var(--color-white) 100%)',
+              border: '2px solid var(--color-yellow)'
             }}>
-              <h3 style={{ marginBottom: '1rem', color: '#1F2937', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <AlertTriangle size={20} color="#DC2626" /> Peak Times to Avoid
+              <h3 style={{ marginBottom: '1rem', color: 'var(--color-gray-900)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <AlertTriangle size={20} color="var(--color-red)" /> Peak Times to Avoid
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {mlPredictions.peakTimes.filter(p => p.prediction === 'High').slice(0, 3).map((item, index) => (
                   <div key={index} style={{
                     padding: '1rem',
-                    backgroundColor: '#FFFFFF',
+                    backgroundColor: 'var(--color-white)',
                     borderRadius: '8px',
-                    border: '1px solid #FCD34D'
+                    border: '1px solid var(--color-yellow-light)'
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                       <span style={{ fontWeight: 600 }}>{item.hour}</span>
                       <span className="badge badge-red">High</span>
                     </div>
-                    <div style={{ fontSize: '0.875rem', color: '#6B7280' }}>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>
                       {item.customers} customers expected ({item.confidence}% confidence)
                     </div>
                   </div>
@@ -156,24 +156,24 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage }) => {
 
             {/* Wait Time Forecast */}
             <div className="card" style={{
-              background: 'linear-gradient(135deg, #D1FAE5 0%, #FFFFFF 100%)',
-              border: '2px solid #10B981'
+              background: 'linear-gradient(135deg, var(--color-green-bg) 0%, var(--color-white) 100%)',
+              border: '2px solid var(--color-green-light)'
             }}>
-              <h3 style={{ marginBottom: '1rem', color: '#1F2937', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <h3 style={{ marginBottom: '1rem', color: 'var(--color-gray-900)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <BarChart2 size={20} /> Wait Time Forecast
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {mlPredictions.waitTimePredictions.map((item, index) => (
                   <div key={index} style={{
                     padding: '1rem',
-                    backgroundColor: '#FFFFFF',
+                    backgroundColor: 'var(--color-white)',
                     borderRadius: '8px',
-                    border: '1px solid #A7F3D0'
+                    border: '1px solid var(--color-green-bg)'
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>
                         <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>{item.time}</div>
-                        <div style={{ fontSize: '0.875rem', color: '#6B7280' }}>
+                        <div style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>
                           Predicted: {item.predictedWait} min
                         </div>
                       </div>
@@ -182,8 +182,8 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage }) => {
                         borderRadius: '4px',
                         fontSize: '0.75rem',
                         fontWeight: 600,
-                        backgroundColor: item.accuracy >= 90 ? '#D1FAE5' : '#FEF3C7',
-                        color: item.accuracy >= 90 ? '#065F46' : '#92400E'
+                        backgroundColor: item.accuracy >= 90 ? 'var(--color-green-bg)' : 'var(--color-yellow-bg)',
+                        color: item.accuracy >= 90 ? 'var(--color-green)' : 'var(--color-yellow)'
                       }}>
                         {item.accuracy}%
                       </div>
@@ -262,10 +262,10 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage }) => {
             </button>
             <h3 style={{ marginBottom: '1rem' }}>Scan QR Code to Book Slot</h3>
             <QRCodeDisplay eventData={selectedEvent} size={250} />
-            <p style={{ marginTop: '1rem', fontSize: '0.875rem', color: '#6B7280' }}>
+            <p style={{ marginTop: '1rem', fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>
               {selectedEvent.title}
             </p>
-            <p style={{ fontSize: '0.875rem', color: '#6B7280' }}>
+            <p style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>
               {selectedEvent.date} at {selectedEvent.time}
             </p>
           </div>
