@@ -95,7 +95,7 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
               className="hero-button hero-button-primary"
               onClick={() => onNavigate('join-queue')}
             >
-              Join Queue
+              Join as Guest
             </button>
             <button
               className="hero-button hero-button-secondary"

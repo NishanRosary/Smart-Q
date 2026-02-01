@@ -44,7 +44,7 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage }) => {
 
   const handleJoinQueue = (event) => {
     // Navigate to join queue page with event pre-selected
-    onNavigate('join-queue', { event });
+    onNavigate('join-queue', { event, isCustomer: true });
   };
 
   return (

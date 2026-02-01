@@ -30,27 +30,9 @@ const Sidebar = ({ currentPage, onNavigate, goBack }) => {
         <div className="admin-sidebar-title">Smart'Q Admin</div>
       </div>
 
-      <nav style={{ flex: 1, overflowY: 'auto' }}>
-        <ul className="admin-nav">
-          {navItems.map(item => (
-            <li key={item.id} className="admin-nav-item">
-              <a
-                href="#"
-                className={`admin-nav-link ${currentPage === item.id ? 'active' : ''}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  onNavigate(item.id);
-                }}
-              >
-                <span style={{ marginRight: '0.5rem' }}>{item.icon}</span>
-                {item.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
       {showBackButton && goBack && (
-        <div style={{ paddingTop: '1rem', borderTop: '1px solid #E5E7EB', marginTop: 'auto' }}>
+        
+        <div style={{ paddingBottom: '1rem', marginBottom: '1rem', borderBottom: '1px solid #E5E7EB' }}>
           <button
             onClick={goBack}
             style={{
@@ -83,6 +65,26 @@ const Sidebar = ({ currentPage, onNavigate, goBack }) => {
           </button>
         </div>
       )}
+
+      <nav>
+        <ul className="admin-nav">
+          {navItems.map(item => (
+            <li key={item.id} className="admin-nav-item">
+              <a
+                href="#"
+                className={`admin-nav-link ${currentPage === item.id ? 'active' : ''}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  onNavigate(item.id);
+                }}
+              >
+                <span style={{ marginRight: '0.5rem' }}>{item.icon}</span>
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
     </aside>
   );
 };

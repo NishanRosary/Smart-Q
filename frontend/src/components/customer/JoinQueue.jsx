@@ -1,95 +1,503 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "../shared/Header";
 import axios from "axios";
 import "../../styles/customer.css";
+import { getEvents, services } from '../../data/mockData';
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  Info,
+  User,
+  Phone,
+  ArrowRight,
+  CheckCircle,
+  Building2,
+  ChevronRight,
+  Shield,
+  Activity
+} from 'lucide-react';
 
-const JoinQueue = ({ onNavigate, goBack, currentPage }) => {
-  const [selectedService, setSelectedService] = useState("");
+const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
+  const [step, setStep] = useState(1); // 1: Events, 2: Guest Details, 3: Service Selection, 4: Status
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [guestDetails, setGuestDetails] = useState({ name: '', mobile: '', otp: '' });
+  const [selectedService, setSelectedService] = useState('');
   const [loading, setLoading] = useState(false);
   const [tokenData, setTokenData] = useState(null);
 
-  const handleJoin = async (e) => {
+  const events = getEvents();
+
+  useEffect(() => {
+    if (eventData && eventData.event) {
+      setSelectedEvent(eventData.event);
+      if (eventData.isCustomer) {
+        setStep(3);
+      } else {
+        setStep(2);
+      }
+    }
+  }, [eventData]);
+
+  const getCrowdLevelColor = (level) => {
+    switch (level) {
+      case 'Low': return 'badge-green';
+      case 'Medium': return 'badge-yellow';
+      case 'High': return 'badge-red';
+      default: return 'badge-green';
+    }
+  };
+
+  const getCrowdLevelBadge = (level) => {
+    return <span className={`badge ${getCrowdLevelColor(level)}`}>{level}</span>;
+  };
+
+  const handleEventSelect = (event) => {
+    setSelectedEvent(event);
+    setStep(2);
+  };
+
+  const handleGuestSubmit = (e) => {
+    e.preventDefault();
+    if (guestDetails.name && guestDetails.mobile) {
+      setStep(3);
+    }
+  };
+
+  const handleServiceSubmit = async (e) => {
     e.preventDefault();
     if (!selectedService) return;
 
     setLoading(true);
-
     try {
+      // API Call simulation
       const res = await axios.post("http://localhost:5000/api/queue/join", {
-        service: selectedService
+        service: selectedService,
+        guestName: guestDetails.name,
+        guestMobile: guestDetails.mobile,
+        eventId: selectedEvent.id,
+        eventName: selectedEvent.title
       });
-
       setTokenData(res.data);
+      setStep(4);
     } catch (error) {
-      alert("Failed to join queue. Please try again.");
       console.error(error);
+      // Fallback for demo without backend
+      // alert("Note: Backend might be unavailable. Showing demo token.");
+      const demoToken = {
+        tokenNumber: Math.floor(Math.random() * 100) + 1,
+        service: selectedService,
+        estimatedWait: 15
+      };
+      setTokenData(demoToken);
+      setStep(4);
     } finally {
       setLoading(false);
     }
   };
 
+  const resetFlow = () => {
+    setStep(1);
+    setSelectedEvent(null);
+    setGuestDetails({ name: '', mobile: '', otp: '' });
+    setSelectedService('');
+    setTokenData(null);
+  };
+
+  // Render Functions
+  const renderProgressBar = () => (
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      marginBottom: '3rem',
+      position: 'relative',
+      maxWidth: '600px',
+      margin: '0 auto 3rem'
+    }}>
+      <div style={{
+        position: 'absolute',
+        top: '50%',
+        left: '0',
+        right: '0',
+        height: '2px',
+        background: '#E2E8F0',
+        zIndex: 0,
+        transform: 'translateY(-50%)'
+      }}></div>
+      <div style={{
+        position: 'absolute',
+        top: '50%',
+        left: '0',
+        width: `${((step - 1) / 3) * 100}%`,
+        height: '2px',
+        background: '#3B82F6',
+        zIndex: 0,
+        transform: 'translateY(-50%)',
+        transition: 'width 0.3s ease'
+      }}></div>
+      {[1, 2, 3, 4].map((s) => (
+        <div key={s} style={{
+          zIndex: 1,
+          background: step >= s ? '#3B82F6' : '#FFFFFF',
+          color: step >= s ? '#FFFFFF' : '#94A3B8',
+          border: `2px solid ${step >= s ? '#3B82F6' : '#E2E8F0'}`,
+          width: '40px',
+          height: '40px',
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontWeight: 600,
+          margin: '0 auto', // This centers strictly if in flex, but we want distributed
+          position: 'absolute',
+          left: `${((s - 1) / 3) * 100}%`,
+          transform: 'translateX(-50%)',
+          transition: 'all 0.3s ease'
+        }}>
+          {step > s ? <CheckCircle size={20} /> : s}
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <div>
       <Header onNavigate={onNavigate} goBack={goBack} currentPage={currentPage} />
 
-      <div className="join-queue-container">
-        <h2 style={{ textAlign: "center", marginBottom: "2rem" }}>
-          Join Queue
-        </h2>
+      {/* Customer Logged In View */}
+      {eventData?.isCustomer ? (
+        <div className="join-queue-container" style={{ maxWidth: '600px', padding: '3rem 1rem' }}>
+          {step === 3 && (
+            <div className="card">
+              <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0F172A', marginBottom: '0.5rem' }}>
+                  Select Service
+                </h2>
+                <p style={{ color: '#64748B' }}>
+                  For {selectedEvent?.title}
+                </p>
+              </div>
 
-        {!tokenData ? (
-          <div className="card">
-            <form onSubmit={handleJoin}>
-              <div className="form-group">
-                <label>Select Service</label>
-                <select
-                  value={selectedService}
-                  onChange={(e) => setSelectedService(e.target.value)}
-                  required
+              <form onSubmit={handleServiceSubmit}>
+                <div className="form-group" style={{ marginBottom: '2rem' }}>
+                  {services.map((service, index) => (
+                    <div
+                      key={index}
+                      onClick={() => setSelectedService(service)}
+                      style={{
+                        padding: '1rem',
+                        borderRadius: '8px',
+                        border: selectedService === service ? '2px solid #3B82F6' : '1px solid #E2E8F0',
+                        background: selectedService === service ? '#EFF6FF' : '#FFFFFF',
+                        marginBottom: '0.75rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <span style={{ fontWeight: 500, color: selectedService === service ? '#1E40AF' : '#334155' }}>{service}</span>
+                      {selectedService === service && <CheckCircle size={20} color="#3B82F6" />}
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => onNavigate('customer-dashboard')}
+                    style={{
+                      flex: 1,
+                      padding: '0.75rem',
+                      borderRadius: '8px',
+                      border: '1px solid #E2E8F0',
+                      background: 'white',
+                      color: '#64748B',
+                      cursor: 'pointer',
+                      fontWeight: 500
+                    }}>
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn-primary"
+                    style={{ flex: 1 }}
+                    disabled={!selectedService || loading}
+                  >
+                    {loading ? "Joining..." : "Join Queue"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {step === 4 && tokenData && (
+            <div style={{ maxWidth: '500px', margin: '0 auto' }}>
+              <div className="token-card">
+                <div className="token-number">T{tokenData.tokenNumber}</div>
+                <div className="token-label">Queue Token</div>
+
+                <div style={{ marginTop: '2rem', background: 'rgba(255,255,255,0.1)', padding: '1.5rem', borderRadius: '8px', textAlign: 'left' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                    <span style={{ opacity: 0.8 }}>Event:</span>
+                    <span style={{ fontWeight: 600 }}>{selectedEvent?.title}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                    <span style={{ opacity: 0.8 }}>Service:</span>
+                    <span style={{ fontWeight: 600 }}>{tokenData.service}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ opacity: 0.8 }}>Est. Wait:</span>
+                    <span style={{ fontWeight: 600 }}>{tokenData.estimatedWait || '15'} mins</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ textAlign: "center", marginTop: "2rem" }}>
+                <button
+                  className="btn-primary"
+                  onClick={() => onNavigate('customer-dashboard')}
                 >
-                  <option value="">-- Select a service --</option>
-                  <option value="General Checkup">General Checkup</option>
-                  <option value="Consultation">Consultation</option>
-                  <option value="Lab Test">Lab Test</option>
-                </select>
+                  Return to Dashboard
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        /* Guest Flow View */
+        <div className="join-queue-container" style={{ maxWidth: '1000px', padding: '2rem 1rem' }}>
+
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <h1 style={{ fontSize: '2rem', color: '#0F172A', fontWeight: 800 }}>
+              {step === 1 ? 'Select an Event' :
+                step === 2 ? 'Guest Details' :
+                  step === 3 ? 'Select Service' :
+                    'Queue Status'}
+            </h1>
+            <p style={{ color: '#64748B', marginTop: '0.5rem' }}>
+              {step === 1 ? 'Choose an upcoming event to join' :
+                step === 2 ? 'Please provide your contact information' :
+                  step === 3 ? 'Choose the service you need' :
+                    'You have successfully joined the queue'}
+            </p>
+          </div>
+
+          {renderProgressBar()}
+
+          {/* Step 1: Events List */}
+          {step === 1 && (
+            <div className="events-grid">
+              {events.map(event => (
+                <div key={event.id} className="event-card" style={{ cursor: 'pointer', border: selectedEvent?.id === event.id ? '2px solid #3B82F6' : 'transparent' }} onClick={() => handleEventSelect(event)}>
+                  <div className="event-header">
+                    <span className="event-organization" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Building2 size={16} /> {event.organizationType}
+                    </span>
+                    {getCrowdLevelBadge(event.crowdLevel)}
+                  </div>
+                  <h3 className="event-title">{event.title}</h3>
+                  <div className="event-details">
+                    <div className="event-detail-item">
+                      <span><Calendar size={16} /></span>
+                      <span>{new Date(event.date).toLocaleDateString()}</span>
+                    </div>
+                    <div className="event-detail-item">
+                      <span><Clock size={16} /></span>
+                      <span>{event.time}</span>
+                    </div>
+                    <div className="event-detail-item">
+                      <span><MapPin size={16} /></span>
+                      <span>{event.location}</span>
+                    </div>
+                  </div>
+                  <button className="btn-primary" style={{ marginTop: '1rem', width: '100%' }}>
+                    Join This Event <ArrowRight size={16} style={{ marginLeft: '0.5rem' }} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Step 2: Guest Details */}
+          {step === 2 && selectedEvent && (
+            <div className="card" style={{ maxWidth: '500px', margin: '0 auto', padding: '2rem' }}>
+              <div style={{ marginBottom: '2rem', padding: '1rem', background: '#F8FAFC', borderRadius: '8px', borderLeft: '4px solid #3B82F6' }}>
+                <div style={{ fontSize: '0.875rem', color: '#64748B' }}>Joining Event</div>
+                <div style={{ fontWeight: 600, color: '#0F172A' }}>{selectedEvent.title}</div>
               </div>
 
-              <button
-                type="submit"
-                className="btn-primary"
-                style={{ width: "100%" }}
-                disabled={loading}
-              >
-                {loading ? "Joining..." : "Join Queue"}
-              </button>
-            </form>
-          </div>
-        ) : (
-          <div>
-            <div className="token-card">
-              <div className="token-number">
-                T{tokenData.tokenNumber}
-              </div>
-              <div className="token-label">Your Queue Token</div>
-              <p style={{ marginTop: "1rem" }}>
-                Service: {selectedService}
-              </p>
-            </div>
+              <form onSubmit={handleGuestSubmit}>
+                <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#334155' }}>Full Name</label>
+                  <div style={{ position: 'relative' }}>
+                    <User size={20} style={{ position: 'absolute', left: '12px', top: '12px', color: '#94A3B8' }} />
+                    <input
+                      type="text"
+                      required
+                      style={{
+                        width: '100%',
+                        padding: '10px 10px 10px 40px',
+                        borderRadius: '8px',
+                        border: '1px solid #E2E8F0',
+                        fontSize: '1rem'
+                      }}
+                      placeholder="Enter your name"
+                      value={guestDetails.name}
+                      onChange={(e) => setGuestDetails({ ...guestDetails, name: e.target.value })}
+                    />
+                  </div>
+                </div>
 
-            <div style={{ textAlign: "center", marginTop: "2rem" }}>
-              <button
-                className="btn-secondary"
-                onClick={() => {
-                  setTokenData(null);
-                  setSelectedService("");
-                }}
-              >
-                Join Another Queue
-              </button>
+                <div className="form-group" style={{ marginBottom: '2rem' }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#334155' }}>Mobile Number</label>
+                  <div style={{ position: 'relative' }}>
+                    <Phone size={20} style={{ position: 'absolute', left: '12px', top: '12px', color: '#94A3B8' }} />
+                    <input
+                      type="tel"
+                      required
+                      style={{
+                        width: '100%',
+                        padding: '10px 10px 10px 40px',
+                        borderRadius: '8px',
+                        border: '1px solid #E2E8F0',
+                        fontSize: '1rem'
+                      }}
+                      placeholder="Enter mobile number"
+                      value={guestDetails.mobile}
+                      onChange={(e) => setGuestDetails({ ...guestDetails, mobile: e.target.value })}
+                    />
+                  </div>
+                  <div style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: '#64748B' }}>
+                    * OTP verification is optional for guests
+                  </div>
+                </div>
+
+                <button type="submit" className="btn-primary" style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}>
+                  Continue <ArrowRight size={18} />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
+                  style={{
+                    marginTop: '1rem',
+                    width: '100%',
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#64748B',
+                    cursor: 'pointer'
+                  }}>
+                  Back to Events
+                </button>
+              </form>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+
+          {/* Step 3: Service Selection */}
+          {step === 3 && (
+            <div className="card" style={{ maxWidth: '500px', margin: '0 auto', padding: '2rem' }}>
+              <h3 style={{ marginBottom: '1.5rem', color: '#0F172A' }}>Select Service</h3>
+
+              <form onSubmit={handleServiceSubmit}>
+                <div className="form-group" style={{ marginBottom: '2rem' }}>
+                  {services.map((service, index) => (
+                    <div
+                      key={index}
+                      onClick={() => setSelectedService(service)}
+                      style={{
+                        padding: '1rem',
+                        borderRadius: '8px',
+                        border: selectedService === service ? '2px solid #3B82F6' : '1px solid #E2E8F0',
+                        background: selectedService === service ? '#EFF6FF' : '#FFFFFF',
+                        marginBottom: '0.75rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <span style={{ fontWeight: 500, color: selectedService === service ? '#1E40AF' : '#334155' }}>{service}</span>
+                      {selectedService === service && <CheckCircle size={20} color="#3B82F6" />}
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  style={{ width: '100%' }}
+                  disabled={!selectedService || loading}
+                >
+                  {loading ? "Joining Queue..." : "Join Queue"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (eventData?.isCustomer) {
+                      onNavigate('customer-dashboard');
+                    } else {
+                      setStep(2);
+                    }
+                  }}
+                  style={{
+                    marginTop: '1rem',
+                    width: '100%',
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#64748B',
+                    cursor: 'pointer'
+                  }}>
+                  Back
+                </button>
+              </form>
+            </div>
+          )}
+
+          {/* Step 4: Token Status */}
+          {step === 4 && tokenData && (
+            <div style={{ maxWidth: '500px', margin: '0 auto' }}>
+              <div className="token-card">
+                <div className="token-number">T{tokenData.tokenNumber}</div>
+                <div className="token-label">Your Queue Token</div>
+
+                <div style={{ marginTop: '2rem', background: 'rgba(255,255,255,0.1)', padding: '1.5rem', borderRadius: '8px', textAlign: 'left' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                    <span style={{ opacity: 0.8 }}>Name:</span>
+                    <span style={{ fontWeight: 600 }}>{guestDetails.name || (eventData?.isCustomer ? 'Logged In User' : 'Guest')}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                    <span style={{ opacity: 0.8 }}>Event:</span>
+                    <span style={{ fontWeight: 600 }}>{selectedEvent?.title}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                    <span style={{ opacity: 0.8 }}>Service:</span>
+                    <span style={{ fontWeight: 600 }}>{tokenData.service}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ opacity: 0.8 }}>Est. Wait:</span>
+                    <span style={{ fontWeight: 600 }}>{tokenData.estimatedWait || '15'} mins</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ textAlign: "center", marginTop: "2rem" }}>
+                <button
+                  className="btn-secondary"
+                  style={{ color: '#3B82F6', borderColor: '#3B82F6' }}
+                  onClick={resetFlow}
+                >
+                  Join Another Queue
+                </button>
+              </div>
+            </div>
+          )}
+
+        </div>
+      )}
     </div>
   );
 };
