@@ -8,9 +8,8 @@ import '../../styles/global.css';
 const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
   const [formData, setFormData] = useState({
     organizationType: '',
+    organizationName: '',
     title: '',
-    date: '',
-    time: '',
     date: '',
     time: '',
     location: '',
@@ -36,6 +35,7 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
     setShowSuccess(true);
     setFormData({
       organizationType: '',
+      organizationName: '',
       title: '',
       date: '',
       time: '',
@@ -97,6 +97,31 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
                     <option key={type} value={type}>{type}</option>
                   ))}
                 </select>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="title">Event Title</label>
+                <input
+                  type="text"
+                  id="title"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  placeholder="Enter event title"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="organizationName">Organization Name</label>
+                <input
+                  type="text"
+                  id="organizationName"
+                  name="organizationName"
+                  value={formData.organizationName}
+                  onChange={handleInputChange}
+                  placeholder="Enter organization name"
+                  required
+                />
               </div>
 
               <div className="form-group">
@@ -240,6 +265,7 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
             <thead>
               <tr>
                 <th>Organization</th>
+                <th>Name</th>
                 <th>Event Title</th>
                 <th>Date</th>
                 <th>Time</th>
@@ -251,13 +277,14 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
               {events.map(event => (
                 <tr key={event.id}>
                   <td>{event.organizationType}</td>
+                  <td>{event.organizationName || '-'}</td>
                   <td style={{ fontWeight: 600 }}>{event.title}</td>
                   <td>{new Date(event.date).toLocaleDateString()}</td>
                   <td>{event.time}</td>
                   <td>{event.location}</td>
                   <td>
                     <span className={`badge ${event.status === 'Upcoming' ? 'badge-yellow' :
-                      event.status === 'Ongoing' ? 'badge-green' : 'badge-red'
+                        event.status === 'Ongoing' ? 'badge-green' : 'badge-red'
                       }`}>
                       {event.status}
                     </span>

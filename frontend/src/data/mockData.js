@@ -6,6 +6,7 @@ let events = [
   {
     id: 1,
     organizationType: 'Hospital',
+    organizationName: 'City General Hospital',
     title: 'General Health Checkup',
     date: '2024-02-15',
     time: '09:00',
@@ -17,6 +18,7 @@ let events = [
   {
     id: 2,
     organizationType: 'Bank',
+    organizationName: 'National Bank',
     title: 'Account Opening Session',
     date: '2024-02-16',
     time: '10:30',
@@ -28,6 +30,7 @@ let events = [
   {
     id: 3,
     organizationType: 'Interview',
+    organizationName: 'Tech Corp',
     title: 'Software Developer Interview',
     date: '2024-02-14',
     time: '14:00',
@@ -39,6 +42,7 @@ let events = [
   {
     id: 4,
     organizationType: 'Government Office',
+    organizationName: 'Regional Passport Office',
     title: 'Passport Application',
     date: '2024-02-17',
     time: '11:00',
@@ -50,6 +54,7 @@ let events = [
   {
     id: 5,
     organizationType: 'Exam',
+    organizationName: 'Metro University',
     title: 'Entrance Examination',
     date: '2024-02-13',
     time: '08:00',

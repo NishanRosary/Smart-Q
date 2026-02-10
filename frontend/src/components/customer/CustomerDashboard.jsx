@@ -202,7 +202,10 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage }) => {
             {events.map(event => (
               <div key={event.id} className="event-card">
                 <div className="event-header">
-                  <span className="event-organization">{event.organizationType}</span>
+                  <span className="event-organization" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontWeight: 700, color: 'var(--color-primary)' }}>{event.organizationName}</span>
+                    <span style={{ opacity: 0.8, fontSize: '0.8rem' }}>({event.organizationType})</span>
+                  </span>
                   {getCrowdLevelBadge(event.crowdLevel)}
                 </div>
                 <h3 className="event-title">{event.title}</h3>

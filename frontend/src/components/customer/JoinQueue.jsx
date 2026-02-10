@@ -297,7 +297,9 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
                 <div key={event.id} className="event-card" style={{ cursor: 'pointer', border: selectedEvent?.id === event.id ? '2px solid var(--color-primary)' : 'transparent' }} onClick={() => handleEventSelect(event)}>
                   <div className="event-header">
                     <span className="event-organization" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Building2 size={16} /> {event.organizationType}
+                      <Building2 size={16} />
+                      <span style={{ fontWeight: 700 }}>{event.organizationName}</span>
+                      <span style={{ fontSize: '0.8rem', opacity: 0.8 }}>({event.organizationType})</span>
                     </span>
                     {getCrowdLevelBadge(event.crowdLevel)}
                   </div>
