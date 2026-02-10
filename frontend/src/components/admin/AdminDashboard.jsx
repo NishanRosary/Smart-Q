@@ -107,7 +107,7 @@ const AdminDashboard = ({ onNavigate, goBack, currentPage }) => {
               {mlPredictions.peakTimes.slice(0, 3).map((item, index) => (
                 <div key={index} style={{
                   padding: '0.75rem',
-                  backgroundColor: '#F3F4F6',
+                  backgroundColor: 'var(--color-gray-50)',
                   borderRadius: '8px',
                   display: 'flex',
                   justifyContent: 'space-between',
@@ -144,15 +144,15 @@ const AdminDashboard = ({ onNavigate, goBack, currentPage }) => {
           <div className="card">
             <h3 style={{ marginBottom: '1rem' }}>Recent Activity</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ padding: '0.75rem', backgroundColor: '#F3F4F6', borderRadius: '8px' }}>
+              <div style={{ padding: '0.75rem', backgroundColor: 'var(--color-gray-50)', borderRadius: '8px' }}>
                 <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>New event scheduled</div>
                 <div style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>General Health Checkup - 2 hours ago</div>
               </div>
-              <div style={{ padding: '0.75rem', backgroundColor: '#F3F4F6', borderRadius: '8px' }}>
+              <div style={{ padding: '0.75rem', backgroundColor: 'var(--color-gray-50)', borderRadius: '8px' }}>
                 <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>Queue updated</div>
                 <div style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>5 customers joined queue - 3 hours ago</div>
               </div>
-              <div style={{ padding: '0.75rem', backgroundColor: '#F3F4F6', borderRadius: '8px' }}>
+              <div style={{ padding: '0.75rem', backgroundColor: 'var(--color-gray-50)', borderRadius: '8px' }}>
                 <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>Counter activated</div>
                 <div style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>Counter 3 is now active - 4 hours ago</div>
               </div>

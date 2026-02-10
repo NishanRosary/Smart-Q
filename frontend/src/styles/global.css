@@ -144,11 +144,11 @@
   --color-gray-200: var(--palette-slate-700);
   --color-gray-300: var(--palette-slate-600);
   --color-gray-400: var(--palette-slate-500);
-  --color-gray-500: var(--palette-slate-400);
-  --color-gray-600: var(--palette-slate-300);
-  --color-gray-700: var(--palette-slate-200);
-  --color-gray-800: var(--palette-slate-100);
-  --color-gray-900: var(--palette-slate-50);
+  --color-gray-500: #94A3B8;
+  --color-gray-600: #CBD5E1;
+  --color-gray-700: #E2E8F0;
+  --color-gray-800: #F1F5F9;
+  --color-gray-900: #FFFFFF;
 
   --color-primary: var(--palette-blue-500);
   --color-primary-dark: var(--palette-blue-600);
@@ -407,6 +407,16 @@ textarea {
   transition: all var(--transition-base);
   width: 100%;
   line-height: 1.5;
+}
+
+/* Fix for Chrome/Edge Autofill White Background */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px var(--color-white) inset !important;
+  -webkit-text-fill-color: var(--color-gray-900) !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 input:focus,

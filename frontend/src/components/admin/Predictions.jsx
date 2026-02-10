@@ -8,7 +8,7 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
   const getPredictionColor = (level) => {
     switch (level) {
       case 'High':
-        return '#EF4444';
+        return 'var(--color-red)';
       case 'Medium':
         return 'var(--color-yellow)';
       case 'Low':
@@ -92,7 +92,7 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
                 return (
                   <div key={index} style={{
                     padding: '1rem',
-                    backgroundColor: '#F9FAFB',
+                    backgroundColor: 'var(--color-gray-50)',
                     borderRadius: '8px',
                     border: `2px solid ${getPredictionColor(item.prediction)}40`
                   }}>
@@ -139,7 +139,7 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
               {mlPredictions.waitTimePredictions.map((item, index) => (
                 <div key={index} style={{
                   padding: '1.5rem',
-                  backgroundColor: '#F9FAFB',
+                  backgroundColor: 'var(--color-gray-50)',
                   borderRadius: '8px',
                   border: '1px solid var(--color-gray-200)'
                 }}>
@@ -155,10 +155,10 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
                     </div>
                     <div style={{
                       padding: '0.5rem 1rem',
-                      backgroundColor: item.accuracy >= 90 ? 'var(--color-green-bg)' : item.accuracy >= 80 ? 'var(--color-yellow-bg)' : '#FEE2E2',
+                      backgroundColor: item.accuracy >= 90 ? 'var(--color-green-bg)' : item.accuracy >= 80 ? 'var(--color-yellow-bg)' : 'var(--color-red-bg)',
                       borderRadius: '6px',
                       fontWeight: 600,
-                      color: item.accuracy >= 90 ? 'var(--color-green)' : item.accuracy >= 80 ? 'var(--color-yellow)' : '#991B1B'
+                      color: item.accuracy >= 90 ? 'var(--color-green)' : item.accuracy >= 80 ? 'var(--color-yellow)' : 'var(--color-red)'
                     }}>
                       {item.accuracy}%
                     </div>

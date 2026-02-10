@@ -32,11 +32,11 @@ const Analytics = ({ onNavigate, goBack, currentPage }) => {
                 Real-time predictions with {mlPredictions.mlModelStats.modelAccuracy}% accuracy
               </p>
             </div>
-            <button 
+            <button
               className="btn-primary"
               onClick={() => onNavigate('predictions')}
-              style={{ 
-                backgroundColor: 'var(--color-white)', 
+              style={{
+                backgroundColor: 'var(--color-white)',
                 color: 'var(--color-primary)',
                 border: 'none'
               }}
@@ -79,7 +79,7 @@ const Analytics = ({ onNavigate, goBack, currentPage }) => {
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   padding: '1rem',
-                  backgroundColor: '#F3F4F6',
+                  backgroundColor: 'var(--color-gray-50)',
                   borderRadius: '8px'
                 }}>
                   <span style={{ fontWeight: 500 }}>{item.hour}</span>
@@ -136,7 +136,7 @@ const Analytics = ({ onNavigate, goBack, currentPage }) => {
                 return (
                   <div key={index} style={{
                     padding: '1rem',
-                    backgroundColor: '#F9FAFB',
+                    backgroundColor: 'var(--color-gray-50)',
                     borderRadius: '8px'
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
@@ -145,9 +145,9 @@ const Analytics = ({ onNavigate, goBack, currentPage }) => {
                         <span style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>
                           {item.customers} customers
                         </span>
-                        <span className="badge" style={{ 
-                          backgroundColor: `${color}20`, 
-                          color: color 
+                        <span className="badge" style={{
+                          backgroundColor: `${color}20`,
+                          color: color
                         }}>
                           {item.prediction}
                         </span>

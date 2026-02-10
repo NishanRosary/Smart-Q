@@ -100,6 +100,10 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
             <button
               className="hero-button hero-button-secondary"
               onClick={() => onNavigate('login')}
+              style={{
+                borderColor: 'var(--color-white)',
+                color: 'var(--color-white)'
+              }}
             >
               Login
             </button>
@@ -443,12 +447,7 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
       </section>
 
       {/* Footer */}
-      <footer style={{
-        backgroundColor: 'rgb(11, 61, 122)',
-        color: '#FFFFFF',
-        padding: '3rem 2rem',
-        marginTop: '4rem'
-      }}>
+      <footer className="landing-footer">
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{
             display: 'grid',
@@ -456,42 +455,42 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
             gap: '2rem'
           }}>
             <div>
-              <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', color: '#FFFFFF', fontWeight: 700 }}>Smart'Q</h3>
-              <p style={{ color: 'white', lineHeight: '1.6', fontSize: '0.9375rem' }}>
+              <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: 700 }}>Smart'Q</h3>
+              <p style={{ lineHeight: '1.6', fontSize: '0.9375rem' }}>
                 Smarter queue management powered by intelligent technology—delivering seamless and efficient service experiences.
               </p>
             </div>
 
             <div>
-              <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', color: '#FFFFFF', fontWeight: 700 }}>Quick Links</h3>
+              <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: 700 }}>Quick Links</h3>
               <ul style={{ listStyle: 'none', padding: 0 }}>
                 <li style={{ marginBottom: '0.5rem' }}>
-                  <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('landing'); }} style={{ color: '#E2E8F0', textDecoration: 'none', fontSize: '0.9375rem' }}>Home</a>
+                  <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('landing'); }} style={{ textDecoration: 'none', fontSize: '0.9375rem' }}>Home</a>
                 </li>
                 <li style={{ marginBottom: '0.5rem' }}>
-                  <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('login'); }} style={{ color: '#E2E8F0', textDecoration: 'none', fontSize: '0.9375rem' }}>Login</a>
+                  <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('login'); }} style={{ textDecoration: 'none', fontSize: '0.9375rem' }}>Login</a>
                 </li>
                 <li style={{ marginBottom: '0.5rem' }}>
-                  <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('join-queue'); }} style={{ color: '#E2E8F0', textDecoration: 'none', fontSize: '0.9375rem' }}>Join Queue</a>
+                  <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('join-queue'); }} style={{ textDecoration: 'none', fontSize: '0.9375rem' }}>Join Queue</a>
                 </li>
               </ul>
             </div>
 
             <div>
-              <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', color: '#FFFFFF', fontWeight: 700 }}>Contact Us</h3>
-              <p style={{ margin: '0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#E2E8F0' }}>
+              <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: 700 }}>Contact Us</h3>
+              <p style={{ margin: '0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Mail size={16} /> info@smartq.app
               </p>
-              <p style={{ margin: '0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#E2E8F0' }}>
+              <p style={{ margin: '0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Phone size={16} /> +91 1234567890
               </p>
-              <p style={{ margin: '0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#E2E8F0' }}>
+              <p style={{ margin: '0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <MapPin size={16} /> Bangalore, India
               </p>
             </div>
 
             <div>
-              <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', color: '#FFFFFF', fontWeight: 700 }}>Follow Us</h3>
+              <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: 700 }}>Follow Us</h3>
               <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                 <Instagram size={24} style={{ cursor: 'pointer' }} />
                 <Linkedin size={24} style={{ cursor: 'pointer' }} />
@@ -505,7 +504,7 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
             borderTop: '1px solid rgba(255, 255, 255, 0.1)',
             textAlign: 'center'
           }}>
-            <p style={{ color: '#E2E8F0', fontSize: '0.875rem', margin: 0 }}>
+            <p style={{ fontSize: '0.875rem', margin: 0 }}>
               © 2024 Smart'Q. All rights reserved.
             </p>
           </div>

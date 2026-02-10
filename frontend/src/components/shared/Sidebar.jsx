@@ -41,10 +41,10 @@ const Sidebar = ({ currentPage, onNavigate, goBack }) => {
             style={{
               width: '100%',
               padding: '0.75rem',
-              backgroundColor: '#F3F4F6',
-              border: '1px solid #E5E7EB',
+              backgroundColor: 'var(--color-gray-50)',
+              border: '1px solid var(--color-gray-200)',
               borderRadius: '8px',
-              color: '#374151',
+              color: 'var(--color-gray-700)',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -55,12 +55,12 @@ const Sidebar = ({ currentPage, onNavigate, goBack }) => {
               transition: 'all 0.2s ease'
             }}
             onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = '#E5E7EB';
-              e.currentTarget.style.color = '#111827';
+              e.currentTarget.style.backgroundColor = 'var(--color-gray-100)';
+              e.currentTarget.style.color = 'var(--color-gray-900)';
             }}
             onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = '#F3F4F6';
-              e.currentTarget.style.color = '#374151';
+              e.currentTarget.style.backgroundColor = 'var(--color-gray-50)';
+              e.currentTarget.style.color = 'var(--color-gray-700)';
             }}
             title="Go back"
           >

@@ -216,10 +216,11 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
                       padding: '0.75rem',
                       borderRadius: '8px',
                       border: '1px solid var(--color-gray-200)',
-                      background: 'white',
-                      color: 'var(--color-gray-500)',
                       cursor: 'pointer',
-                      fontWeight: 500
+                      fontWeight: 500,
+                      backgroundColor: 'var(--color-white)',
+                      color: 'var(--color-gray-700)',
+                      boxShadow: 'var(--shadow-sm)'
                     }}>
                     Cancel
                   </button>
