@@ -41,8 +41,9 @@ const Header = ({ onNavigate, goBack, currentPage }) => {
               <ArrowLeft size={16} /> Back
             </button>
           )}
-          <div className="logo" onClick={() => onNavigate('landing')} style={{ cursor: 'pointer' }}>
-            Smart'Q
+          <div className="logo" onClick={() => onNavigate('landing')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <img src="/tab-logo.png" alt="Smart'Q" style={{ height: '32px', width: 'auto' }} />
+            <span>Smart'Q</span>
           </div>
         </div>
         <nav style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>

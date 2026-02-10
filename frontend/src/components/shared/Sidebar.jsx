@@ -27,11 +27,14 @@ const Sidebar = ({ currentPage, onNavigate, goBack }) => {
   return (
     <aside className="admin-sidebar">
       <div className="admin-sidebar-header">
-        <div className="admin-sidebar-title">Smart'Q Admin</div>
+        <div className="admin-sidebar-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <img src="/tab-logo.png" alt="Smart'Q" style={{ height: '24px', width: 'auto' }} />
+          Smart'Q Admin
+        </div>
       </div>
 
       {showBackButton && goBack && (
-        
+
         <div style={{ paddingBottom: '1rem', marginBottom: '1rem', borderBottom: '1px solid #E5E7EB' }}>
           <button
             onClick={goBack}
