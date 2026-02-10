@@ -28,6 +28,10 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
 
   const events = getEvents();
 
+  const availableServices = selectedEvent?.serviceTypes && selectedEvent.serviceTypes.length > 0
+    ? selectedEvent.serviceTypes
+    : services;
+
   useEffect(() => {
     if (eventData && eventData.event) {
       setSelectedEvent(eventData.event);
@@ -180,7 +184,7 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
 
               <form onSubmit={handleServiceSubmit}>
                 <div className="form-group" style={{ marginBottom: '2rem' }}>
-                  {services.map((service, index) => (
+                  {availableServices.map((service, index) => (
                     <div
                       key={index}
                       onClick={() => setSelectedService(service)}
@@ -402,7 +406,7 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
 
               <form onSubmit={handleServiceSubmit}>
                 <div className="form-group" style={{ marginBottom: '2rem' }}>
-                  {services.map((service, index) => (
+                  {availableServices.map((service, index) => (
                     <div
                       key={index}
                       onClick={() => setSelectedService(service)}

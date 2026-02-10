@@ -11,7 +11,8 @@ let events = [
     time: '09:00',
     location: 'City General Hospital, Building A',
     status: 'Upcoming',
-    crowdLevel: 'Medium'
+    crowdLevel: 'Medium',
+    serviceTypes: ['General Checkup', 'Specialist Consultation', 'Vitals Check']
   },
   {
     id: 2,
@@ -21,7 +22,8 @@ let events = [
     time: '10:30',
     location: 'Main Street Branch',
     status: 'Upcoming',
-    crowdLevel: 'High'
+    crowdLevel: 'High',
+    serviceTypes: ['Savings Account', 'Current Account', 'Loan Inquiry']
   },
   {
     id: 3,
@@ -31,7 +33,8 @@ let events = [
     time: '14:00',
     location: 'Tech Corp Office, Floor 5',
     status: 'Ongoing',
-    crowdLevel: 'Low'
+    crowdLevel: 'Low',
+    serviceTypes: ['Technical Round', 'HR Round', 'Managerial Round']
   },
   {
     id: 4,
@@ -41,7 +44,8 @@ let events = [
     time: '11:00',
     location: 'Regional Passport Office',
     status: 'Upcoming',
-    crowdLevel: 'High'
+    crowdLevel: 'High',
+    serviceTypes: ['New Passport', 'Renewal', 'Correction']
   },
   {
     id: 5,
@@ -51,7 +55,8 @@ let events = [
     time: '08:00',
     location: 'University Campus, Hall A',
     status: 'Completed',
-    crowdLevel: 'Low'
+    crowdLevel: 'Low',
+    serviceTypes: ['Paper 1', 'Paper 2']
   }
 ];
 
@@ -152,7 +157,7 @@ export const analyticsData = {
   ]
 };
 
-// Services list
+// Services list (Legacy - kept for backward compatibility if needed, but prefer event-specific services)
 export const services = [
   'General Checkup',
   'Consultation',
@@ -189,6 +194,7 @@ export const addEvent = (eventData) => {
     ...eventData,
     status: 'Upcoming',
     crowdLevel: 'Medium'
+    // serviceTypes is now expected to be part of eventData
   };
   events.push(newEvent);
   return newEvent;

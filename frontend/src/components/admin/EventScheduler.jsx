@@ -11,8 +11,12 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
     title: '',
     date: '',
     time: '',
-    location: ''
+    date: '',
+    time: '',
+    location: '',
+    serviceTypes: []
   });
+  const [currentService, setCurrentService] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   const [newEvent, setNewEvent] = useState(null);
   const events = getAllEvents();
@@ -35,9 +39,28 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
       title: '',
       date: '',
       time: '',
-      location: ''
+      location: '',
+      serviceTypes: []
     });
     setTimeout(() => setShowSuccess(false), 5000);
+  };
+
+  const handleAddService = (e) => {
+    e.preventDefault();
+    if (currentService.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        serviceTypes: [...prev.serviceTypes, currentService.trim()]
+      }));
+      setCurrentService('');
+    }
+  };
+
+  const handleRemoveService = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      serviceTypes: prev.serviceTypes.filter((_, i) => i !== index)
+    }));
   };
 
   return (
@@ -50,7 +73,7 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
 
         <div className="event-scheduler-form">
           <h2 style={{ marginBottom: '1.5rem' }}>Schedule New Event</h2>
-          
+
           {showSuccess && (
             <div className="success-message">
               <span>✓</span>
@@ -129,16 +152,75 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
               />
             </div>
 
+            <div className="form-group">
+              <label htmlFor="serviceTypes">Service Types (Manual Entry)</label>
+              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                <input
+                  type="text"
+                  id="serviceTypes"
+                  value={currentService}
+                  onChange={(e) => setCurrentService(e.target.value)}
+                  placeholder="Type a service and press Enter or Add"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddService(e);
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={handleAddService}
+                  className="btn-secondary"
+                  style={{ whiteSpace: 'nowrap' }}
+                >
+                  Add Service
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.5rem' }}>
+                {formData.serviceTypes.map((service, index) => (
+                  <span
+                    key={index}
+                    className="badge badge-green"
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                  >
+                    {service}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveService(index)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'inherit',
+                        cursor: 'pointer',
+                        padding: 0,
+                        display: 'flex',
+                        alignItems: 'center'
+                      }}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+                {formData.serviceTypes.length === 0 && (
+                  <span style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)', fontStyle: 'italic' }}>
+                    No services added yet. Add at least one service type.
+                  </span>
+                )}
+              </div>
+            </div>
+
             <button type="submit" className="btn-primary">
               Save Event
             </button>
           </form>
 
           {newEvent && (
-            <div style={{ 
-              marginTop: '2rem', 
-              padding: '1.5rem', 
-              backgroundColor: '#F3F4F6', 
+            <div style={{
+              marginTop: '2rem',
+              padding: '1.5rem',
+              backgroundColor: '#F3F4F6',
               borderRadius: '12px',
               textAlign: 'center'
             }}>
@@ -174,10 +256,9 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
                   <td>{event.time}</td>
                   <td>{event.location}</td>
                   <td>
-                    <span className={`badge ${
-                      event.status === 'Upcoming' ? 'badge-yellow' : 
+                    <span className={`badge ${event.status === 'Upcoming' ? 'badge-yellow' :
                       event.status === 'Ongoing' ? 'badge-green' : 'badge-red'
-                    }`}>
+                      }`}>
                       {event.status}
                     </span>
                   </td>
