@@ -8,6 +8,7 @@ const connectDB = require("./config/db");
 const queueRoutes = require("./routes/queueRoutes");
 const eventRoutes = require("./routes/eventRoutes");
 const mlRoutes = require("./routes/mlRoutes");
+const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 const server = http.createServer(app);
@@ -22,15 +23,16 @@ const io = new Server(server, {
 
 app.set("io", io);
 
-const cookieParser = require("cookie-parser");
-app.use(cookieParser());
-
-// Middleware
-connectDB();
+// Middleware (ORDER FIXED)
 app.use(cors({ origin: "http://localhost:3000", credentials: true }));
-app.use(express.json());
+app.use(express.json()); // 🔥 Must be before routes
+app.use(require("cookie-parser")());
+
+// DB
+connectDB();
 
 // Routes
+app.use("/api/auth", authRoutes);
 app.use("/api/queue", queueRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/ml", mlRoutes);
