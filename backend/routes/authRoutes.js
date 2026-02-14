@@ -2,38 +2,60 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
+const RefreshToken = require("../models/refreshTokens");
 
 const router = express.Router();
 
+/* =========================
+   ADMIN LOGIN
+========================= */
 router.post("/admin/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // 1️⃣ Find admin by email
     const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // 2️⃣ Ensure role is admin
     if (user.role !== "admin") {
       return res.status(403).json({ message: "Not authorized" });
     }
 
-    // 3️⃣ Compare password
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // 4️⃣ Generate access token
+    // 🔐 Access Token
     const accessToken = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_ACCESS_SECRET,
       { expiresIn: process.env.ACCESS_TOKEN_EXPIRE }
     );
+
+    // 🔁 Refresh Token
+    const refreshToken = jwt.sign(
+      { id: user._id },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: process.env.REFRESH_TOKEN_EXPIRE }
+    );
+
+    // 💾 Store Refresh Token in DB
+    await RefreshToken.create({
+      userId: user._id,
+      token: refreshToken,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    });
+
+    // 🍪 Send Refresh Token as httpOnly cookie
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: false, // change to true in production (HTTPS)
+      sameSite: "strict"
+    });
 
     res.status(200).json({
       message: "Login successful",
@@ -42,6 +64,76 @@ router.post("/admin/login", async (req, res) => {
 
   } catch (error) {
     console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+/* =========================
+   REFRESH TOKEN
+========================= */
+router.post("/admin/refresh", async (req, res) => {
+  try {
+    const token = req.cookies.refreshToken;
+
+    if (!token) {
+      return res.status(401).json({ message: "No refresh token provided" });
+    }
+
+    const storedToken = await RefreshToken.findOne({ token });
+
+    if (!storedToken) {
+      return res.status(403).json({ message: "Invalid refresh token" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+
+    // 🔄 Generate new Access Token
+    const newAccessToken = jwt.sign(
+      { id: decoded.id, role: "admin" },
+      process.env.JWT_ACCESS_SECRET,
+      { expiresIn: process.env.ACCESS_TOKEN_EXPIRE }
+    );
+
+    // 🔄 Rotate Refresh Token
+    const newRefreshToken = jwt.sign(
+      { id: decoded.id },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: process.env.REFRESH_TOKEN_EXPIRE }
+    );
+
+    storedToken.token = newRefreshToken;
+    storedToken.expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    await storedToken.save();
+
+    res.cookie("refreshToken", newRefreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "strict"
+    });
+
+    res.json({ accessToken: newAccessToken });
+
+  } catch (error) {
+    return res.status(403).json({ message: "Invalid or expired refresh token" });
+  }
+});
+
+/* =========================
+   LOGOUT
+========================= */
+router.post("/admin/logout", async (req, res) => {
+  try {
+    const token = req.cookies.refreshToken;
+
+    if (token) {
+      await RefreshToken.deleteOne({ token });
+    }
+
+    res.clearCookie("refreshToken");
+
+    res.json({ message: "Logged out successfully" });
+
+  } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
 });
