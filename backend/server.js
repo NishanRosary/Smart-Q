@@ -37,6 +37,16 @@ app.use("/api/queue", queueRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/ml", mlRoutes);
 
+
+const { authMiddleware } = require("./middleware/auth");
+
+app.get("/api/test-protected", authMiddleware, (req, res) => {
+  res.json({
+    message: "Protected route accessed",
+    user: req.user
+  });
+});
+
 // Health
 app.get("/api/health", (req, res) => {
   res.json({ message: "Frontend and Backend connected" });
