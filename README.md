@@ -346,6 +346,3 @@
 # Smart’Q presents a modern, scalable approach to queue management by combining digital queue joining, real-time updates, and administrative control.  
 
 # The system moves beyond basic token generation and provides a strong foundation for intelligent, data-driven service management in real-world environments.
-
-
-

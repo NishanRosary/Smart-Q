@@ -20,8 +20,10 @@ const io = new Server(server, {
   }
 });
 
-// 🔑 MAKE IO AVAILABLE EVERYWHERE
 app.set("io", io);
+
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
 
 // Middleware
 connectDB();
@@ -35,7 +37,7 @@ app.use("/api/ml", mlRoutes);
 
 // Health
 app.get("/api/health", (req, res) => {
-  res.json({ message: "Frontend and Backend connected ✅" });
+  res.json({ message: "Frontend and Backend connected" });
 });
 
 // Socket events
