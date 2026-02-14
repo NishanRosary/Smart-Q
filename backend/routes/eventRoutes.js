@@ -1,32 +1,42 @@
 const express = require("express");
 const router = express.Router();
 const Event = require("../models/event");
+const { authMiddleware, adminMiddleware } = require("../middleware/auth");
 
+// =======================
 // CREATE EVENT (Admin)
-router.post("/", async (req, res) => {
-  try {
-    const { title, organization, date, time, location } = req.body;
+// =======================
+router.post(
+  "/",
+  authMiddleware,
+  adminMiddleware,
+  async (req, res) => {
+    try {
+      const { title, organization, date, time, location } = req.body;
 
-    const event = new Event({
-      title,
-      organization,
-      date,
-      time,
-      location
-    });
+      const event = new Event({
+        title,
+        organization,
+        date,
+        time,
+        location
+      });
 
-    await event.save();
+      await event.save();
 
-    res.status(201).json({
-      message: "Event created successfully",
-      event
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+      res.status(201).json({
+        message: "Event created successfully",
+        event
+      });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
   }
-});
+);
 
-// GET ALL EVENTS (Customer/Admin)
+// =======================
+// GET ALL EVENTS (Public)
+// =======================
 router.get("/", async (req, res) => {
   try {
     const events = await Event.find().sort({ createdAt: -1 });

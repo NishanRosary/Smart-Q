@@ -1,8 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const Queue = require("../models/queue");
+const { authMiddleware, adminMiddleware } = require("../middleware/auth");
 
+// =======================
 // JOIN QUEUE (Customer)
+// =======================
 router.post("/join", async (req, res) => {
   try {
     const { service } = req.body;
@@ -30,34 +33,55 @@ router.post("/join", async (req, res) => {
   }
 });
 
+// =======================
 // GET QUEUE LIST (Admin)
-router.get("/", async (req, res) => {
-  try {
-    const queue = await Queue.find().sort({ tokenNumber: 1 });
-    res.json(queue);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+// =======================
+router.get(
+  "/",
+  authMiddleware,
+  adminMiddleware,
+  async (req, res) => {
+    try {
+      const queue = await Queue.find().sort({ tokenNumber: 1 });
+      res.json(queue);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
   }
-});
+);
 
-// START SERVING
-router.put("/:id/start", async (req, res) => {
-  const updated = await Queue.findByIdAndUpdate(
-    req.params.id,
-    { status: "serving" },
-    { new: true }
-  );
-  res.json(updated);
-});
+// =======================
+// START SERVING (Admin)
+// =======================
+router.put(
+  "/:id/start",
+  authMiddleware,
+  adminMiddleware,
+  async (req, res) => {
+    const updated = await Queue.findByIdAndUpdate(
+      req.params.id,
+      { status: "serving" },
+      { new: true }
+    );
+    res.json(updated);
+  }
+);
 
-// COMPLETE
-router.put("/:id/complete", async (req, res) => {
-  const updated = await Queue.findByIdAndUpdate(
-    req.params.id,
-    { status: "completed" },
-    { new: true }
-  );
-  res.json(updated);
-});
+// =======================
+// COMPLETE (Admin)
+// =======================
+router.put(
+  "/:id/complete",
+  authMiddleware,
+  adminMiddleware,
+  async (req, res) => {
+    const updated = await Queue.findByIdAndUpdate(
+      req.params.id,
+      { status: "completed" },
+      { new: true }
+    );
+    res.json(updated);
+  }
+);
 
 module.exports = router;
