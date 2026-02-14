@@ -21,7 +21,7 @@ class QueueMLModels:
         self.label_encoders = {}
         self.is_trained = False
         
-    def prepare_features(self, df):
+    def prepare_features(self, df, fit_encoders=False):
         """Prepare features from raw data"""
         df = df.copy()
         
@@ -35,18 +35,23 @@ class QueueMLModels:
         
         # Encode categorical features
         if 'service' in df.columns:
-            if 'service' not in self.label_encoders:
+            if fit_encoders or 'service' not in self.label_encoders:
                 self.label_encoders['service'] = LabelEncoder()
                 df['service_encoded'] = self.label_encoders['service'].fit_transform(df['service'])
             else:
-                df['service_encoded'] = self.label_encoders['service'].transform(df['service'])
+                # Handle unseen services during inference without failing.
+                encoder = self.label_encoders['service']
+                known = set(encoder.classes_)
+                df['service_encoded'] = df['service'].apply(
+                    lambda value: int(encoder.transform([value])[0]) if value in known else -1
+                )
         
         return df
     
     def train_waiting_time_model(self, data):
         """Train model to predict waiting time"""
         df = pd.DataFrame(data)
-        df = self.prepare_features(df)
+        df = self.prepare_features(df, fit_encoders=True)
         
         # Features for waiting time prediction
         feature_cols = ['dayOfWeek', 'hourOfDay', 'month', 'dayOfMonth', 'service_encoded', 'positionInQueue']
@@ -71,7 +76,7 @@ class QueueMLModels:
     def train_queue_length_model(self, data):
         """Train model to predict queue length"""
         df = pd.DataFrame(data)
-        df = self.prepare_features(df)
+        df = self.prepare_features(df, fit_encoders=True)
         
         feature_cols = ['dayOfWeek', 'hourOfDay', 'month', 'dayOfMonth', 'service_encoded']
         feature_cols = [col for col in feature_cols if col in df.columns]
@@ -97,7 +102,7 @@ class QueueMLModels:
     def train_no_show_model(self, data):
         """Train model to predict no-show probability"""
         df = pd.DataFrame(data)
-        df = self.prepare_features(df)
+        df = self.prepare_features(df, fit_encoders=True)
         
         feature_cols = ['dayOfWeek', 'hourOfDay', 'month', 'dayOfMonth', 'service_encoded', 'positionInQueue']
         feature_cols = [col for col in feature_cols if col in df.columns]
@@ -118,7 +123,7 @@ class QueueMLModels:
     def train_peak_hours_model(self, data):
         """Train model to predict peak hours"""
         df = pd.DataFrame(data)
-        df = self.prepare_features(df)
+        df = self.prepare_features(df, fit_encoders=True)
         
         # Calculate queue density per hour
         df['queueDensity'] = df.groupby(['dayOfWeek', 'hourOfDay'])['status'].transform('count')

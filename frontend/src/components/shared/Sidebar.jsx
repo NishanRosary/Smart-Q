@@ -27,21 +27,24 @@ const Sidebar = ({ currentPage, onNavigate, goBack }) => {
   return (
     <aside className="admin-sidebar">
       <div className="admin-sidebar-header">
-        <div className="admin-sidebar-title">Smart'Q Admin</div>
+        <div className="admin-sidebar-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <img src="/tab-logo.png" alt="Smart'Q" style={{ height: '24px', width: 'auto' }} />
+          Smart'Q Admin
+        </div>
       </div>
 
       {showBackButton && goBack && (
-        
+
         <div style={{ paddingBottom: '1rem', marginBottom: '1rem', borderBottom: '1px solid #E5E7EB' }}>
           <button
             onClick={goBack}
             style={{
               width: '100%',
               padding: '0.75rem',
-              backgroundColor: '#F3F4F6',
-              border: '1px solid #E5E7EB',
+              backgroundColor: 'var(--color-gray-50)',
+              border: '1px solid var(--color-gray-200)',
               borderRadius: '8px',
-              color: '#374151',
+              color: 'var(--color-gray-700)',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -52,12 +55,12 @@ const Sidebar = ({ currentPage, onNavigate, goBack }) => {
               transition: 'all 0.2s ease'
             }}
             onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = '#E5E7EB';
-              e.currentTarget.style.color = '#111827';
+              e.currentTarget.style.backgroundColor = 'var(--color-gray-100)';
+              e.currentTarget.style.color = 'var(--color-gray-900)';
             }}
             onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = '#F3F4F6';
-              e.currentTarget.style.color = '#374151';
+              e.currentTarget.style.backgroundColor = 'var(--color-gray-50)';
+              e.currentTarget.style.color = 'var(--color-gray-700)';
             }}
             title="Go back"
           >

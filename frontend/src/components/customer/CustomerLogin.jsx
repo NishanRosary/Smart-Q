@@ -41,26 +41,26 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 100%)',
+        background: 'linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-primary-bg) 100%)',
         padding: '2rem'
       }}>
         <div className="card" style={{
           maxWidth: '450px',
           width: '100%',
           padding: '2.5rem',
-          border: '1px solid rgba(226, 232, 240, 0.8)',
+          border: '1px solid var(--color-gray-200)',
           boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
         }}>
           <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
             <h2 style={{
               fontSize: '1.875rem',
-              color: '#0F172A',
+              color: 'var(--color-gray-900)',
               marginBottom: '0.5rem',
               fontWeight: 700
             }}>
               {isSignUp ? 'Create Account' : 'Welcome Back'}
             </h2>
-            <p style={{ color: '#64748B' }}>
+            <p style={{ color: 'var(--color-gray-500)' }}>
               {isSignUp ? 'Enter your details to register' : 'Please enter your details to sign in'}
             </p>
           </div>
@@ -68,7 +68,7 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
           {/* Sign In / Register Switch */}
           <div style={{
             display: 'flex',
-            borderBottom: '2px solid #E2E8F0',
+            borderBottom: '2px solid var(--color-gray-200)',
             marginBottom: '2rem'
           }}>
             <button
@@ -78,9 +78,9 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
                 padding: '1rem',
                 background: 'none',
                 border: 'none',
-                borderBottom: !isSignUp ? '2px solid #3B82F6' : 'none',
+                borderBottom: !isSignUp ? '2px solid var(--color-primary)' : 'none',
                 marginBottom: '-2px',
-                color: !isSignUp ? '#3B82F6' : '#64748B',
+                color: !isSignUp ? 'var(--color-primary)' : 'var(--color-gray-500)',
                 fontWeight: 600,
                 cursor: 'pointer'
               }}
@@ -94,9 +94,9 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
                 padding: '1rem',
                 background: 'none',
                 border: 'none',
-                borderBottom: isSignUp ? '2px solid #3B82F6' : 'none',
+                borderBottom: isSignUp ? '2px solid var(--color-primary)' : 'none',
                 marginBottom: '-2px',
-                color: isSignUp ? '#3B82F6' : '#64748B',
+                color: isSignUp ? 'var(--color-primary)' : 'var(--color-gray-500)',
                 fontWeight: 600,
                 cursor: 'pointer'
               }}
@@ -110,7 +110,7 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
             <div style={{
               display: 'flex',
               padding: '0.25rem',
-              backgroundColor: '#F1F5F9',
+              backgroundColor: 'var(--color-gray-100)',
               borderRadius: '8px',
               marginBottom: '2rem'
             }}>
@@ -119,8 +119,8 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
                 style={{
                   flex: 1,
                   padding: '0.5rem',
-                  backgroundColor: loginType === 'email' ? '#FFFFFF' : 'transparent',
-                  color: loginType === 'email' ? '#0F172A' : '#64748B',
+                  backgroundColor: loginType === 'email' ? 'var(--color-white)' : 'transparent',
+                  color: loginType === 'email' ? 'var(--color-gray-900)' : 'var(--color-gray-500)',
                   boxShadow: loginType === 'email' ? '0 1px 3px 0 rgba(0, 0, 0, 0.1)' : 'none',
                   borderRadius: '6px',
                   fontWeight: 600,
@@ -135,8 +135,8 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
                 style={{
                   flex: 1,
                   padding: '0.5rem',
-                  backgroundColor: loginType === 'mobile' ? '#FFFFFF' : 'transparent',
-                  color: loginType === 'mobile' ? '#0F172A' : '#64748B',
+                  backgroundColor: loginType === 'mobile' ? 'var(--color-white)' : 'transparent',
+                  color: loginType === 'mobile' ? 'var(--color-gray-900)' : 'var(--color-gray-500)',
                   boxShadow: loginType === 'mobile' ? '0 1px 3px 0 rgba(0, 0, 0, 0.1)' : 'none',
                   borderRadius: '6px',
                   fontWeight: 600,
@@ -229,7 +229,7 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
                     style={{
                       background: 'none',
                       border: 'none',
-                      color: '#3B82F6',
+                      color: 'var(--color-primary)',
                       fontSize: '0.875rem',
                       padding: 0,
                       textDecoration: 'underline'
@@ -285,8 +285,8 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
             </button>
           </form>
 
-          <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid #E2E8F0' }}>
-            <p style={{ textAlign: 'center', fontSize: '0.875rem', color: '#64748B', marginBottom: '1rem' }}>
+          <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid var(--color-gray-200)' }}>
+            <p style={{ textAlign: 'center', fontSize: '0.875rem', color: 'var(--color-gray-500)', marginBottom: '1rem' }}>
               Don't have an account?
             </p>
             <button
@@ -302,7 +302,7 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
             <a href="#" onClick={(e) => {
               e.preventDefault();
               onNavigate('landing');
-            }} style={{ fontSize: '0.875rem', color: '#64748B', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+            }} style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
               <ArrowLeft size={16} /> Back to Home
             </a>
           </div>

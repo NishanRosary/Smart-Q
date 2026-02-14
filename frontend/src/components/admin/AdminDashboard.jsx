@@ -16,9 +16,9 @@ import '../../styles/global.css';
 
 const AdminDashboard = ({ onNavigate, goBack, currentPage }) => {
   const stats = [
-    { label: 'Total Queues', value: summaryStats.totalQueues, icon: <ClipboardList size={24} />, color: '#3B82F6' },
-    { label: 'Active Counters', value: summaryStats.activeCounters, icon: <Building2 size={24} />, color: '#10B981' },
-    { label: 'Pending Events', value: summaryStats.pendingEvents, icon: <Calendar size={24} />, color: '#F59E0B' },
+    { label: 'Total Queues', value: summaryStats.totalQueues, icon: <ClipboardList size={24} />, color: 'var(--color-primary)' },
+    { label: 'Active Counters', value: summaryStats.activeCounters, icon: <Building2 size={24} />, color: 'var(--color-green-light)' },
+    { label: 'Pending Events', value: summaryStats.pendingEvents, icon: <Calendar size={24} />, color: 'var(--color-yellow)' },
     { label: 'Total Customers', value: summaryStats.totalCustomers, icon: <Users size={24} />, color: '#8B5CF6' },
     { label: 'Avg Wait Time', value: `${summaryStats.averageWaitTime} min`, icon: <Clock size={24} />, color: '#EF4444' }
   ];
@@ -100,14 +100,14 @@ const AdminDashboard = ({ onNavigate, goBack, currentPage }) => {
             <h3 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Brain size={20} color="#8B5CF6" /> ML Predictions Preview
             </h3>
-            <div style={{ marginBottom: '1rem', fontSize: '0.875rem', color: '#6B7280' }}>
+            <div style={{ marginBottom: '1rem', fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>
               Next Peak Time: <strong>{mlPredictions.peakTimes[0].hour}</strong> ({mlPredictions.peakTimes[0].prediction})
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {mlPredictions.peakTimes.slice(0, 3).map((item, index) => (
                 <div key={index} style={{
                   padding: '0.75rem',
-                  backgroundColor: '#F3F4F6',
+                  backgroundColor: 'var(--color-gray-50)',
                   borderRadius: '8px',
                   display: 'flex',
                   justifyContent: 'space-between',
@@ -115,7 +115,7 @@ const AdminDashboard = ({ onNavigate, goBack, currentPage }) => {
                 }}>
                   <div>
                     <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>{item.hour}</div>
-                    <div style={{ fontSize: '0.875rem', color: '#6B7280' }}>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>
                       {item.customers} customers predicted
                     </div>
                   </div>
@@ -124,8 +124,8 @@ const AdminDashboard = ({ onNavigate, goBack, currentPage }) => {
                     borderRadius: '4px',
                     fontSize: '0.75rem',
                     fontWeight: 600,
-                    backgroundColor: item.prediction === 'High' ? '#FEE2E2' : item.prediction === 'Medium' ? '#FEF3C7' : '#D1FAE5',
-                    color: item.prediction === 'High' ? '#991B1B' : item.prediction === 'Medium' ? '#92400E' : '#065F46'
+                    backgroundColor: item.prediction === 'High' ? '#FEE2E2' : item.prediction === 'Medium' ? 'var(--color-yellow-bg)' : 'var(--color-green-bg)',
+                    color: item.prediction === 'High' ? '#991B1B' : item.prediction === 'Medium' ? 'var(--color-yellow)' : 'var(--color-green)'
                   }}>
                     {item.prediction}
                   </div>
@@ -144,17 +144,17 @@ const AdminDashboard = ({ onNavigate, goBack, currentPage }) => {
           <div className="card">
             <h3 style={{ marginBottom: '1rem' }}>Recent Activity</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ padding: '0.75rem', backgroundColor: '#F3F4F6', borderRadius: '8px' }}>
+              <div style={{ padding: '0.75rem', backgroundColor: 'var(--color-gray-50)', borderRadius: '8px' }}>
                 <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>New event scheduled</div>
-                <div style={{ fontSize: '0.875rem', color: '#6B7280' }}>General Health Checkup - 2 hours ago</div>
+                <div style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>General Health Checkup - 2 hours ago</div>
               </div>
-              <div style={{ padding: '0.75rem', backgroundColor: '#F3F4F6', borderRadius: '8px' }}>
+              <div style={{ padding: '0.75rem', backgroundColor: 'var(--color-gray-50)', borderRadius: '8px' }}>
                 <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>Queue updated</div>
-                <div style={{ fontSize: '0.875rem', color: '#6B7280' }}>5 customers joined queue - 3 hours ago</div>
+                <div style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>5 customers joined queue - 3 hours ago</div>
               </div>
-              <div style={{ padding: '0.75rem', backgroundColor: '#F3F4F6', borderRadius: '8px' }}>
+              <div style={{ padding: '0.75rem', backgroundColor: 'var(--color-gray-50)', borderRadius: '8px' }}>
                 <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>Counter activated</div>
-                <div style={{ fontSize: '0.875rem', color: '#6B7280' }}>Counter 3 is now active - 4 hours ago</div>
+                <div style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>Counter 3 is now active - 4 hours ago</div>
               </div>
             </div>
           </div>

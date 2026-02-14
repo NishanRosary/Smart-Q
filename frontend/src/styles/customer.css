@@ -2,7 +2,7 @@
 
 .customer-header {
   background-color: var(--color-white);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
   padding: var(--spacing-md) var(--spacing-xl);
   position: sticky;
   top: 0;
@@ -22,18 +22,18 @@
   font-size: 16px;
   border-radius: 12px;
   font-weight: 600;
-  border: 2px solid rgb(11, 61, 122);
+  border: 2px solid var(--color-primary-dark);
   background: transparent;
-  color: rgb(11, 61, 122);
+  color: var(--color-primary-dark);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .nav-button:hover {
-  background: rgb(11, 61, 122);
-  color: #ffffff;
+  background: var(--color-primary-dark);
+  color: var(--color-white);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(11, 61, 122, 0.3);
+  box-shadow: var(--shadow-md);
 }
 
 .logo {
@@ -48,7 +48,7 @@
 }
 
 .hero-section {
-  background: rgb(11, 61, 122);
+  background: var(--color-primary-dark);
   color: var(--color-white);
   min-height: 90vh;
   padding: 100px 20px;
@@ -97,8 +97,8 @@
 }
 
 .hero-button-primary {
-  background: #ffffff;
-  color: #1e40af;
+  background: var(--color-white);
+  color: var(--color-primary);
 }
 
 .hero-button-primary:hover {
@@ -133,17 +133,17 @@
     gap: 4rem;
     padding: 80px 40px;
   }
-  
+
   .hero-content {
     flex: 1;
     text-align: left;
     max-width: 600px;
   }
-  
+
   .hero-buttons {
     justify-content: flex-start;
   }
-  
+
   .hero-image-wrapper {
     flex: 1;
     max-width: 600px;
@@ -156,15 +156,15 @@
     min-height: 100vh;
     padding: 60px 20px;
   }
-  
+
   .hero-title {
     font-size: 2rem;
   }
-  
+
   .hero-subtitle {
     font-size: 16px;
   }
-  
+
   .hero-image-wrapper {
     max-width: 100%;
   }
@@ -189,9 +189,9 @@
   align-items: center;
   gap: 1rem;
   padding: 1.5rem;
-  background: linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 100%);
+  background: linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-white) 100%);
   border-radius: 12px;
-  border: 1px solid #E2E8F0;
+  border: 1px solid var(--color-gray-200);
   transition: all 0.2s ease;
 }
 
@@ -422,7 +422,7 @@
 }
 
 .token-card {
-  background: linear-gradient(135deg, var(--color-green) 0%, #059669 100%);
+  background: linear-gradient(135deg, var(--color-green) 0%, var(--palette-green-600) 100%);
   color: var(--color-white);
   border-radius: var(--radius-lg);
   padding: var(--spacing-2xl);
@@ -472,3 +472,44 @@
   color: var(--color-gray-700);
 }
 
+/* Landing Page Footer - Specific Theme Logic */
+.landing-footer {
+  padding: 3rem 2rem;
+  margin-top: 4rem;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  background-color: var(--color-primary-dark);
+  /* Dynamically matches Hero Section Blue */
+}
+
+/* LIGHT MODE: White Text */
+:root:not([data-theme='dark']) .landing-footer {
+  color: #FFFFFF;
+}
+
+:root:not([data-theme='dark']) .landing-footer h3 {
+  color: #FFFFFF;
+}
+
+:root:not([data-theme='dark']) .landing-footer p,
+:root:not([data-theme='dark']) .landing-footer a,
+:root:not([data-theme='dark']) .landing-footer li {
+  color: #E2E8F0;
+}
+
+/* DARK MODE: Black Text */
+[data-theme='dark'] .landing-footer {
+  color: #000000;
+}
+
+[data-theme='dark'] .landing-footer h3 {
+  color: #000000;
+  font-weight: 700;
+}
+
+[data-theme='dark'] .landing-footer p,
+[data-theme='dark'] .landing-footer a,
+[data-theme='dark'] .landing-footer li {
+  color: #000000;
+  /* Black text on Blue background as requested */
+}

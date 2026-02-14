@@ -28,6 +28,10 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
 
   const events = getEvents();
 
+  const availableServices = selectedEvent?.serviceTypes && selectedEvent.serviceTypes.length > 0
+    ? selectedEvent.serviceTypes
+    : services;
+
   useEffect(() => {
     if (eventData && eventData.event) {
       setSelectedEvent(eventData.event);
@@ -120,7 +124,7 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
         left: '0',
         right: '0',
         height: '2px',
-        background: '#E2E8F0',
+        background: 'var(--color-gray-200)',
         zIndex: 0,
         transform: 'translateY(-50%)'
       }}></div>
@@ -130,7 +134,7 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
         left: '0',
         width: `${((step - 1) / 3) * 100}%`,
         height: '2px',
-        background: '#3B82F6',
+        background: 'var(--color-primary)',
         zIndex: 0,
         transform: 'translateY(-50%)',
         transition: 'width 0.3s ease'
@@ -138,9 +142,9 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
       {[1, 2, 3, 4].map((s) => (
         <div key={s} style={{
           zIndex: 1,
-          background: step >= s ? '#3B82F6' : '#FFFFFF',
-          color: step >= s ? '#FFFFFF' : '#94A3B8',
-          border: `2px solid ${step >= s ? '#3B82F6' : '#E2E8F0'}`,
+          background: step >= s ? 'var(--color-primary)' : 'var(--color-white)',
+          color: step >= s ? 'var(--color-white)' : 'var(--color-gray-400)',
+          border: `2px solid ${step >= s ? 'var(--color-primary)' : 'var(--color-gray-200)'}`,
           width: '40px',
           height: '40px',
           borderRadius: '50%',
@@ -170,25 +174,25 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
           {step === 3 && (
             <div className="card">
               <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0F172A', marginBottom: '0.5rem' }}>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--color-gray-900)', marginBottom: '0.5rem' }}>
                   Select Service
                 </h2>
-                <p style={{ color: '#64748B' }}>
+                <p style={{ color: 'var(--color-gray-500)' }}>
                   For {selectedEvent?.title}
                 </p>
               </div>
 
               <form onSubmit={handleServiceSubmit}>
                 <div className="form-group" style={{ marginBottom: '2rem' }}>
-                  {services.map((service, index) => (
+                  {availableServices.map((service, index) => (
                     <div
                       key={index}
                       onClick={() => setSelectedService(service)}
                       style={{
                         padding: '1rem',
                         borderRadius: '8px',
-                        border: selectedService === service ? '2px solid #3B82F6' : '1px solid #E2E8F0',
-                        background: selectedService === service ? '#EFF6FF' : '#FFFFFF',
+                        border: selectedService === service ? '2px solid var(--color-primary)' : '1px solid var(--color-gray-200)',
+                        background: selectedService === service ? 'var(--color-primary-bg)' : 'var(--color-white)',
                         marginBottom: '0.75rem',
                         cursor: 'pointer',
                         display: 'flex',
@@ -197,8 +201,8 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
                         transition: 'all 0.2s ease'
                       }}
                     >
-                      <span style={{ fontWeight: 500, color: selectedService === service ? '#1E40AF' : '#334155' }}>{service}</span>
-                      {selectedService === service && <CheckCircle size={20} color="#3B82F6" />}
+                      <span style={{ fontWeight: 500, color: selectedService === service ? 'var(--color-primary)' : 'var(--color-gray-700)' }}>{service}</span>
+                      {selectedService === service && <CheckCircle size={20} color="var(--color-primary)" />}
                     </div>
                   ))}
                 </div>
@@ -211,11 +215,12 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
                       flex: 1,
                       padding: '0.75rem',
                       borderRadius: '8px',
-                      border: '1px solid #E2E8F0',
-                      background: 'white',
-                      color: '#64748B',
+                      border: '1px solid var(--color-gray-200)',
                       cursor: 'pointer',
-                      fontWeight: 500
+                      fontWeight: 500,
+                      backgroundColor: 'var(--color-white)',
+                      color: 'var(--color-gray-700)',
+                      boxShadow: 'var(--shadow-sm)'
                     }}>
                     Cancel
                   </button>
@@ -270,13 +275,13 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
         <div className="join-queue-container" style={{ maxWidth: '1000px', padding: '2rem 1rem' }}>
 
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <h1 style={{ fontSize: '2rem', color: '#0F172A', fontWeight: 800 }}>
+            <h1 style={{ fontSize: '2rem', color: 'var(--color-gray-900)', fontWeight: 800 }}>
               {step === 1 ? 'Select an Event' :
                 step === 2 ? 'Guest Details' :
                   step === 3 ? 'Select Service' :
                     'Queue Status'}
             </h1>
-            <p style={{ color: '#64748B', marginTop: '0.5rem' }}>
+            <p style={{ color: 'var(--color-gray-500)', marginTop: '0.5rem' }}>
               {step === 1 ? 'Choose an upcoming event to join' :
                 step === 2 ? 'Please provide your contact information' :
                   step === 3 ? 'Choose the service you need' :
@@ -290,10 +295,12 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
           {step === 1 && (
             <div className="events-grid">
               {events.map(event => (
-                <div key={event.id} className="event-card" style={{ cursor: 'pointer', border: selectedEvent?.id === event.id ? '2px solid #3B82F6' : 'transparent' }} onClick={() => handleEventSelect(event)}>
+                <div key={event.id} className="event-card" style={{ cursor: 'pointer', border: selectedEvent?.id === event.id ? '2px solid var(--color-primary)' : 'transparent' }} onClick={() => handleEventSelect(event)}>
                   <div className="event-header">
                     <span className="event-organization" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Building2 size={16} /> {event.organizationType}
+                      <Building2 size={16} />
+                      <span style={{ fontWeight: 700 }}>{event.organizationName}</span>
+                      <span style={{ fontSize: '0.8rem', opacity: 0.8 }}>({event.organizationType})</span>
                     </span>
                     {getCrowdLevelBadge(event.crowdLevel)}
                   </div>
@@ -323,16 +330,16 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
           {/* Step 2: Guest Details */}
           {step === 2 && selectedEvent && (
             <div className="card" style={{ maxWidth: '500px', margin: '0 auto', padding: '2rem' }}>
-              <div style={{ marginBottom: '2rem', padding: '1rem', background: '#F8FAFC', borderRadius: '8px', borderLeft: '4px solid #3B82F6' }}>
-                <div style={{ fontSize: '0.875rem', color: '#64748B' }}>Joining Event</div>
-                <div style={{ fontWeight: 600, color: '#0F172A' }}>{selectedEvent.title}</div>
+              <div style={{ marginBottom: '2rem', padding: '1rem', background: 'var(--color-gray-50)', borderRadius: '8px', borderLeft: '4px solid var(--color-primary)' }}>
+                <div style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>Joining Event</div>
+                <div style={{ fontWeight: 600, color: 'var(--color-gray-900)' }}>{selectedEvent.title}</div>
               </div>
 
               <form onSubmit={handleGuestSubmit}>
                 <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#334155' }}>Full Name</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: 'var(--color-gray-700)' }}>Full Name</label>
                   <div style={{ position: 'relative' }}>
-                    <User size={20} style={{ position: 'absolute', left: '12px', top: '12px', color: '#94A3B8' }} />
+                    <User size={20} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--color-gray-400)' }} />
                     <input
                       type="text"
                       required
@@ -340,7 +347,7 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
                         width: '100%',
                         padding: '10px 10px 10px 40px',
                         borderRadius: '8px',
-                        border: '1px solid #E2E8F0',
+                        border: '1px solid var(--color-gray-200)',
                         fontSize: '1rem'
                       }}
                       placeholder="Enter your name"
@@ -351,9 +358,9 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
                 </div>
 
                 <div className="form-group" style={{ marginBottom: '2rem' }}>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#334155' }}>Mobile Number</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: 'var(--color-gray-700)' }}>Mobile Number</label>
                   <div style={{ position: 'relative' }}>
-                    <Phone size={20} style={{ position: 'absolute', left: '12px', top: '12px', color: '#94A3B8' }} />
+                    <Phone size={20} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--color-gray-400)' }} />
                     <input
                       type="tel"
                       required
@@ -361,7 +368,7 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
                         width: '100%',
                         padding: '10px 10px 10px 40px',
                         borderRadius: '8px',
-                        border: '1px solid #E2E8F0',
+                        border: '1px solid var(--color-gray-200)',
                         fontSize: '1rem'
                       }}
                       placeholder="Enter mobile number"
@@ -369,7 +376,7 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
                       onChange={(e) => setGuestDetails({ ...guestDetails, mobile: e.target.value })}
                     />
                   </div>
-                  <div style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: '#64748B' }}>
+                  <div style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>
                     * OTP verification is optional for guests
                   </div>
                 </div>
@@ -386,7 +393,7 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
                     width: '100%',
                     background: 'transparent',
                     border: 'none',
-                    color: '#64748B',
+                    color: 'var(--color-gray-500)',
                     cursor: 'pointer'
                   }}>
                   Back to Events
@@ -398,19 +405,19 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
           {/* Step 3: Service Selection */}
           {step === 3 && (
             <div className="card" style={{ maxWidth: '500px', margin: '0 auto', padding: '2rem' }}>
-              <h3 style={{ marginBottom: '1.5rem', color: '#0F172A' }}>Select Service</h3>
+              <h3 style={{ marginBottom: '1.5rem', color: 'var(--color-gray-900)' }}>Select Service</h3>
 
               <form onSubmit={handleServiceSubmit}>
                 <div className="form-group" style={{ marginBottom: '2rem' }}>
-                  {services.map((service, index) => (
+                  {availableServices.map((service, index) => (
                     <div
                       key={index}
                       onClick={() => setSelectedService(service)}
                       style={{
                         padding: '1rem',
                         borderRadius: '8px',
-                        border: selectedService === service ? '2px solid #3B82F6' : '1px solid #E2E8F0',
-                        background: selectedService === service ? '#EFF6FF' : '#FFFFFF',
+                        border: selectedService === service ? '2px solid var(--color-primary)' : '1px solid var(--color-gray-200)',
+                        background: selectedService === service ? 'var(--color-primary-bg)' : 'var(--color-white)',
                         marginBottom: '0.75rem',
                         cursor: 'pointer',
                         display: 'flex',
@@ -419,8 +426,8 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
                         transition: 'all 0.2s ease'
                       }}
                     >
-                      <span style={{ fontWeight: 500, color: selectedService === service ? '#1E40AF' : '#334155' }}>{service}</span>
-                      {selectedService === service && <CheckCircle size={20} color="#3B82F6" />}
+                      <span style={{ fontWeight: 500, color: selectedService === service ? 'var(--color-primary)' : 'var(--color-gray-700)' }}>{service}</span>
+                      {selectedService === service && <CheckCircle size={20} color="var(--color-primary)" />}
                     </div>
                   ))}
                 </div>
@@ -448,7 +455,7 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
                     width: '100%',
                     background: 'transparent',
                     border: 'none',
-                    color: '#64748B',
+                    color: 'var(--color-gray-500)',
                     cursor: 'pointer'
                   }}>
                   Back
@@ -487,7 +494,7 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
               <div style={{ textAlign: "center", marginTop: "2rem" }}>
                 <button
                   className="btn-secondary"
-                  style={{ color: '#3B82F6', borderColor: '#3B82F6' }}
+                  style={{ color: 'var(--color-primary)', borderColor: 'var(--color-primary)' }}
                   onClick={resetFlow}
                 >
                   Join Another Queue

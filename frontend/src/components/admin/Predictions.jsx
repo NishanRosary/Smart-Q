@@ -8,13 +8,13 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
   const getPredictionColor = (level) => {
     switch (level) {
       case 'High':
-        return '#EF4444';
+        return 'var(--color-red)';
       case 'Medium':
-        return '#F59E0B';
+        return 'var(--color-yellow)';
       case 'Low':
-        return '#10B981';
+        return 'var(--color-green-light)';
       default:
-        return '#6B7280';
+        return 'var(--color-gray-500)';
     }
   };
 
@@ -33,7 +33,7 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
       <main className="admin-main">
         <div className="admin-header">
           <h1>ML-Powered Predictions</h1>
-          <p style={{ margin: '0.5rem 0 0 0', color: '#6B7280', fontSize: '0.875rem' }}>
+          <p style={{ margin: '0.5rem 0 0 0', color: 'var(--color-gray-500)', fontSize: '0.875rem' }}>
             AI-driven insights powered by machine learning algorithms
           </p>
         </div>
@@ -46,26 +46,26 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
           marginBottom: '2rem'
         }}>
           <div className="card">
-            <div style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '0.5rem' }}>Model Accuracy</div>
-            <div style={{ fontSize: '2rem', fontWeight: 700, color: '#10B981' }}>
+            <div style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)', marginBottom: '0.5rem' }}>Model Accuracy</div>
+            <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--color-green-light)' }}>
               {mlPredictions.mlModelStats.modelAccuracy}%
             </div>
           </div>
           <div className="card">
-            <div style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '0.5rem' }}>Predictions Today</div>
-            <div style={{ fontSize: '2rem', fontWeight: 700, color: '#3B82F6' }}>
+            <div style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)', marginBottom: '0.5rem' }}>Predictions Today</div>
+            <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--color-primary)' }}>
               {mlPredictions.mlModelStats.predictionsToday}
             </div>
           </div>
           <div className="card">
-            <div style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '0.5rem' }}>Avg Accuracy</div>
+            <div style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)', marginBottom: '0.5rem' }}>Avg Accuracy</div>
             <div style={{ fontSize: '2rem', fontWeight: 700, color: '#8B5CF6' }}>
               {mlPredictions.mlModelStats.avgAccuracy}%
             </div>
           </div>
           <div className="card">
-            <div style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '0.5rem' }}>Last Updated</div>
-            <div style={{ fontSize: '1.25rem', fontWeight: 600, color: '#1F2937' }}>
+            <div style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)', marginBottom: '0.5rem' }}>Last Updated</div>
+            <div style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--color-gray-900)' }}>
               {mlPredictions.mlModelStats.lastUpdated}
             </div>
           </div>
@@ -82,7 +82,7 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
             <h3 className="analytics-title">
               🔮 Peak Time Predictions (ML)
             </h3>
-            <div style={{ marginBottom: '1rem', fontSize: '0.875rem', color: '#6B7280' }}>
+            <div style={{ marginBottom: '1rem', fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>
               Predicted using historical data and ML algorithms
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -92,7 +92,7 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
                 return (
                   <div key={index} style={{
                     padding: '1rem',
-                    backgroundColor: '#F9FAFB',
+                    backgroundColor: 'var(--color-gray-50)',
                     borderRadius: '8px',
                     border: `2px solid ${getPredictionColor(item.prediction)}40`
                   }}>
@@ -102,14 +102,14 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
                         <span style={{ marginLeft: '0.5rem' }}>{getPredictionBadge(item.prediction)}</span>
                       </div>
                       <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontWeight: 600, color: '#1F2937' }}>{item.customers} customers</div>
-                        <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>{item.confidence}% confidence</div>
+                        <div style={{ fontWeight: 600, color: 'var(--color-gray-900)' }}>{item.customers} customers</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--color-gray-500)' }}>{item.confidence}% confidence</div>
                       </div>
                     </div>
                     <div style={{
                       width: '100%',
                       height: '8px',
-                      backgroundColor: '#E5E7EB',
+                      backgroundColor: 'var(--color-gray-200)',
                       borderRadius: '4px',
                       overflow: 'hidden',
                       marginTop: '0.5rem'
@@ -132,33 +132,33 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
             <h3 className="analytics-title">
               ⏱️ Wait Time Predictions (ML)
             </h3>
-            <div style={{ marginBottom: '1rem', fontSize: '0.875rem', color: '#6B7280' }}>
+            <div style={{ marginBottom: '1rem', fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>
               AI-predicted wait times with accuracy metrics
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {mlPredictions.waitTimePredictions.map((item, index) => (
                 <div key={index} style={{
                   padding: '1.5rem',
-                  backgroundColor: '#F9FAFB',
+                  backgroundColor: 'var(--color-gray-50)',
                   borderRadius: '8px',
-                  border: '1px solid #E5E7EB'
+                  border: '1px solid var(--color-gray-200)'
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                       <div style={{ fontWeight: 600, fontSize: '1.125rem', marginBottom: '0.25rem' }}>
                         {item.time}
                       </div>
-                      <div style={{ fontSize: '0.875rem', color: '#6B7280' }}>
+                      <div style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>
                         Predicted: {item.predictedWait} min
                         {item.actualWait && ` | Actual: ${item.actualWait} min`}
                       </div>
                     </div>
                     <div style={{
                       padding: '0.5rem 1rem',
-                      backgroundColor: item.accuracy >= 90 ? '#D1FAE5' : item.accuracy >= 80 ? '#FEF3C7' : '#FEE2E2',
+                      backgroundColor: item.accuracy >= 90 ? 'var(--color-green-bg)' : item.accuracy >= 80 ? 'var(--color-yellow-bg)' : 'var(--color-red-bg)',
                       borderRadius: '6px',
                       fontWeight: 600,
-                      color: item.accuracy >= 90 ? '#065F46' : item.accuracy >= 80 ? '#92400E' : '#991B1B'
+                      color: item.accuracy >= 90 ? 'var(--color-green)' : item.accuracy >= 80 ? 'var(--color-yellow)' : 'var(--color-red)'
                     }}>
                       {item.accuracy}%
                     </div>
@@ -174,7 +174,7 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
           <h3 className="analytics-title">
             📊 Crowd Level Forecast (ML)
           </h3>
-          <div style={{ marginBottom: '1rem', fontSize: '0.875rem', color: '#6B7280' }}>
+          <div style={{ marginBottom: '1rem', fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>
             7-day forecast using machine learning models
           </div>
           <div style={{
@@ -188,7 +188,7 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
                 padding: '1.5rem',
                 border: `2px solid ${getPredictionColor(item.level)}40`
               }}>
-                <div style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '0.5rem' }}>
+                <div style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)', marginBottom: '0.5rem' }}>
                   {item.date}
                 </div>
                 <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>
@@ -199,7 +199,7 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
                 </div>
                 <div style={{
                   fontSize: '0.875rem',
-                  color: '#6B7280',
+                  color: 'var(--color-gray-500)',
                   marginTop: '0.5rem'
                 }}>
                   {item.probability}% probability
@@ -211,11 +211,11 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
 
         {/* ML Model Info */}
         <div className="card" style={{
-          backgroundColor: '#F0F9FF',
-          border: '1px solid #3B82F6',
+          backgroundColor: 'var(--color-primary-bg)',
+          border: '1px solid var(--color-primary)',
           padding: '1.5rem'
         }}>
-          <h3 style={{ marginBottom: '1rem', color: '#1F2937' }}>🤖 Machine Learning Model Information</h3>
+          <h3 style={{ marginBottom: '1rem', color: 'var(--color-gray-900)' }}>🤖 Machine Learning Model Information</h3>
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',

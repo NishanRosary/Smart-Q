@@ -6,52 +6,62 @@ let events = [
   {
     id: 1,
     organizationType: 'Hospital',
+    organizationName: 'City General Hospital',
     title: 'General Health Checkup',
     date: '2024-02-15',
     time: '09:00',
     location: 'City General Hospital, Building A',
     status: 'Upcoming',
-    crowdLevel: 'Medium'
+    crowdLevel: 'Medium',
+    serviceTypes: ['General Checkup', 'Specialist Consultation', 'Vitals Check']
   },
   {
     id: 2,
     organizationType: 'Bank',
+    organizationName: 'National Bank',
     title: 'Account Opening Session',
     date: '2024-02-16',
     time: '10:30',
     location: 'Main Street Branch',
     status: 'Upcoming',
-    crowdLevel: 'High'
+    crowdLevel: 'High',
+    serviceTypes: ['Savings Account', 'Current Account', 'Loan Inquiry']
   },
   {
     id: 3,
     organizationType: 'Interview',
+    organizationName: 'Tech Corp',
     title: 'Software Developer Interview',
     date: '2024-02-14',
     time: '14:00',
     location: 'Tech Corp Office, Floor 5',
     status: 'Ongoing',
-    crowdLevel: 'Low'
+    crowdLevel: 'Low',
+    serviceTypes: ['Technical Round', 'HR Round', 'Managerial Round']
   },
   {
     id: 4,
     organizationType: 'Government Office',
+    organizationName: 'Regional Passport Office',
     title: 'Passport Application',
     date: '2024-02-17',
     time: '11:00',
     location: 'Regional Passport Office',
     status: 'Upcoming',
-    crowdLevel: 'High'
+    crowdLevel: 'High',
+    serviceTypes: ['New Passport', 'Renewal', 'Correction']
   },
   {
     id: 5,
     organizationType: 'Exam',
+    organizationName: 'Metro University',
     title: 'Entrance Examination',
     date: '2024-02-13',
     time: '08:00',
     location: 'University Campus, Hall A',
     status: 'Completed',
-    crowdLevel: 'Low'
+    crowdLevel: 'Low',
+    serviceTypes: ['Paper 1', 'Paper 2']
   }
 ];
 
@@ -152,7 +162,7 @@ export const analyticsData = {
   ]
 };
 
-// Services list
+// Services list (Legacy - kept for backward compatibility if needed, but prefer event-specific services)
 export const services = [
   'General Checkup',
   'Consultation',
@@ -189,6 +199,7 @@ export const addEvent = (eventData) => {
     ...eventData,
     status: 'Upcoming',
     crowdLevel: 'Medium'
+    // serviceTypes is now expected to be part of eventData
   };
   events.push(newEvent);
   return newEvent;

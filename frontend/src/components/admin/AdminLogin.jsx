@@ -32,7 +32,7 @@ const AdminLogin = ({ onNavigate, goBack, currentPage }) => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'linear-gradient(135deg, #f7f7f7ff 0%, #e8e9eeff 100%)',
+      background: 'linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%)',
       padding: '2rem'
     }}>
       <div className="card" style={{
@@ -45,13 +45,13 @@ const AdminLogin = ({ onNavigate, goBack, currentPage }) => {
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <h2 style={{
             fontSize: '1.75rem',
-            color: '#0F172A',
+            color: 'var(--color-gray-900)',
             marginBottom: '0.5rem',
             fontWeight: 800
           }}>
             {isSignUp ? 'New Admin Registration' : 'Admin Portal'}
           </h2>
-          <p style={{ color: '#64748B', fontSize: '0.9375rem' }}>
+          <p style={{ color: 'var(--color-gray-500)', fontSize: '0.9375rem' }}>
             {isSignUp ? 'Create new administrative access' : 'Restricted access for authorized personnel'}
           </p>
         </div>
@@ -59,7 +59,7 @@ const AdminLogin = ({ onNavigate, goBack, currentPage }) => {
         {/* Sign In / Register Switch */}
         <div style={{
           display: 'flex',
-          borderBottom: '2px solid #E2E8F0',
+          borderBottom: '2px solid var(--color-gray-200)',
           marginBottom: '2rem'
         }}>
           <button
@@ -69,9 +69,9 @@ const AdminLogin = ({ onNavigate, goBack, currentPage }) => {
               padding: '1rem',
               background: 'none',
               border: 'none',
-              borderBottom: !isSignUp ? '2px solid #1E40AF' : 'none',
+              borderBottom: !isSignUp ? '2px solid var(--color-primary)' : 'none',
               marginBottom: '-2px',
-              color: !isSignUp ? '#1E40AF' : '#64748B',
+              color: !isSignUp ? 'var(--color-primary)' : 'var(--color-gray-500)',
               fontWeight: 600,
               cursor: 'pointer'
             }}
@@ -85,9 +85,9 @@ const AdminLogin = ({ onNavigate, goBack, currentPage }) => {
               padding: '1rem',
               background: 'none',
               border: 'none',
-              borderBottom: isSignUp ? '2px solid #1E40AF' : 'none',
+              borderBottom: isSignUp ? '2px solid var(--color-primary)' : 'none',
               marginBottom: '-2px',
-              color: isSignUp ? '#1E40AF' : '#64748B',
+              color: isSignUp ? 'var(--color-primary)' : 'var(--color-gray-500)',
               fontWeight: 600,
               cursor: 'pointer'
             }}
@@ -98,7 +98,7 @@ const AdminLogin = ({ onNavigate, goBack, currentPage }) => {
 
         <form onSubmit={handleLogin}>
           <div className="form-group">
-            <label htmlFor="username" style={{ color: '#334155' }}>Username</label>
+            <label htmlFor="username" style={{ color: 'var(--color-gray-700)' }}>Username</label>
             <input
               type="text"
               id="username"
@@ -106,7 +106,7 @@ const AdminLogin = ({ onNavigate, goBack, currentPage }) => {
               value={formData.username}
               onChange={handleInputChange}
               placeholder="Enter Username"
-              style={{ background: '#F8FAFC' }}
+              style={{ background: 'var(--color-gray-50)' }}
               required
             />
           </div>
@@ -114,7 +114,7 @@ const AdminLogin = ({ onNavigate, goBack, currentPage }) => {
           {isSignUp && (
             <>
               <div className="form-group">
-                <label htmlFor="email" style={{ color: '#334155' }}>Email</label>
+                <label htmlFor="email" style={{ color: 'var(--color-gray-700)' }}>Email</label>
                 <input
                   type="email"
                   id="email"
@@ -122,12 +122,12 @@ const AdminLogin = ({ onNavigate, goBack, currentPage }) => {
                   value={formData.email || ''} // Handle undefined since we didn't init
                   onChange={handleInputChange}
                   placeholder="Enter Email"
-                  style={{ background: '#F8FAFC' }}
+                  style={{ background: 'var(--color-gray-50)' }}
                   required
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="mobile" style={{ color: '#334155' }}>Mobile</label>
+                <label htmlFor="mobile" style={{ color: 'var(--color-gray-700)' }}>Mobile</label>
                 <input
                   type="tel"
                   id="mobile"
@@ -135,7 +135,7 @@ const AdminLogin = ({ onNavigate, goBack, currentPage }) => {
                   value={formData.mobile || ''}
                   onChange={handleInputChange}
                   placeholder="Enter Mobile Number"
-                  style={{ background: '#F8FAFC' }}
+                  style={{ background: 'var(--color-gray-50)' }}
                   required
                 />
               </div>
@@ -143,7 +143,7 @@ const AdminLogin = ({ onNavigate, goBack, currentPage }) => {
           )}
 
           <div className="form-group">
-            <label htmlFor="password" style={{ color: '#334155' }}>Password</label>
+            <label htmlFor="password" style={{ color: 'var(--color-gray-700)' }}>Password</label>
             <input
               type="password"
               id="password"
@@ -151,7 +151,7 @@ const AdminLogin = ({ onNavigate, goBack, currentPage }) => {
               value={formData.password}
               onChange={handleInputChange}
               placeholder="Enter Password"
-              style={{ background: '#F8FAFC' }}
+              style={{ background: 'var(--color-gray-50)' }}
               required
             />
           </div>
@@ -163,7 +163,7 @@ const AdminLogin = ({ onNavigate, goBack, currentPage }) => {
               width: '100%',
               marginTop: '1rem',
               padding: '0.875rem',
-              backgroundColor: '#1E40AF',
+              backgroundColor: 'var(--color-primary)',
               fontSize: '1rem'
             }}
           >
@@ -171,21 +171,21 @@ const AdminLogin = ({ onNavigate, goBack, currentPage }) => {
           </button>
         </form>
 
-        <div style={{ textAlign: 'center', marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid #E2E8F0' }}>
+        <div style={{ textAlign: 'center', marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid var(--color-gray-200)' }}>
           <a href="#" onClick={(e) => {
             e.preventDefault();
             onNavigate('landing');
           }} style={{
             fontSize: '0.875rem',
-            color: '#64748B',
+            color: 'var(--color-gray-500)',
             textDecoration: 'none',
             display: 'inline-flex',
             alignItems: 'center',
             gap: '0.5rem',
             transition: 'color 0.2s'
           }}
-            onMouseOver={(e) => e.target.style.color = '#1E40AF'}
-            onMouseOut={(e) => /**/ e.target.style.color = '#64748B'}
+            onMouseOver={(e) => e.target.style.color = 'var(--color-primary)'}
+            onMouseOut={(e) => /**/ e.target.style.color = 'var(--color-gray-500)'}
           >
             <ArrowLeft size={16} /> Return to Public Site
           </a>
@@ -195,7 +195,7 @@ const AdminLogin = ({ onNavigate, goBack, currentPage }) => {
       <div style={{
         position: 'absolute',
         bottom: '1rem',
-        color: '#64748B',
+        color: 'var(--color-gray-500)',
         fontSize: '0.75rem'
       }}>
         Authorized Access Only • Smart'Q System v1.0
