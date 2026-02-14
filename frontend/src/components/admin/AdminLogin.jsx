@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import "../../styles/admin.css";
 import "../../styles/global.css";
-import { loginAdmin, setAuthToken } from "../services/api";
+import { loginAdmin, setAuthToken } from "../../services/api";
 
 const AdminLogin = ({ onNavigate }) => {
   const [formData, setFormData] = useState({
