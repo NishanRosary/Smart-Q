@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../shared/Header';
 import '../../styles/customer.css';
 import {
@@ -37,6 +37,35 @@ import {
 
 const LandingPage = ({ onNavigate, goBack, currentPage }) => {
   const [openFaq, setOpenFaq] = useState(null);
+  const [theme, setTheme] = useState('light');
+
+  useEffect(() => {
+    // Get initial theme
+    const initialTheme = localStorage.getItem('smartq-theme') || 'light';
+    setTheme(initialTheme);
+
+    // Listen for theme changes
+    const handleThemeChange = () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+      setTheme(currentTheme);
+    };
+
+    // Check theme changes on storage event (for other tabs)
+    window.addEventListener('storage', () => {
+      const savedTheme = localStorage.getItem('smartq-theme') || 'light';
+      setTheme(savedTheme);
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    });
+
+    // Use a MutationObserver to detect theme attribute changes
+    const observer = new MutationObserver(handleThemeChange);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('storage', handleThemeChange);
+    };
+  }, []);
 
   const toggleFaq = (index) => {
     setOpenFaq(openFaq === index ? null : index);
@@ -123,7 +152,7 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
             boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)'
           }}>
             <img
-              src="/smartq-logo.jpg"
+              src={theme === 'dark' ? "/Smart'Q dark theme.jpg" : "/smartq-logo.jpg"}
               alt="Smart'Q Logo"
               style={{
                 width: '100%',
