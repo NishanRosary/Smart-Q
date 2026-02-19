@@ -8,11 +8,10 @@ const connectDB = require("./config/db");
 const queueRoutes = require("./routes/queueRoutes");
 const eventRoutes = require("./routes/eventRoutes");
 const mlRoutes = require("./routes/mlRoutes");
+const otpRoutes = require("./routes/otpRoutes");
+
 const authRoutes = require("./routes/authRoutes");
 const { sendQueueRegistrationEmail } = require("./services/emailService");
-
-const otpRoutes = require("./routes/otpRoutes");
-app.use("/api/otp", otpRoutes);
 
 const app = express();
 const server = http.createServer(app);
@@ -40,6 +39,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/queue", queueRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/ml", mlRoutes);
+app.use("/api/otp", otpRoutes);
+
 
 
 const { authMiddleware } = require("./middleware/auth");
