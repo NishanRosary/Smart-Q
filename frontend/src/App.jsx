@@ -17,6 +17,7 @@ import QueueManagement from "./components/admin/QueueManagement";
 import CounterManagement from "./components/admin/CounterManagement";
 import Analytics from "./components/admin/Analytics";
 import Predictions from "./components/admin/Predictions";
+import AdminSettings from "./components/admin/AdminSettings";
 
 function App() {
   const [currentPage, setCurrentPage] = useState("landing");
@@ -96,6 +97,9 @@ function App() {
 
       case "predictions":
         return <Predictions onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
+
+      case "settings":
+        return <AdminSettings onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
 
       default:
         return <LandingPage onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;

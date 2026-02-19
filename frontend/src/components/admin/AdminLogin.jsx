@@ -40,7 +40,8 @@ const AdminLogin = ({ onNavigate }) => {
       onNavigate("admin-dashboard");
     } catch (error) {
       console.error("Login failed:", error);
-      setErrorMessage("Invalid email or password");
+      const msg = error.response?.data?.message || "Login failed. Is the backend running?";
+      setErrorMessage(msg);
     } finally {
       setLoading(false);
     }
