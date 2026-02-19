@@ -513,3 +513,153 @@
   color: #000000;
   /* Black text on Blue background as requested */
 }
+
+/* Customer Login - Premium Scoped Styling */
+.customer-header + div[style*="linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-primary-bg) 100%)"] {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 10% 20%, color-mix(in srgb, var(--color-primary) 18%, transparent) 0%, transparent 42%),
+    radial-gradient(circle at 85% 15%, color-mix(in srgb, var(--color-primary-light) 26%, transparent) 0%, transparent 44%),
+    linear-gradient(135deg, color-mix(in srgb, var(--color-gray-50) 88%, var(--color-primary-bg) 12%) 0%, var(--color-primary-bg) 100%) !important;
+}
+
+.customer-header + div[style*="linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-primary-bg) 100%)"] > .card {
+  border-radius: 24px !important;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 26%, transparent) !important;
+  background: color-mix(in srgb, var(--color-white) 92%, var(--color-primary-bg) 8%) !important;
+  box-shadow:
+    0 30px 70px -34px rgba(15, 23, 42, 0.5),
+    0 18px 34px -28px rgba(37, 99, 235, 0.45) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  position: relative;
+  isolation: isolate;
+}
+
+.customer-header + div[style*="linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-primary-bg) 100%)"] > .card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  padding: 1px;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--color-primary-light) 40%, transparent), transparent 30%, color-mix(in srgb, var(--color-primary) 20%, transparent));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.customer-header + div[style*="linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-primary-bg) 100%)"] .form-group label {
+  color: var(--color-gray-800);
+  font-weight: 700;
+  letter-spacing: 0.015em;
+}
+
+.customer-header + div[style*="linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-primary-bg) 100%)"] input {
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--color-gray-300) 80%, transparent);
+  background: color-mix(in srgb, var(--color-white) 92%, var(--color-primary-bg) 8%);
+}
+
+.customer-header + div[style*="linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-primary-bg) 100%)"] input:focus {
+  border-color: color-mix(in srgb, var(--color-primary) 80%, white);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary-bg) 70%, transparent);
+}
+
+.customer-header + div[style*="linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-primary-bg) 100%)"] .btn-primary {
+  border-radius: 12px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #ffffff !important;
+  border: 1px solid color-mix(in srgb, var(--color-primary-dark) 60%, transparent);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
+  background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-primary) 45%, var(--color-primary-dark) 100%) !important;
+  box-shadow: 0 14px 30px -16px color-mix(in srgb, var(--color-primary) 70%, transparent);
+}
+
+.customer-header + div[style*="linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-primary-bg) 100%)"] .btn-primary:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+}
+
+.customer-header + div[style*="linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-primary-bg) 100%)"] .btn-primary:disabled {
+  color: #dbeafe !important;
+  filter: saturate(0.85);
+  opacity: 0.8;
+}
+
+.customer-header + div[style*="linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-primary-bg) 100%)"] .btn-secondary {
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 25%, var(--color-gray-300)) !important;
+  background: color-mix(in srgb, var(--color-white) 86%, var(--color-primary-bg) 14%);
+}
+
+.customer-header + div[style*="linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-primary-bg) 100%)"] > .card > div:nth-child(2) {
+  border-bottom: 1px solid color-mix(in srgb, var(--color-gray-300) 75%, transparent) !important;
+}
+
+.customer-header + div[style*="linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-primary-bg) 100%)"] > .card > div:nth-child(2) button {
+  border-radius: 10px 10px 0 0;
+  color: var(--color-gray-600) !important;
+}
+
+.customer-header + div[style*="linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-primary-bg) 100%)"] > .card > div:nth-child(2) button:hover {
+  color: var(--color-primary) !important;
+  background: color-mix(in srgb, var(--color-primary-bg) 45%, transparent) !important;
+}
+
+.customer-header + div[style*="linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-primary-bg) 100%)"] > .card > div:nth-child(3) {
+  border: 1px solid color-mix(in srgb, var(--color-gray-300) 65%, transparent);
+  background: color-mix(in srgb, var(--color-gray-100) 80%, transparent) !important;
+  border-radius: 12px !important;
+}
+
+[data-theme='dark'] .customer-header + div[style*="linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-primary-bg) 100%)"] {
+  background:
+    radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.35) 0%, transparent 44%),
+    radial-gradient(circle at 85% 15%, rgba(59, 130, 246, 0.3) 0%, transparent 42%),
+    linear-gradient(145deg, #030712 0%, #0b1220 44%, #111827 100%) !important;
+}
+
+[data-theme='dark'] .customer-header + div[style*="linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-primary-bg) 100%)"] > .card {
+  background: linear-gradient(160deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%) !important;
+  border: 1px solid rgba(148, 163, 184, 0.25) !important;
+  box-shadow:
+    0 26px 60px -30px rgba(0, 0, 0, 0.8),
+    0 14px 28px -22px rgba(59, 130, 246, 0.45) !important;
+}
+
+[data-theme='dark'] .customer-header + div[style*="linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-primary-bg) 100%)"] > .card::before {
+  background: linear-gradient(145deg, rgba(96, 165, 250, 0.5), rgba(56, 189, 248, 0.1) 36%, rgba(59, 130, 246, 0.3));
+}
+
+[data-theme='dark'] .customer-header + div[style*="linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-primary-bg) 100%)"] input {
+  border-color: rgba(148, 163, 184, 0.28);
+  background: rgba(15, 23, 42, 0.6);
+}
+
+[data-theme='dark'] .customer-header + div[style*="linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-primary-bg) 100%)"] .btn-secondary {
+  color: var(--color-gray-700);
+  border-color: rgba(148, 163, 184, 0.35) !important;
+  background: rgba(30, 41, 59, 0.75);
+}
+
+[data-theme='dark'] .customer-header + div[style*="linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-primary-bg) 100%)"] .btn-primary {
+  color: #ffffff !important;
+  border-color: rgba(59, 130, 246, 0.55);
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 48%, #1d4ed8 100%) !important;
+  box-shadow: 0 18px 34px -18px rgba(59, 130, 246, 0.7);
+}
+
+@media (max-width: 640px) {
+  .customer-header + div[style*="linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-primary-bg) 100%)"] {
+    padding: 1rem !important;
+  }
+
+  .customer-header + div[style*="linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-primary-bg) 100%)"] > .card {
+    padding: 1.5rem !important;
+    border-radius: 18px !important;
+  }
+}
