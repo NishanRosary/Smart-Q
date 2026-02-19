@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const Queue = require("../models/queue");
 const { authMiddleware, adminMiddleware } = require("../middleware/auth");
-const { sendQueueRegistrationEmail } = require("../services/emailService");
 
 const AVG_SERVICE_TIME = 4;
 
@@ -26,27 +25,16 @@ const getCrowdLevel = (waitingCount) => {
 
 const broadcastQueueUpdate = async (io) => {
   try {
-    const waitingQueue = await Queue.find({ status: "waiting" }).sort({ createdAt: 1 });
-    const servingQueue = await Queue.find({ status: "serving" });
+    // 🔥 Get BOTH waiting and serving together
+    const queue = await Queue.find({
+      status: { $in: ["waiting", "serving"] }
+    }).sort({ createdAt: 1 });
 
-    const totalWaiting = waitingQueue.length;
+    const totalWaiting = await Queue.countDocuments({ status: "waiting" });
     const crowdLevel = getCrowdLevel(totalWaiting);
 
-    const queueStatus = waitingQueue.map((item, index) => ({
-      _id: item._id,
-      tokenNumber: item.tokenNumber,
-      service: item.service,
-      status: item.status,
-      position: index + 1,
-      estimatedWaitTime: calculateWaitTime(index + 1),
-      crowdLevel,
-      totalWaiting,
-      joinedAt: item.createdAt
-    }));
-
     io.emit("queue:update", {
-      queue: queueStatus,
-      serving: servingQueue,
+      queue,
       totalWaiting,
       crowdLevel,
       timestamp: new Date()
@@ -60,13 +48,12 @@ const broadcastQueueUpdate = async (io) => {
 // ================= JOIN QUEUE =================
 router.post("/join", async (req, res) => {
   try {
-    const { service, guestName, guestMobile, guestEmail, email, isCustomerUser } = req.body;
+    const { service, guestName, guestMobile } = req.body;
 
     if (!service) {
       return res.status(400).json({ message: "Service is required" });
     }
 
-    // SAFE TOKEN GENERATION
     const lastToken = await Queue.findOne().sort({ tokenNumber: -1 });
     const tokenNumber = lastToken ? lastToken.tokenNumber + 1 : 1;
 
@@ -98,7 +85,10 @@ router.post("/join", async (req, res) => {
 // ================= GET QUEUE LIST =================
 router.get("/", authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    const queue = await Queue.find().sort({ createdAt: 1 });
+    const queue = await Queue.find({
+      status: { $in: ["waiting", "serving"] }
+    }).sort({ createdAt: 1 });
+
     res.json(queue);
   } catch (error) {
     res.status(500).json({ message: error.message });
