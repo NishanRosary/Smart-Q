@@ -8,26 +8,38 @@ import "../../styles/global.css";
 const QueueManagement = ({ onNavigate, goBack, currentPage }) => {
   const [queueData, setQueueData] = useState([]);
 
-  // Fetch initial queue data + listen for real-time updates
+  const getAuthConfig = () => ({
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+
   useEffect(() => {
+    // FETCH INITIAL DATA WITH AUTH
     axios
-      .get("http://localhost:5000/api/queue")
+      .get("http://localhost:5000/api/queue", getAuthConfig())
       .then((res) => setQueueData(res.data))
       .catch((err) => console.error("Error fetching queue:", err));
 
-    socket.on("queueUpdated", (updatedQueue) => {
-      setQueueData(updatedQueue);
+    // FIXED SOCKET EVENT NAME
+    socket.on("queue:update", (data) => {
+      if (data.queue) {
+        setQueueData(data.queue);
+      }
     });
 
     return () => {
-      socket.off("queueUpdated");
+      socket.off("queue:update");
     };
   }, []);
 
-  // Admin actions
   const startQueue = async (id) => {
     try {
-      await axios.put(`http://localhost:5000/api/queue/${id}/start`);
+      await axios.put(
+        `http://localhost:5000/api/queue/${id}/start`,
+        {},
+        getAuthConfig()
+      );
     } catch (error) {
       console.error("Error starting queue:", error);
     }
@@ -35,7 +47,11 @@ const QueueManagement = ({ onNavigate, goBack, currentPage }) => {
 
   const completeQueue = async (id) => {
     try {
-      await axios.put(`http://localhost:5000/api/queue/${id}/complete`);
+      await axios.put(
+        `http://localhost:5000/api/queue/${id}/complete`,
+        {},
+        getAuthConfig()
+      );
     } catch (error) {
       console.error("Error completing queue:", error);
     }

@@ -26,7 +26,7 @@ app.set("io", io);
 
 // Middleware (ORDER FIXED)
 app.use(cors({ origin: "http://localhost:3000", credentials: true }));
-app.use(express.json()); // 🔥 Must be before routes
+app.use(express.json()); //  Must be before routes
 app.use(require("cookie-parser")());
 
 // DB

@@ -33,14 +33,18 @@ const AdminLogin = ({ onNavigate }) => {
         formData.password
       );
 
-      // Attach token to API
+      // 🔥 STORE TOKEN IN LOCALSTORAGE
+      localStorage.setItem("token", data.accessToken);
+
+      // 🔥 SET AXIOS DEFAULT HEADER
       setAuthToken(data.accessToken);
 
       // Navigate to dashboard
       onNavigate("admin-dashboard");
+
     } catch (error) {
       console.error("Login failed:", error);
-      const msg = error.response?.data?.message || "Login failed. Is the backend running?";
+      const msg = error.response?.data?.message || "Login failed. Ensure Server is running";
       setErrorMessage(msg);
     } finally {
       setLoading(false);
