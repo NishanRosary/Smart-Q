@@ -397,9 +397,9 @@ div[style*="linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 10
   position: relative;
   overflow: hidden;
   background:
-    radial-gradient(circle at 8% 12%, color-mix(in srgb, var(--color-primary) 20%, transparent) 0%, transparent 42%),
-    radial-gradient(circle at 95% 8%, color-mix(in srgb, var(--color-primary-light) 22%, transparent) 0%, transparent 38%),
-    linear-gradient(145deg, color-mix(in srgb, var(--bg-secondary) 74%, var(--color-primary-bg) 26%) 0%, var(--bg-primary) 100%) !important;
+    radial-gradient(circle at 8% 12%, rgba(37,99,235,0.20) 0%, transparent 42%),
+    radial-gradient(circle at 95% 8%, rgba(59,130,246,0.22) 0%, transparent 38%),
+    linear-gradient(145deg, var(--bg-secondary) 0%, var(--color-primary-bg) 26%, var(--bg-primary) 100%) !important;
 }
 
 div[style*="linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%)"]::before {
@@ -409,15 +409,15 @@ div[style*="linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 10
   width: 280px;
   height: 280px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--color-primary) 16%, transparent);
+  background: rgba(37,99,235,0.16);
   filter: blur(32px);
   pointer-events: none;
 }
 
 div[style*="linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%)"] > .card {
   border-radius: 22px !important;
-  border: 1px solid color-mix(in srgb, var(--color-primary) 28%, transparent) !important;
-  background: color-mix(in srgb, var(--color-white) 90%, var(--color-primary-bg) 10%) !important;
+  border: 1px solid rgba(37,99,235,0.28) !important;
+  background: var(--color-white) !important;
   box-shadow:
     0 36px 80px -38px rgba(15, 23, 42, 0.6),
     0 22px 40px -26px rgba(29, 78, 216, 0.38) !important;
@@ -431,8 +431,9 @@ div[style*="linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 10
   inset: 0;
   border-radius: 22px;
   padding: 1px;
-  background: linear-gradient(145deg, color-mix(in srgb, var(--color-primary-light) 40%, transparent), transparent 34%, color-mix(in srgb, var(--color-primary) 24%, transparent));
+  background: linear-gradient(145deg, rgba(147,197,253,0.40), transparent 34%, rgba(37,99,235,0.24));
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
@@ -447,13 +448,13 @@ div[style*="linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 10
 
 div[style*="linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%)"] input {
   border-radius: 12px;
-  border: 1px solid color-mix(in srgb, var(--color-gray-300) 78%, transparent);
-  background: color-mix(in srgb, var(--color-white) 88%, var(--color-primary-bg) 12%);
+  border: 1px solid rgba(203,213,225,0.78);
+  background: var(--color-white);
 }
 
 div[style*="linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%)"] input:focus {
-  border-color: color-mix(in srgb, var(--color-primary) 80%, white);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary-bg) 65%, transparent);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(226,232,240,0.65);
 }
 
 div[style*="linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%)"] .btn-primary {
@@ -461,10 +462,10 @@ div[style*="linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 10
   font-weight: 700;
   letter-spacing: 0.02em;
   color: #ffffff !important;
-  border: 1px solid color-mix(in srgb, var(--color-primary-dark) 62%, transparent);
+  border: 1px solid rgba(30,41,59,0.62);
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
   background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-primary) 48%, var(--color-primary-dark) 100%) !important;
-  box-shadow: 0 16px 32px -18px color-mix(in srgb, var(--color-primary) 65%, transparent);
+  box-shadow: 0 16px 32px -18px rgba(37,99,235,0.65);
 }
 
 div[style*="linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%)"] .btn-primary:hover {

@@ -372,7 +372,7 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
                   <Clock size={20} /> Best Times to Visit
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  {displayPredictions.optimalVisitTimes.map((item, index) => (
+                  {(displayPredictions.optimalVisitTimes ?? []).map((item, index) => (
                     <div key={index} style={{
                       padding: '1rem',
                       backgroundColor: 'var(--color-white)',
@@ -400,7 +400,7 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
                   <AlertTriangle size={20} color="var(--color-red)" /> Peak Times to Avoid
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  {displayPredictions.peakTimes.filter(p => p.prediction === 'High').slice(0, 3).map((item, index) => (
+                  {(displayPredictions.peakTimes ?? []).filter(p => p.prediction === 'High').slice(0, 3).map((item, index) => (
                     <div key={index} style={{
                       padding: '1rem',
                       backgroundColor: 'var(--color-white)',
@@ -416,7 +416,7 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
                       </div>
                     </div>
                   ))}
-                  {displayPredictions.peakTimes.filter(p => p.prediction === 'High').length === 0 && (
+                  {(displayPredictions.peakTimes ?? []).filter(p => p.prediction === 'High').length === 0 && (
                     <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--color-gray-500)' }}>
                       <TrendingDown size={24} style={{ marginBottom: '0.5rem' }} />
                       <br />No peak hours detected right now
@@ -434,7 +434,7 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
                   <BarChart2 size={20} /> Wait Time Forecast
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  {displayPredictions.waitTimePredictions.map((item, index) => (
+                  {(displayPredictions.waitTimePredictions ?? []).map((item, index) => (
                     <div key={index} style={{
                       padding: '1rem',
                       backgroundColor: 'var(--color-white)',

@@ -81,6 +81,7 @@ function App() {
             goBack={goBack}
             currentPage={currentPage}
             eventData={pageData}
+            customerData={customerData}
           />
         );
 

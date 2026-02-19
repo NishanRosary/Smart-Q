@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Queue = require("../models/queue");
 const { authMiddleware, adminMiddleware } = require("../middleware/auth");
+const { sendQueueRegistrationEmail } = require("../services/emailService");
 
 // =======================
 // ML PREDICTION HELPERS
@@ -20,10 +21,8 @@ const calculateWaitTime = (position) => {
   else if (hour >= 9 && hour <= 10) peakMultiplier = 1.1;
 
   // Base wait = position * avg service time * peak factor
-  // Add slight randomness for realism
   const baseWait = position * AVG_SERVICE_TIME * peakMultiplier;
-  const noise = (Math.random() - 0.5) * 2; // ±1 minute natural variance
-  return Math.max(1, Math.round(baseWait + noise));
+  return Math.max(1, Math.round(baseWait));
 };
 
 const getCrowdLevel = (waitingCount) => {
@@ -93,44 +92,52 @@ const getPredictions = async (tokenNumber, service) => {
     serviceWaiting,
     crowdLevel: getCrowdLevel(totalWaiting),
     mlModelStats: {
-      modelAccuracy: 89 + Math.floor(Math.random() * 8),
-      predictionsToday: 50 + Math.floor(Math.random() * 120),
-      avgAccuracy: 86 + Math.floor(Math.random() * 9),
-      lastUpdated: 'just now'
+      isSimulated: true,
+      note: 'These values are simulated for demo purposes.',
+      modelAccuracy: null,
+      predictionsToday: null,
+      avgAccuracy: null,
+      lastUpdated: null
     }
   };
 };
 
 // Helper: broadcast queue update to all clients
 const broadcastQueueUpdate = async (io) => {
-  const waitingQueue = await Queue.find({ status: "waiting" }).sort({ tokenNumber: 1 });
-  const servingQueue = await Queue.find({ status: "serving" });
-  const totalWaiting = waitingQueue.length;
-  const crowdLevel = getCrowdLevel(totalWaiting);
+  try {
+    const waitingQueue = await Queue.find({ status: "waiting" }).sort({ tokenNumber: 1 });
+    const servingQueue = await Queue.find({ status: "serving" });
+    const totalWaiting = waitingQueue.length;
+    const crowdLevel = getCrowdLevel(totalWaiting);
 
-  // Build per-token status
-  const queueStatus = waitingQueue.map((item, index) => {
-    const position = index + 1;
-    return {
-      _id: item._id,
-      tokenNumber: item.tokenNumber,
-      service: item.service,
-      status: item.status,
-      position,
-      estimatedWaitTime: calculateWaitTime(position),
-      crowdLevel,
+    // Build per-token status
+    const queueStatus = waitingQueue.map((item, index) => {
+      const position = index + 1;
+      return {
+        _id: item._id,
+        tokenNumber: item.tokenNumber,
+        service: item.service,
+        status: item.status,
+        position,
+        estimatedWaitTime: calculateWaitTime(position),
+        crowdLevel,
+        totalWaiting,
+        joinedAt: item.createdAt
+      };
+    });
+
+    io.emit("queue:update", {
+      queue: queueStatus,
+      serving: servingQueue,
       totalWaiting,
-      joinedAt: item.createdAt
-    };
-  });
-
-  io.emit("queue:update", {
-    queue: queueStatus,
-    serving: servingQueue,
-    totalWaiting,
-    crowdLevel,
-    timestamp: new Date()
-  });
+      crowdLevel,
+      timestamp: new Date()
+    });
+    return true;
+  } catch (err) {
+    console.error("broadcastQueueUpdate failed:", err);
+    return false;
+  }
 };
 
 // =======================
@@ -138,7 +145,7 @@ const broadcastQueueUpdate = async (io) => {
 // =======================
 router.post("/join", async (req, res) => {
   try {
-    const { service, guestName, guestMobile } = req.body;
+    const { service, guestName, guestMobile, guestEmail, email, isCustomerUser } = req.body;
 
     if (!service) {
       return res.status(400).json({ message: "Service is required" });
@@ -149,7 +156,9 @@ router.post("/join", async (req, res) => {
 
     const newQueue = new Queue({
       tokenNumber,
-      service
+      service,
+      guestName: guestName || null,
+      guestMobile: guestMobile || null
     });
 
     await newQueue.save();
@@ -166,6 +175,21 @@ router.post("/join", async (req, res) => {
 
     // Get ML predictions
     const predictions = await getPredictions(tokenNumber, service);
+
+    // Send confirmation email when a recipient email is available.
+    // Email failures should not block queue join.
+    const recipientEmail = guestEmail || email;
+    if (isCustomerUser && recipientEmail) {
+      sendQueueRegistrationEmail({
+        toEmail: recipientEmail,
+        userName: guestName || "User",
+        tokenNumber,
+        serviceName: service,
+        estimatedWaitTime
+      }).catch((mailError) => {
+        console.error("Queue confirmation email failed:", mailError.message);
+      });
+    }
 
     // Broadcast real-time update
     const io = req.app.get("io");

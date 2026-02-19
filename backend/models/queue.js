@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 
+
 const QueueSchema = new mongoose.Schema({
   tokenNumber: {
     type: Number,
@@ -8,6 +9,14 @@ const QueueSchema = new mongoose.Schema({
   service: {
     type: String,
     required: true
+  },
+  guestName: {
+    type: String,
+    default: null
+  },
+  guestMobile: {
+    type: String,
+    default: null
   },
   status: {
     type: String,

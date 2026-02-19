@@ -24,7 +24,7 @@ const formatTokenNumber = (tokenValue) => {
   return `T${numeric.padStart(3, '0')}`;
 };
 
-const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
+const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData }) => {
   const [step, setStep] = useState(1); // 1: Events, 2: Guest Details, 3: Service Selection, 4: Status
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [guestDetails, setGuestDetails] = useState({ name: '', mobile: '', otp: '' });
@@ -82,8 +82,10 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
     try {
       const res = await axios.post("http://localhost:5000/api/queue/join", {
         service: selectedService,
-        guestName: guestDetails.name,
-        guestMobile: guestDetails.mobile,
+        guestName: guestDetails.name || customerData?.name || "Customer",
+        guestMobile: guestDetails.mobile || customerData?.phone || "",
+        guestEmail: eventData?.isCustomer ? (customerData?.email || "") : "",
+        isCustomerUser: Boolean(eventData?.isCustomer),
         eventId: selectedEvent.id,
         eventName: selectedEvent.title
       });

@@ -9,6 +9,7 @@ const queueRoutes = require("./routes/queueRoutes");
 const eventRoutes = require("./routes/eventRoutes");
 const mlRoutes = require("./routes/mlRoutes");
 const authRoutes = require("./routes/authRoutes");
+const { sendQueueRegistrationEmail } = require("./services/emailService");
 
 const app = express();
 const server = http.createServer(app);
@@ -50,6 +51,31 @@ app.get("/api/test-protected", authMiddleware, (req, res) => {
 // Health
 app.get("/api/health", (req, res) => {
   res.json({ message: "Frontend and Backend connected" });
+});
+
+// Temporary SMTP test route
+app.get("/api/test-email", async (req, res) => {
+  try {
+    const result = await sendQueueRegistrationEmail({
+      toEmail: req.query.toEmail || "abhayganesh154@gmail.com",
+      userName: req.query.userName || "Nishan",
+      tokenNumber: req.query.tokenNumber || "A123",
+      serviceName: req.query.serviceName || "General Service",
+      estimatedWaitTime: Number(req.query.estimatedWaitTime || 15)
+    });
+
+    res.json({
+      ok: true,
+      message: "Test email request processed",
+      result
+    });
+  } catch (error) {
+    res.status(500).json({
+      ok: false,
+      message: "Failed to send test email",
+      error: error.message
+    });
+  }
 });
 
 // Socket events

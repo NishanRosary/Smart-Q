@@ -59,7 +59,8 @@ export const joinQueue = async (service, guestName, guestMobile, eventId, eventN
 
 // API: Get my queue status
 export const getQueueStatus = async (tokenNumber) => {
-    const response = await axios.get(`${API_BASE_URL}/api/queue/status/${tokenNumber}`);
+    const safeToken = encodeURIComponent(tokenNumber);
+    const response = await axios.get(`${API_BASE_URL}/api/queue/status/${safeToken}`);
     return response.data;
 };
 
