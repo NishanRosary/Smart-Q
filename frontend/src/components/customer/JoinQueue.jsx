@@ -18,6 +18,12 @@ import {
   Activity
 } from 'lucide-react';
 
+const formatTokenNumber = (tokenValue) => {
+  const numeric = String(tokenValue ?? '').replace(/\D/g, '');
+  if (!numeric) return '--';
+  return `T${numeric.padStart(3, '0')}`;
+};
+
 const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
   const [step, setStep] = useState(1); // 1: Events, 2: Guest Details, 3: Service Selection, 4: Status
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -74,7 +80,6 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
 
     setLoading(true);
     try {
-      // API Call simulation
       const res = await axios.post("http://localhost:5000/api/queue/join", {
         service: selectedService,
         guestName: guestDetails.name,
@@ -82,17 +87,22 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
         eventId: selectedEvent.id,
         eventName: selectedEvent.title
       });
+      // Store token for real-time tracking on dashboard
+      localStorage.setItem('smartq-active-token', String(res.data.tokenNumber));
+      localStorage.setItem('smartq-active-service', selectedService);
       setTokenData(res.data);
       setStep(4);
     } catch (error) {
       console.error(error);
       // Fallback for demo without backend
-      // alert("Note: Backend might be unavailable. Showing demo token.");
       const demoToken = {
         tokenNumber: Math.floor(Math.random() * 100) + 1,
         service: selectedService,
-        estimatedWait: 15
+        estimatedWaitTime: 15,
+        position: 1
       };
+      localStorage.setItem('smartq-active-token', String(demoToken.tokenNumber));
+      localStorage.setItem('smartq-active-service', selectedService);
       setTokenData(demoToken);
       setStep(4);
     } finally {
@@ -240,7 +250,7 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
           {step === 4 && tokenData && (
             <div style={{ maxWidth: '500px', margin: '0 auto' }}>
               <div className="token-card">
-                <div className="token-number">T{tokenData.tokenNumber}</div>
+                <div className="token-number">{formatTokenNumber(tokenData.tokenNumber)}</div>
                 <div className="token-label">Queue Token</div>
 
                 <div style={{ marginTop: '2rem', background: 'rgba(255,255,255,0.1)', padding: '1.5rem', borderRadius: '8px', textAlign: 'left' }}>
@@ -254,7 +264,7 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <span style={{ opacity: 0.8 }}>Est. Wait:</span>
-                    <span style={{ fontWeight: 600 }}>{tokenData.estimatedWait || '15'} mins</span>
+                    <span style={{ fontWeight: 600 }}>{tokenData.estimatedWaitTime ?? tokenData.estimatedWait ?? 15} mins</span>
                   </div>
                 </div>
               </div>
@@ -468,7 +478,7 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
           {step === 4 && tokenData && (
             <div style={{ maxWidth: '500px', margin: '0 auto' }}>
               <div className="token-card">
-                <div className="token-number">T{tokenData.tokenNumber}</div>
+                <div className="token-number">{formatTokenNumber(tokenData.tokenNumber)}</div>
                 <div className="token-label">Your Queue Token</div>
 
                 <div style={{ marginTop: '2rem', background: 'rgba(255,255,255,0.1)', padding: '1.5rem', borderRadius: '8px', textAlign: 'left' }}>
@@ -486,7 +496,7 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData }) => {
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <span style={{ opacity: 0.8 }}>Est. Wait:</span>
-                    <span style={{ fontWeight: 600 }}>{tokenData.estimatedWait || '15'} mins</span>
+                    <span style={{ fontWeight: 600 }}>{tokenData.estimatedWaitTime ?? tokenData.estimatedWait ?? 15} mins</span>
                   </div>
                 </div>
               </div>
