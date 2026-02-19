@@ -41,11 +41,45 @@ const Header = ({ onNavigate, goBack, currentPage }) => {
               <ArrowLeft size={16} /> Back
             </button>
           )}
-          <div className="logo" onClick={() => onNavigate('landing')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <img src="/tab-logo.png" alt="Smart'Q" style={{ height: '32px', width: 'auto' }} />
-            <span>Smart'Q</span>
+          <div
+            className="logo-container"
+            onClick={() => onNavigate('landing')}
+            style={{
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.625rem',
+              transition: 'transform 0.2s ease',
+            }}
+            onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.03)'}
+            onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          >
+            <img
+              src="/favicon.jpg"
+              alt="Smart'Q"
+              style={{
+                height: '36px',
+                width: '36px',
+                borderRadius: '10px',
+                objectFit: 'cover',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12)',
+                border: '1.5px solid rgba(37, 99, 235, 0.2)',
+              }}
+            />
+            <span style={{
+              fontSize: '1.25rem',
+              fontWeight: 800,
+              fontFamily: 'var(--font-heading)',
+              color: 'var(--color-primary-dark)',
+              letterSpacing: '-0.02em',
+            }}>
+              Smart'Q
+            </span>
           </div>
+
         </div>
+
+
         <nav style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
           <button
             className="nav-button"

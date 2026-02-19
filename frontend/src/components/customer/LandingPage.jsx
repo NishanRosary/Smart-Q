@@ -35,6 +35,8 @@ import {
   Github
 } from 'lucide-react';
 
+import Logo from '../shared/Logo';
+
 const LandingPage = ({ onNavigate, goBack, currentPage }) => {
   const [openFaq, setOpenFaq] = useState(null);
   const [theme, setTheme] = useState('light');
@@ -51,11 +53,13 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
     };
 
     // Check theme changes on storage event (for other tabs)
-    window.addEventListener('storage', () => {
+    const handleStorageChange = () => {
       const savedTheme = localStorage.getItem('smartq-theme') || 'light';
       setTheme(savedTheme);
       document.documentElement.setAttribute('data-theme', savedTheme);
-    });
+    };
+
+    window.addEventListener('storage', handleStorageChange);
 
     // Use a MutationObserver to detect theme attribute changes
     const observer = new MutationObserver(handleThemeChange);
@@ -63,7 +67,7 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
 
     return () => {
       observer.disconnect();
-      window.removeEventListener('storage', handleThemeChange);
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 
@@ -164,6 +168,9 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
           </div>
         </div>
       </section>
+
+
+
 
       {/* Key Features Section */}
       <section style={{
@@ -484,11 +491,15 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
             gap: '2rem'
           }}>
             <div>
-              <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: 700 }}>Smart'Q</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                <Logo size={32} showText={false} />
+                <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800 }}>Smart'Q</h3>
+              </div>
               <p style={{ lineHeight: '1.6', fontSize: '0.9375rem' }}>
                 Smarter queue management powered by intelligent technology—delivering seamless and efficient service experiences.
               </p>
             </div>
+
 
             <div>
               <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: 700 }}>Quick Links</h3>
