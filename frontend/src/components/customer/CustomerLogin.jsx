@@ -24,7 +24,12 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    onNavigate('customer-dashboard');
+    const customerInfo = {
+      name: formData.email ? formData.email.split('@')[0] : formData.mobile,
+      email: formData.email || '',
+      phone: formData.mobile || ''
+    };
+    onNavigate('customer-dashboard', customerInfo);
   };
 
   const toggleLoginType = (type) => {

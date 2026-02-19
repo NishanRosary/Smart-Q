@@ -15,7 +15,7 @@ import {
   Info
 } from 'lucide-react';
 
-const CustomerDashboard = ({ onNavigate, goBack, currentPage }) => {
+const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLogout }) => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showQRModal, setShowQRModal] = useState(false);
   const events = getEvents();
@@ -49,7 +49,7 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage }) => {
 
   return (
     <div>
-      <Header onNavigate={onNavigate} goBack={goBack} currentPage={currentPage} />
+      <Header onNavigate={onNavigate} goBack={goBack} currentPage={currentPage} customerData={customerData} onLogout={onLogout} />
       <div className="dashboard-container">
         {/* Queue Status Section */}
         <div className="dashboard-section">

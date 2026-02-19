@@ -24,15 +24,26 @@ function App() {
   const [pageData, setPageData] = useState(null);
   const [navigationHistory, setNavigationHistory] = useState([]);
   const [backendStatus, setBackendStatus] = useState("");
+  const [customerData, setCustomerData] = useState(null);
 
   const navigate = (page, data = null) => {
     if (page !== currentPage) {
       setNavigationHistory((prev) => [...prev, currentPage]);
     }
+    // Store customer info when logging in
+    if (page === 'customer-dashboard' && data && data.name) {
+      setCustomerData(data);
+    }
     setCurrentPage(page);
     setPageData(data);
   };
 
+  const handleCustomerLogout = () => {
+    setCustomerData(null);
+    setPageData(null);
+    setNavigationHistory([]);
+    setCurrentPage("landing");
+  };
   const goBack = () => {
     if (navigationHistory.length > 0) {
       const previousPage = navigationHistory[navigationHistory.length - 1];
@@ -61,7 +72,7 @@ function App() {
         return <CustomerLogin onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
 
       case "customer-dashboard":
-        return <CustomerDashboard onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
+        return <CustomerDashboard onNavigate={navigate} goBack={goBack} currentPage={currentPage} customerData={customerData} onLogout={handleCustomerLogout} />;
 
       case "join-queue":
         return (
