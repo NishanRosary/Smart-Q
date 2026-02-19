@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { checkBackendHealth } from "./services/api";
+import { checkBackendHealth, setAuthToken } from "./services/api";
 import "./styles/global.css";
 
 // Customer Components
@@ -20,7 +20,11 @@ import Predictions from "./components/admin/Predictions";
 import AdminSettings from "./components/admin/AdminSettings";
 
 function App() {
-  const [currentPage, setCurrentPage] = useState("landing");
+
+  const [currentPage, setCurrentPage] = useState(
+    localStorage.getItem("currentPage") || "landing"
+  );
+
   const [pageData, setPageData] = useState(null);
   const [navigationHistory, setNavigationHistory] = useState([]);
   const [backendStatus, setBackendStatus] = useState("");
@@ -30,11 +34,13 @@ function App() {
     if (page !== currentPage) {
       setNavigationHistory((prev) => [...prev, currentPage]);
     }
-    // Store customer info when logging in
-    if (page === 'customer-dashboard' && data && data.name) {
+
+    if (page === "customer-dashboard" && data && data.name) {
       setCustomerData(data);
     }
+
     setCurrentPage(page);
+    localStorage.setItem("currentPage", page);
     setPageData(data);
   };
 
@@ -42,16 +48,20 @@ function App() {
     setCustomerData(null);
     setPageData(null);
     setNavigationHistory([]);
+    localStorage.removeItem("currentPage");
     setCurrentPage("landing");
   };
+
   const goBack = () => {
     if (navigationHistory.length > 0) {
       const previousPage = navigationHistory[navigationHistory.length - 1];
       setNavigationHistory((prev) => prev.slice(0, -1));
       setCurrentPage(previousPage);
+      localStorage.setItem("currentPage", previousPage);
       setPageData(null);
     } else {
       setCurrentPage("landing");
+      localStorage.setItem("currentPage", "landing");
       setPageData(null);
     }
   };
@@ -62,9 +72,17 @@ function App() {
       .catch(() => setBackendStatus("Backend not reachable ❌"));
   }, []);
 
+  // 🔥 Restore token on refresh
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      setAuthToken(token);
+    }
+  }, []);
+
   const renderPage = () => {
     switch (currentPage) {
-      // Customer
+
       case "landing":
         return <LandingPage onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
 
@@ -75,20 +93,11 @@ function App() {
         return <CustomerDashboard onNavigate={navigate} goBack={goBack} currentPage={currentPage} customerData={customerData} onLogout={handleCustomerLogout} />;
 
       case "join-queue":
-        return (
-          <JoinQueue
-            onNavigate={navigate}
-            goBack={goBack}
-            currentPage={currentPage}
-            eventData={pageData}
-            customerData={customerData}
-          />
-        );
+        return <JoinQueue onNavigate={navigate} goBack={goBack} currentPage={currentPage} eventData={pageData} customerData={customerData} />;
 
       case "welcome":
         return <WelcomePage onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
 
-      // Admin
       case "admin-login":
         return <AdminLogin onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
 
