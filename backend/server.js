@@ -11,6 +11,9 @@ const mlRoutes = require("./routes/mlRoutes");
 const authRoutes = require("./routes/authRoutes");
 const { sendQueueRegistrationEmail } = require("./services/emailService");
 
+const otpRoutes = require("./routes/otpRoutes");
+app.use("/api/otp", otpRoutes);
+
 const app = express();
 const server = http.createServer(app);
 
