@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Sidebar from "../shared/Sidebar";
 import axios from "axios";
 import socket from "../../socket";
@@ -14,17 +14,23 @@ const QueueManagement = ({ onNavigate, goBack, currentPage }) => {
     },
   });
 
-  useEffect(() => {
-    // FETCH INITIAL DATA WITH AUTH
-    axios
-      .get("http://localhost:5000/api/queue", getAuthConfig())
-      .then((res) => setQueueData(res.data))
-      .catch((err) => console.error("Error fetching queue:", err));
+  const fetchQueueData = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/queue", getAuthConfig());
+      setQueueData(res.data || []);
+    } catch (err) {
+      console.error("Error fetching queue:", err);
+    }
+  };
 
-    // FIXED SOCKET EVENT NAME
+  useEffect(() => {
+    fetchQueueData();
+
     socket.on("queue:update", (data) => {
-      if (data.queue || data.cancelled) {
-        setQueueData([...(data.queue || []), ...(data.cancelled || [])]);
+      if (Array.isArray(data.queue)) {
+        setQueueData(data.queue);
+      } else {
+        setQueueData([]);
       }
     });
 
@@ -33,41 +39,31 @@ const QueueManagement = ({ onNavigate, goBack, currentPage }) => {
     };
   }, []);
 
-  const startQueue = async (id) => {
+  const applyQueueAction = async (id, nextStatus, endpoint, errorLabel) => {
+    const previous = queueData;
+    setQueueData((prev) =>
+      prev.map((item) =>
+        item._id === id
+          ? {
+              ...item,
+              status: nextStatus,
+            }
+          : item
+      )
+    );
+
     try {
-      await axios.put(
-        `http://localhost:5000/api/queue/${id}/start`,
-        {},
-        getAuthConfig()
-      );
+      await axios.put(`http://localhost:5000/api/queue/${id}/${endpoint}`, {}, getAuthConfig());
     } catch (error) {
-      console.error("Error starting queue:", error);
+      console.error(errorLabel, error);
+      setQueueData(previous);
     }
   };
 
-  const completeQueue = async (id) => {
-    try {
-      await axios.put(
-        `http://localhost:5000/api/queue/${id}/complete`,
-        {},
-        getAuthConfig()
-      );
-    } catch (error) {
-      console.error("Error completing queue:", error);
-    }
-  };
-
-  const cancelQueue = async (id) => {
-    try {
-      await axios.put(
-        `http://localhost:5000/api/queue/${id}/cancel`,
-        {},
-        getAuthConfig()
-      );
-    } catch (error) {
-      console.error("Error cancelling queue:", error);
-    }
-  };
+  const startQueue = (id) => applyQueueAction(id, "serving", "start", "Error starting queue:");
+  const completeQueue = (id) => applyQueueAction(id, "completed", "complete", "Error completing queue:");
+  const cancelQueue = (id) => applyQueueAction(id, "cancelled", "cancel", "Error cancelling queue:");
+  const revokeQueue = (id) => applyQueueAction(id, "waiting", "revoke", "Error revoking queue:");
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -75,118 +71,162 @@ const QueueManagement = ({ onNavigate, goBack, currentPage }) => {
         return <span className="badge badge-yellow">WAITING</span>;
       case "serving":
         return <span className="badge badge-green">IN PROGRESS</span>;
-      case "completed":
-        return <span className="badge badge-red">COMPLETED</span>;
       case "cancelled":
         return <span className="badge badge-red">CANCELLED</span>;
+      case "completed":
+        return <span className="badge badge-red">COMPLETED</span>;
       default:
         return <span className="badge badge-yellow">{status}</span>;
     }
   };
 
+  const waitingQueue = useMemo(
+    () => queueData.filter((item) => item.status === "waiting"),
+    [queueData]
+  );
+
+  const inProgressQueue = useMemo(
+    () => queueData.filter((item) => item.status === "serving"),
+    [queueData]
+  );
+
+  const cancelledQueue = useMemo(
+    () => queueData.filter((item) => item.status === "cancelled"),
+    [queueData]
+  );
+
+  const completedQueue = useMemo(
+    () => queueData.filter((item) => item.status === "completed"),
+    [queueData]
+  );
+
+  const renderQueueSection = ({ title, subtitle, sectionColor, rows, emptyText, renderActions }) => (
+    <div
+      className="card"
+      style={{
+        marginBottom: "1.5rem",
+        borderTop: `4px solid ${sectionColor}`,
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+        <div>
+          <h3 style={{ margin: 0, color: sectionColor }}>{title}</h3>
+          <p style={{ margin: "0.35rem 0 0 0", color: "var(--color-gray-500)", fontSize: "0.875rem" }}>{subtitle}</p>
+        </div>
+        <span className="badge" style={{ backgroundColor: sectionColor, color: "#fff" }}>
+          {rows.length}
+        </span>
+      </div>
+
+      <div style={{ overflowX: "auto" }}>
+        <table className="queue-table" style={{ boxShadow: "none" }}>
+          <thead>
+            <tr>
+              <th>Token Number</th>
+              <th>Service</th>
+              <th>Status</th>
+              <th>Joined At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length === 0 ? (
+              <tr>
+                <td colSpan="5" style={{ textAlign: "center", padding: "1rem" }}>
+                  {emptyText}
+                </td>
+              </tr>
+            ) : (
+              rows.map((queue) => (
+                <tr key={queue._id}>
+                  <td style={{ fontWeight: 600, color: "var(--color-primary)" }}>T{queue.tokenNumber}</td>
+                  <td>{queue.service}</td>
+                  <td>{getStatusBadge(queue.status)}</td>
+                  <td>
+                    {new Date(queue.createdAt).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </td>
+                  <td>{renderActions(queue)}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+
   return (
     <div className="admin-layout">
-      <Sidebar
-        currentPage={currentPage}
-        onNavigate={onNavigate}
-        goBack={goBack}
-      />
+      <Sidebar currentPage={currentPage} onNavigate={onNavigate} goBack={goBack} />
 
       <main className="admin-main">
         <div className="admin-header">
           <h1>Queue Management</h1>
         </div>
 
-        <div className="card" style={{ marginBottom: "1.5rem" }}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <div>
-              <h3 style={{ margin: 0 }}>Active Queues</h3>
-              <p
-                style={{
-                  margin: "0.5rem 0 0 0",
-                  color: "var(--color-gray-500)",
-                  fontSize: "0.875rem",
-                }}
-              >
-                Manage and monitor all queue entries
-              </p>
+        {renderQueueSection({
+          title: "Section 1 - Waiting",
+          subtitle: "Tokens waiting to be served",
+          sectionColor: "#d97706",
+          rows: waitingQueue,
+          emptyText: "No waiting tokens",
+          renderActions: (queue) => (
+            <div className="action-buttons">
+              <button className="action-btn btn-primary" onClick={() => startQueue(queue._id)}>
+                Start
+              </button>
+              <button className="action-btn btn-danger" onClick={() => cancelQueue(queue._id)}>
+                Cancel
+              </button>
             </div>
-          </div>
-        </div>
+          )
+        })}
 
-        <div className="card" style={{ padding: 0 }}>
-          <table className="queue-table">
-            <thead>
-              <tr>
-                <th>Token Number</th>
-                <th>Service</th>
-                <th>Status</th>
-                <th>Joined At</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
+        {renderQueueSection({
+          title: "Section 2 - In Progress",
+          subtitle: "Tokens currently being served",
+          sectionColor: "#16a34a",
+          rows: inProgressQueue,
+          emptyText: "No tokens in progress",
+          renderActions: (queue) => (
+            <div className="action-buttons">
+              <button className="action-btn btn-danger" onClick={() => completeQueue(queue._id)}>
+                Complete
+              </button>
+            </div>
+          )
+        })}
 
-            <tbody>
-              {queueData.length === 0 ? (
-                <tr>
-                  <td colSpan="5" style={{ textAlign: "center", padding: "1rem" }}>
-                    No active queues
-                  </td>
-                </tr>
-              ) : (
-                queueData.map((queue) => (
-                  <tr key={queue._id}>
-                    <td style={{ fontWeight: 600, color: "var(--color-primary)" }}>
-                      T{queue.tokenNumber}
-                    </td>
-                    <td>{queue.service}</td>
-                    <td>{getStatusBadge(queue.status)}</td>
-                    <td>
-                      {new Date(queue.createdAt).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </td>
-                    <td>
-                      {queue.status === "waiting" && (
-                        <>
-                          <button
-                            className="action-btn btn-primary"
-                            onClick={() => startQueue(queue._id)}
-                          >
-                            Start
-                          </button>
-                          <button
-                            className="action-btn btn-danger"
-                            onClick={() => cancelQueue(queue._id)}
-                            style={{ marginLeft: "0.5rem" }}
-                          >
-                            Cancel
-                          </button>
-                        </>
-                      )}
+        {renderQueueSection({
+          title: "Section 3 - Cancelled",
+          subtitle: "Tokens cancelled by admin",
+          sectionColor: "#dc2626",
+          rows: cancelledQueue,
+          emptyText: "No cancelled tokens",
+          renderActions: (queue) => (
+            <div className="action-buttons">
+              <button
+                className="action-btn"
+                onClick={() => revokeQueue(queue._id)}
+                style={{ backgroundColor: "#334155", color: "#fff", border: "none" }}
+              >
+                Revoke
+              </button>
+            </div>
+          )
+        })}
 
-                      {queue.status === "serving" && (
-                        <button
-                          className="action-btn btn-danger"
-                          onClick={() => completeQueue(queue._id)}
-                        >
-                          Complete
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        {renderQueueSection({
+          title: "Section 4 - Completed",
+          subtitle: "Tokens completed successfully",
+          sectionColor: "#2563eb",
+          rows: completedQueue,
+          emptyText: "No completed tokens",
+          renderActions: () => <span style={{ color: "var(--color-gray-500)", fontSize: "0.875rem" }}>No actions</span>
+        })}
       </main>
     </div>
   );
