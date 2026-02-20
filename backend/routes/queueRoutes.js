@@ -91,6 +91,7 @@ const getPredictions = async (service) => {
 const buildQueueSnapshot = async () => {
   const waitingQueue = await Queue.find({ status: "waiting" }).sort({ tokenNumber: 1 });
   const servingQueue = await Queue.find({ status: "serving" }).sort({ tokenNumber: 1 });
+  const cancelledQueue = await Queue.find({ status: "cancelled" }).sort({ tokenNumber: 1 });
   const totalWaiting = waitingQueue.length;
   const crowdLevel = getCrowdLevel(totalWaiting);
 
@@ -127,9 +128,25 @@ const buildQueueSnapshot = async () => {
     createdAt: item.createdAt
   }));
 
+  const cancelledStatus = cancelledQueue.map((item) => ({
+    _id: item._id,
+    tokenNumber: item.tokenNumber,
+    service: item.service,
+    status: item.status,
+    position: 0,
+    estimatedWaitTime: 0,
+    crowdLevel,
+    totalWaiting,
+    guestName: item.guestName ?? null,
+    guestMobile: item.guestMobile ?? null,
+    guestEmail: item.guestEmail ?? null,
+    createdAt: item.createdAt
+  }));
+
   return {
     queue: [...waitingStatus, ...servingStatus],
     serving: servingStatus,
+    cancelled: cancelledStatus,
     totalWaiting,
     crowdLevel
   };
@@ -137,11 +154,12 @@ const buildQueueSnapshot = async () => {
 
 const broadcastQueueUpdate = async (io) => {
   try {
-    const { queue, serving, totalWaiting, crowdLevel } = await buildQueueSnapshot();
+    const { queue, serving, cancelled, totalWaiting, crowdLevel } = await buildQueueSnapshot();
 
     io.emit("queue:update", {
       queue,
       serving,
+      cancelled,
       totalWaiting,
       crowdLevel,
       timestamp: new Date()
@@ -260,6 +278,18 @@ router.get("/status/:tokenNumber", async (req, res) => {
       });
     }
 
+    if (myEntry.status === "cancelled") {
+      return res.json({
+        tokenNumber: myEntry.tokenNumber,
+        service: myEntry.service,
+        status: "cancelled",
+        position: 0,
+        estimatedWaitTime: 0,
+        crowdLevel,
+        totalWaiting
+      });
+    }
+
     const waitingAhead = await Queue.countDocuments({
       status: "waiting",
       tokenNumber: { $lt: tokenNum }
@@ -287,7 +317,7 @@ router.get("/status/:tokenNumber", async (req, res) => {
 // ================= GET QUEUE LIST =================
 router.get("/", authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    const queue = await Queue.find({ status: { $in: ["waiting", "serving"] } }).sort({ tokenNumber: 1 });
+    const queue = await Queue.find({ status: { $in: ["waiting", "serving", "cancelled"] } }).sort({ tokenNumber: 1 });
     res.json(queue);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -337,6 +367,29 @@ router.put("/:id/complete", authMiddleware, adminMiddleware, async (req, res) =>
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to complete token" });
+  }
+});
+
+// ================= CANCEL =================
+router.put("/:id/cancel", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const updated = await Queue.findByIdAndUpdate(
+      req.params.id,
+      { status: "cancelled" },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: "Token not found" });
+    }
+
+    const io = req.app.get("io");
+    if (io) await broadcastQueueUpdate(io);
+
+    res.json(updated);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to cancel token" });
   }
 });
 

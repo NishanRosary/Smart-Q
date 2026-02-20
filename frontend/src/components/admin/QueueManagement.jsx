@@ -23,8 +23,8 @@ const QueueManagement = ({ onNavigate, goBack, currentPage }) => {
 
     // FIXED SOCKET EVENT NAME
     socket.on("queue:update", (data) => {
-      if (data.queue) {
-        setQueueData(data.queue);
+      if (data.queue || data.cancelled) {
+        setQueueData([...(data.queue || []), ...(data.cancelled || [])]);
       }
     });
 
@@ -57,6 +57,18 @@ const QueueManagement = ({ onNavigate, goBack, currentPage }) => {
     }
   };
 
+  const cancelQueue = async (id) => {
+    try {
+      await axios.put(
+        `http://localhost:5000/api/queue/${id}/cancel`,
+        {},
+        getAuthConfig()
+      );
+    } catch (error) {
+      console.error("Error cancelling queue:", error);
+    }
+  };
+
   const getStatusBadge = (status) => {
     switch (status) {
       case "waiting":
@@ -65,6 +77,8 @@ const QueueManagement = ({ onNavigate, goBack, currentPage }) => {
         return <span className="badge badge-green">IN PROGRESS</span>;
       case "completed":
         return <span className="badge badge-red">COMPLETED</span>;
+      case "cancelled":
+        return <span className="badge badge-red">CANCELLED</span>;
       default:
         return <span className="badge badge-yellow">{status}</span>;
     }
@@ -141,12 +155,21 @@ const QueueManagement = ({ onNavigate, goBack, currentPage }) => {
                     </td>
                     <td>
                       {queue.status === "waiting" && (
-                        <button
-                          className="action-btn btn-primary"
-                          onClick={() => startQueue(queue._id)}
-                        >
-                          Start
-                        </button>
+                        <>
+                          <button
+                            className="action-btn btn-primary"
+                            onClick={() => startQueue(queue._id)}
+                          >
+                            Start
+                          </button>
+                          <button
+                            className="action-btn btn-danger"
+                            onClick={() => cancelQueue(queue._id)}
+                            style={{ marginLeft: "0.5rem" }}
+                          >
+                            Cancel
+                          </button>
+                        </>
                       )}
 
                       {queue.status === "serving" && (
