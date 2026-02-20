@@ -21,9 +21,7 @@ import AdminSettings from "./components/admin/AdminSettings";
 
 function App() {
 
-  const [currentPage, setCurrentPage] = useState(
-    localStorage.getItem("currentPage") || "landing"
-  );
+  const [currentPage, setCurrentPage] = useState("landing");
 
   const [pageData, setPageData] = useState(null);
   const [navigationHistory, setNavigationHistory] = useState([]);
