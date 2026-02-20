@@ -3,6 +3,22 @@ const router = express.Router();
 const Queue = require("../models/queue");
 const { authMiddleware, adminMiddleware } = require("../middleware/auth");
 
+/**
+ * Safe broadcast helper
+ * Won't crash if io is missing
+ */
+const safeBroadcast = async (req) => {
+  try {
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("queue:update", { timestamp: new Date() });
+    }
+  } catch (err) {
+    console.error("Broadcast error:", err.message);
+  }
+};
+
+
 // ================= START SERVING =================
 router.put("/:id/start", authMiddleware, adminMiddleware, async (req, res) => {
   try {
@@ -18,10 +34,9 @@ router.put("/:id/start", authMiddleware, adminMiddleware, async (req, res) => {
       });
     }
 
-    const io = req.app.get("io");
-    if (io) await broadcastQueueUpdate(io);
-
+    await safeBroadcast(req);
     res.json(updated);
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to start token" });
@@ -44,10 +59,9 @@ router.put("/:id/complete", authMiddleware, adminMiddleware, async (req, res) =>
       });
     }
 
-    const io = req.app.get("io");
-    if (io) await broadcastQueueUpdate(io);
-
+    await safeBroadcast(req);
     res.json(updated);
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to complete token" });
@@ -73,10 +87,9 @@ router.put("/:id/cancel", authMiddleware, adminMiddleware, async (req, res) => {
       });
     }
 
-    const io = req.app.get("io");
-    if (io) await broadcastQueueUpdate(io);
-
+    await safeBroadcast(req);
     res.json(updated);
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to cancel token" });
@@ -99,10 +112,9 @@ router.put("/:id/revoke", authMiddleware, adminMiddleware, async (req, res) => {
       });
     }
 
-    const io = req.app.get("io");
-    if (io) await broadcastQueueUpdate(io);
-
+    await safeBroadcast(req);
     res.json(updated);
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to revoke token" });

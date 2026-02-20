@@ -1,10 +1,10 @@
 const mongoose = require("mongoose");
 
-
 const QueueSchema = new mongoose.Schema({
   tokenNumber: {
     type: Number,
-    required: true
+    required: true,
+    unique: true   // Prevent duplicate tokens
   },
   service: {
     type: String,
@@ -47,6 +47,13 @@ const QueueSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   }
-});
+}, { timestamps: false });
+
+/**
+ * Indexes for performance
+ */
+QueueSchema.index({ status: 1 });
+QueueSchema.index({ createdAt: 1 });
+QueueSchema.index({ tokenNumber: 1 });
 
 module.exports = mongoose.model("Queue", QueueSchema);
