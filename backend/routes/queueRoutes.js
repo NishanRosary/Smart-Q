@@ -252,7 +252,7 @@ router.post("/join", async (req, res) => {
     const predictions = await getPredictions(service);
 
     const recipientEmail = guestEmail || email;
-    const shouldSendConfirmationEmail = Boolean(isCustomerUser && recipientEmail);
+    const shouldSendConfirmationEmail = Boolean(recipientEmail);
 
     const io = req.app.get("io");
     if (io) await broadcastQueueUpdate(io);
