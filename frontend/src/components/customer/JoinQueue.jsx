@@ -10,6 +10,7 @@ import {
   Info,
   User,
   Phone,
+  Mail,
   ArrowRight,
   CheckCircle,
   Building2,
@@ -27,7 +28,7 @@ const formatTokenNumber = (tokenValue) => {
 const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData }) => {
   const [step, setStep] = useState(1); // 1: Events, 2: Guest Details, 3: Service Selection, 4: Status
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [guestDetails, setGuestDetails] = useState({ name: '', mobile: '', otp: '' });
+  const [guestDetails, setGuestDetails] = useState({ name: '', email: '', otp: '' });
   const [selectedService, setSelectedService] = useState('');
   const [loading, setLoading] = useState(false);
   const [tokenData, setTokenData] = useState(null);
@@ -69,7 +70,7 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData })
 
   const handleGuestSubmit = (e) => {
     e.preventDefault();
-    if (guestDetails.name && guestDetails.mobile) {
+    if (guestDetails.name && guestDetails.email) {
       setStep(3);
     }
   };
@@ -83,8 +84,8 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData })
       const res = await axios.post("http://localhost:5000/api/queue/join", {
         service: selectedService,
         guestName: guestDetails.name || customerData?.name || "Customer",
-        guestMobile: guestDetails.mobile || customerData?.phone || "",
-        guestEmail: eventData?.isCustomer ? (customerData?.email || "") : "",
+        guestMobile: customerData?.phone || "",
+        guestEmail: eventData?.isCustomer ? (customerData?.email || "") : guestDetails.email,
         isCustomerUser: Boolean(eventData?.isCustomer),
         eventId: selectedEvent.id,
         eventName: selectedEvent.title,
@@ -117,7 +118,7 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData })
   const resetFlow = () => {
     setStep(1);
     setSelectedEvent(null);
-    setGuestDetails({ name: '', mobile: '', otp: '' });
+    setGuestDetails({ name: '', email: '', otp: '' });
     setSelectedService('');
     setTokenData(null);
   };
@@ -372,11 +373,11 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData })
                 </div>
 
                 <div className="form-group" style={{ marginBottom: '2rem' }}>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: 'var(--color-gray-700)' }}>Mobile Number</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: 'var(--color-gray-700)' }}>Email Address</label>
                   <div style={{ position: 'relative' }}>
-                    <Phone size={20} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--color-gray-400)' }} />
+                    <Mail size={20} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--color-gray-400)' }} />
                     <input
-                      type="tel"
+                      type="email"
                       required
                       style={{
                         width: '100%',
@@ -385,13 +386,10 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData })
                         border: '1px solid var(--color-gray-200)',
                         fontSize: '1rem'
                       }}
-                      placeholder="Enter mobile number"
-                      value={guestDetails.mobile}
-                      onChange={(e) => setGuestDetails({ ...guestDetails, mobile: e.target.value })}
+                      placeholder="Enter email address"
+                      value={guestDetails.email}
+                      onChange={(e) => setGuestDetails({ ...guestDetails, email: e.target.value })}
                     />
-                  </div>
-                  <div style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>
-                    * OTP verification is optional for guests
                   </div>
                 </div>
 
