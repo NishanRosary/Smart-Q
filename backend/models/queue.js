@@ -18,6 +18,10 @@ const QueueSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  guestEmail: {
+    type: String,
+    default: null
+  },
   status: {
     type: String,
     enum: ["waiting", "serving", "completed"],
