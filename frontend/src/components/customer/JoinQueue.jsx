@@ -87,7 +87,9 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData })
         guestEmail: eventData?.isCustomer ? (customerData?.email || "") : "",
         isCustomerUser: Boolean(eventData?.isCustomer),
         eventId: selectedEvent.id,
-        eventName: selectedEvent.title
+        eventName: selectedEvent.title,
+        organizationName: selectedEvent.organizationName,
+        organizationType: selectedEvent.organizationType
       });
       // Store token for real-time tracking on dashboard
       localStorage.setItem('smartq-active-token', String(res.data.tokenNumber));

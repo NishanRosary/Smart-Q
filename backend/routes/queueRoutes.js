@@ -110,6 +110,10 @@ const buildQueueSnapshot = async () => {
       guestName: item.guestName ?? null,
       guestMobile: item.guestMobile ?? null,
       guestEmail: item.guestEmail ?? null,
+      eventId: item.eventId ?? null,
+      eventName: item.eventName ?? null,
+      organizationName: item.organizationName ?? null,
+      organizationType: item.organizationType ?? null,
       createdAt: item.createdAt
     };
   });
@@ -126,6 +130,10 @@ const buildQueueSnapshot = async () => {
     guestName: item.guestName ?? null,
     guestMobile: item.guestMobile ?? null,
     guestEmail: item.guestEmail ?? null,
+    eventId: item.eventId ?? null,
+    eventName: item.eventName ?? null,
+    organizationName: item.organizationName ?? null,
+    organizationType: item.organizationType ?? null,
     createdAt: item.createdAt
   }));
 
@@ -141,6 +149,10 @@ const buildQueueSnapshot = async () => {
     guestName: item.guestName ?? null,
     guestMobile: item.guestMobile ?? null,
     guestEmail: item.guestEmail ?? null,
+    eventId: item.eventId ?? null,
+    eventName: item.eventName ?? null,
+    organizationName: item.organizationName ?? null,
+    organizationType: item.organizationType ?? null,
     createdAt: item.createdAt
   }));
 
@@ -156,6 +168,10 @@ const buildQueueSnapshot = async () => {
     guestName: item.guestName ?? null,
     guestMobile: item.guestMobile ?? null,
     guestEmail: item.guestEmail ?? null,
+    eventId: item.eventId ?? null,
+    eventName: item.eventName ?? null,
+    organizationName: item.organizationName ?? null,
+    organizationType: item.organizationType ?? null,
     createdAt: item.createdAt
   }));
 
@@ -190,7 +206,18 @@ const broadcastQueueUpdate = async (io) => {
 // ================= JOIN QUEUE =================
 router.post("/join", async (req, res) => {
   try {
-    const { service, guestName, guestMobile, guestEmail, email, isCustomerUser } = req.body;
+    const {
+      service,
+      eventId,
+      eventName,
+      organizationName,
+      organizationType,
+      guestName,
+      guestMobile,
+      guestEmail,
+      email,
+      isCustomerUser
+    } = req.body;
 
     if (!service) {
       return res.status(400).json({ message: "Service is required" });
@@ -202,6 +229,10 @@ router.post("/join", async (req, res) => {
     const newQueue = new Queue({
       tokenNumber,
       service,
+      eventId: Number.isFinite(Number(eventId)) ? Number(eventId) : null,
+      eventName: eventName || null,
+      organizationName: organizationName || null,
+      organizationType: organizationType || null,
       guestName: guestName || null,
       guestMobile: guestMobile || null,
       guestEmail: guestEmail || null,
@@ -229,6 +260,10 @@ router.post("/join", async (req, res) => {
     res.status(201).json({
       tokenNumber,
       service,
+      eventId: newQueue.eventId,
+      eventName: newQueue.eventName,
+      organizationName: newQueue.organizationName,
+      organizationType: newQueue.organizationType,
       position,
       totalWaiting,
       estimatedWaitTime,

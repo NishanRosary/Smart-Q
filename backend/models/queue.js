@@ -10,6 +10,22 @@ const QueueSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  eventId: {
+    type: Number,
+    default: null
+  },
+  eventName: {
+    type: String,
+    default: null
+  },
+  organizationName: {
+    type: String,
+    default: null
+  },
+  organizationType: {
+    type: String,
+    default: null
+  },
   guestName: {
     type: String,
     default: null

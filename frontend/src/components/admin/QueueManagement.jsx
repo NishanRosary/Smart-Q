@@ -74,7 +74,7 @@ const QueueManagement = ({ onNavigate, goBack, currentPage }) => {
       case "cancelled":
         return <span className="badge badge-red">CANCELLED</span>;
       case "completed":
-        return <span className="badge badge-red">COMPLETED</span>;
+        return <span className="badge badge-blue">COMPLETED</span>;
       default:
         return <span className="badge badge-yellow">{status}</span>;
     }
