@@ -492,7 +492,6 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
           }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-                <Logo size={32} showText={false} />
                 <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800 }}>Smart'Q</h3>
               </div>
               <p style={{ lineHeight: '1.6', fontSize: '0.9375rem' }}>
