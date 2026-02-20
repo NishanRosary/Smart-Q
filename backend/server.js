@@ -61,7 +61,7 @@ app.get("/api/health", (req, res) => {
 app.get("/api/test-email", async (req, res) => {
   try {
     const result = await sendQueueRegistrationEmail({
-      toEmail: req.query.toEmail || "abhayganesh154@gmail.com",
+      toEmail: req.query.toEmail || "nishanrosary908@gmail.com",
       userName: req.query.userName || "Nishan",
       tokenNumber: req.query.tokenNumber || "A123",
       serviceName: req.query.serviceName || "General Service",

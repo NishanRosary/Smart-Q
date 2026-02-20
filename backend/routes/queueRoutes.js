@@ -48,7 +48,7 @@ const broadcastQueueUpdate = async (io) => {
 // ================= JOIN QUEUE =================
 router.post("/join", async (req, res) => {
   try {
-    const { service, guestName, guestMobile } = req.body;
+    const { service, guestName, guestMobile, guestEmail } = req.body;
 
     if (!service) {
       return res.status(400).json({ message: "Service is required" });
@@ -62,6 +62,7 @@ router.post("/join", async (req, res) => {
       service,
       guestName: guestName || null,
       guestMobile: guestMobile || null,
+      guestEmail: guestEmail || null,
       status: "waiting"
     });
 
