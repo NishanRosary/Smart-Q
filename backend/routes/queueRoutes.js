@@ -185,17 +185,7 @@ router.post("/join", async (req, res) => {
     const predictions = await getPredictions(service);
 
     const recipientEmail = guestEmail || email;
-    if (isCustomerUser && recipientEmail) {
-      sendQueueRegistrationEmail({
-        toEmail: recipientEmail,
-        userName: guestName || "User",
-        tokenNumber,
-        serviceName: service,
-        estimatedWaitTime
-      }).catch((mailError) => {
-        console.error("Queue confirmation email failed:", mailError.message);
-      });
-    }
+    const shouldSendConfirmationEmail = Boolean(isCustomerUser && recipientEmail);
 
     const io = req.app.get("io");
     if (io) await broadcastQueueUpdate(io);
@@ -210,6 +200,20 @@ router.post("/join", async (req, res) => {
       predictions,
       queueId: newQueue._id
     });
+
+    if (shouldSendConfirmationEmail) {
+      setTimeout(() => {
+        sendQueueRegistrationEmail({
+          toEmail: recipientEmail,
+          userName: guestName || "User",
+          tokenNumber,
+          serviceName: service,
+          estimatedWaitTime
+        }).catch((mailError) => {
+          console.error("Queue confirmation email failed:", mailError.message);
+        });
+      }, 2000);
+    }
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to join queue" });
