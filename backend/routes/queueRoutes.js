@@ -2,12 +2,22 @@ const express = require("express");
 const router = express.Router();
 const Queue = require("../models/queue");
 const Event = require("../models/event");
-const { authMiddleware, adminMiddleware } = require("../middleware/auth");
+const { authMiddleware, roleMiddleware } = require("../middleware/auth");
 const { sendQueueRegistrationEmail } = require("../services/emailService");
+const rateLimit = require("express-rate-limit");
 
-/**
- * Queue utility helpers
- */
+/* =========================
+   RATE LIMITER (ANTI-SPAM)
+========================= */
+const joinLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10
+});
+
+/* =========================
+   HELPERS
+========================= */
+
 const AVG_SERVICE_TIME_MIN = 4;
 
 const calculateWaitTime = (position) => {
@@ -21,100 +31,11 @@ const getCrowdLevel = (waitingCount) => {
   return "High";
 };
 
-const syncEventStatus = async (eventId) => {
-  if (!eventId) return;
+/* =========================
+   JOIN QUEUE (Public but Safe)
+========================= */
 
-  const event = await Event.findById(eventId);
-  if (!event) return;
-
-  const totalTokens = Number(event.totalTokens) || 0;
-  const joinedCount = await Queue.countDocuments({
-    eventId: String(eventId),
-    status: { $ne: "cancelled" }
-  });
-  const servingCount = await Queue.countDocuments({
-    eventId: String(eventId),
-    status: "serving"
-  });
-
-  let nextStatus = "Upcoming";
-  if (servingCount > 0) {
-    nextStatus = "Ongoing";
-  } else if (totalTokens > 0 && joinedCount >= totalTokens) {
-    nextStatus = "Full";
-  }
-
-  if (event.status !== nextStatus) {
-    event.status = nextStatus;
-    await event.save();
-  }
-};
-
-const buildQueueSnapshot = async () => {
-  const waitingQueue = await Queue.find({ status: "waiting" }).sort({ tokenNumber: 1 });
-  const servingQueue = await Queue.find({ status: "serving" }).sort({ tokenNumber: 1 });
-  const cancelledQueue = await Queue.find({ status: "cancelled" }).sort({ tokenNumber: 1 });
-  const completedQueue = await Queue.find({ status: "completed" }).sort({ tokenNumber: 1 });
-  const totalWaiting = waitingQueue.length;
-  const crowdLevel = getCrowdLevel(totalWaiting);
-
-  const toQueueItem = (item, position) => ({
-    _id: item._id,
-    tokenNumber: item.tokenNumber,
-    service: item.service,
-    status: item.status,
-    position,
-    estimatedWaitTime: item.status === "waiting" ? calculateWaitTime(position) : 0,
-    crowdLevel,
-    totalWaiting,
-    guestName: item.guestName ?? null,
-    guestMobile: item.guestMobile ?? null,
-    guestEmail: item.guestEmail ?? null,
-    eventId: item.eventId ?? null,
-    eventName: item.eventName ?? null,
-    organizationName: item.organizationName ?? null,
-    organizationType: item.organizationType ?? null,
-    createdAt: item.createdAt
-  });
-
-  const waitingStatus = waitingQueue.map((item, index) => {
-    const position = index + 1;
-    return toQueueItem(item, position);
-  });
-
-  const servingStatus = servingQueue.map((item) => toQueueItem(item, 0));
-  const cancelledStatus = cancelledQueue.map((item) => toQueueItem(item, 0));
-  const completedStatus = completedQueue.map((item) => toQueueItem(item, 0));
-
-  return {
-    queue: [...waitingStatus, ...servingStatus, ...cancelledStatus, ...completedStatus],
-    serving: servingStatus,
-    totalWaiting,
-    crowdLevel
-  };
-};
-
-/**
- * Safe broadcast helper
- * Won't crash if io is missing
- */
-const safeBroadcast = async (req) => {
-  try {
-    const io = req.app.get("io");
-    if (io) {
-      const snapshot = await buildQueueSnapshot();
-      io.emit("queue:update", {
-        ...snapshot,
-        timestamp: new Date()
-      });
-    }
-  } catch (err) {
-    console.error("Broadcast error:", err.message);
-  }
-};
-
-// ================= JOIN QUEUE =================
-router.post("/join", async (req, res) => {
+router.post("/join", joinLimiter, async (req, res) => {
   try {
     const {
       service,
@@ -127,60 +48,41 @@ router.post("/join", async (req, res) => {
       organizationType
     } = req.body;
 
-    if (!service) {
-      return res.status(400).json({ message: "Service is required" });
+    if (!service || !eventId) {
+      return res.status(400).json({ message: "Service and Event are required" });
+    }
+
+    const selectedEvent = await Event.findById(eventId);
+    if (!selectedEvent) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    const totalTokensForEvent = Number(selectedEvent.totalTokens) || 0;
+    const joinedForEvent = await Queue.countDocuments({
+      eventId: String(eventId),
+      status: { $ne: "cancelled" }
+    });
+
+    if (totalTokensForEvent > 0 && joinedForEvent >= totalTokensForEvent) {
+      return res.status(409).json({ message: "Queue is full for this event" });
     }
 
     const lastToken = await Queue.findOne().sort({ tokenNumber: -1 });
     const tokenNumber = lastToken ? lastToken.tokenNumber + 1 : 1;
 
-    const normalizedEventId = eventId ? String(eventId) : null;
-
-    if (!normalizedEventId) {
-      return res.status(400).json({ message: "Event is required to join queue" });
-    }
-
-    const selectedEvent = await Event.findById(normalizedEventId);
-    if (!selectedEvent) {
-      return res.status(404).json({ message: "Selected event not found" });
-    }
-
-    const totalTokensForEvent = Number(selectedEvent.totalTokens) || 0;
-    const joinedForEvent = await Queue.countDocuments({
-      eventId: normalizedEventId,
-      status: { $ne: "cancelled" }
-    });
-
-    if (totalTokensForEvent > 0 && joinedForEvent >= totalTokensForEvent) {
-      return res.status(409).json({
-        message: "Queue is full for this event",
-        isFull: true
-      });
-    }
-
-    const queuePayload = {
+    const newQueue = await Queue.create({
       tokenNumber,
       service,
       guestName: guestName || null,
       guestMobile: guestMobile || null,
       guestEmail: guestEmail || null,
-      eventId: normalizedEventId,
+      eventId,
       eventName: eventName || null,
       organizationName: organizationName || null,
       organizationType: organizationType || null,
+      branchId: selectedEvent.branchId,
       status: "waiting"
-    };
-
-    const newQueue = await Queue.create(queuePayload);
-
-    const waitingAhead = await Queue.countDocuments({
-      status: "waiting",
-      tokenNumber: { $lt: tokenNumber }
     });
-    const position = waitingAhead + 1;
-    const totalWaiting = await Queue.countDocuments({ status: "waiting" });
-    const estimatedWaitTime = calculateWaitTime(position);
-    const crowdLevel = getCrowdLevel(totalWaiting);
 
     if (guestEmail) {
       sendQueueRegistrationEmail({
@@ -188,198 +90,142 @@ router.post("/join", async (req, res) => {
         userName: guestName || "User",
         tokenNumber,
         serviceName: service,
-        estimatedWaitTime
-      }).catch((mailError) => {
-        console.error("Queue confirmation email failed:", mailError.message);
-      });
+        estimatedWaitTime: 0
+      }).catch(() => {});
     }
-
-    await syncEventStatus(normalizedEventId);
-    await safeBroadcast(req);
 
     res.status(201).json({
       tokenNumber,
-      service,
-      position,
-      totalWaiting,
-      estimatedWaitTime,
-      crowdLevel,
-      availableTokens: Math.max(totalTokensForEvent - (joinedForEvent + 1), 0),
-      status: "waiting",
-      queueId: newQueue._id
+      queueId: newQueue._id,
+      status: "waiting"
     });
+
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: "Failed to join queue" });
   }
 });
 
-// ================= GET MY QUEUE STATUS =================
-router.get("/status/:tokenNumber", async (req, res) => {
-  try {
-    const tokenNum = parseInt(String(req.params.tokenNumber).replace(/\D/g, ""), 10);
-    if (Number.isNaN(tokenNum)) {
-      return res.status(400).json({ message: "Invalid token number" });
+/* =========================
+   GET ALL QUEUES (ADMIN ONLY + BRANCH SAFE)
+========================= */
+
+router.get("/",
+  authMiddleware,
+  roleMiddleware("admin"),
+  async (req, res) => {
+    try {
+      const queue = await Queue.find({
+        branchId: req.user.branchId
+      }).sort({ tokenNumber: 1 });
+
+      res.json(queue);
+
+    } catch (error) {
+      res.status(500).json({ message: error.message });
     }
-
-    const myEntry = await Queue.findOne({ tokenNumber: tokenNum });
-    if (!myEntry) {
-      return res.status(404).json({ message: "Token not found" });
-    }
-
-    const totalWaiting = await Queue.countDocuments({ status: "waiting" });
-    const crowdLevel = getCrowdLevel(totalWaiting);
-
-    if (myEntry.status === "serving" || myEntry.status === "completed" || myEntry.status === "cancelled") {
-      return res.json({
-        tokenNumber: myEntry.tokenNumber,
-        service: myEntry.service,
-        status: myEntry.status,
-        position: 0,
-        estimatedWaitTime: 0,
-        crowdLevel,
-        totalWaiting
-      });
-    }
-
-    const waitingAhead = await Queue.countDocuments({
-      status: "waiting",
-      tokenNumber: { $lt: tokenNum }
-    });
-    const position = waitingAhead + 1;
-    const estimatedWaitTime = calculateWaitTime(position);
-
-    res.json({
-      tokenNumber: myEntry.tokenNumber,
-      service: myEntry.service,
-      status: myEntry.status,
-      position,
-      totalWaiting,
-      estimatedWaitTime,
-      crowdLevel
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to get queue status" });
   }
-});
+);
 
-// ================= GET QUEUE LIST =================
-router.get("/", authMiddleware, adminMiddleware, async (req, res) => {
-  try {
-    const queue = await Queue.find({}).sort({ tokenNumber: 1 });
-    res.json(queue);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
+/* =========================
+   START SERVING
+========================= */
 
+router.put("/:id/start",
+  authMiddleware,
+  roleMiddleware("admin"),
+  async (req, res) => {
+    try {
+      const queueItem = await Queue.findById(req.params.id);
 
-// ================= START SERVING =================
-router.put("/:id/start", authMiddleware, adminMiddleware, async (req, res) => {
-  try {
-    const updated = await Queue.findOneAndUpdate(
-      { _id: req.params.id, status: "waiting" },
-      { $set: { status: "serving" } },
-      { new: true }
-    );
+      if (!queueItem) {
+        return res.status(404).json({ message: "Queue not found" });
+      }
 
-    if (!updated) {
-      return res.status(400).json({
-        message: "Token cannot be started (invalid state or not found)"
-      });
+      if (queueItem.branchId.toString() !== req.user.branchId.toString()) {
+        return res.status(403).json({ message: "Wrong branch" });
+      }
+
+      if (queueItem.status !== "waiting") {
+        return res.status(400).json({ message: "Invalid state" });
+      }
+
+      queueItem.status = "serving";
+      await queueItem.save();
+
+      res.json(queueItem);
+
+    } catch (error) {
+      res.status(500).json({ message: "Failed to start token" });
     }
-
-    await syncEventStatus(updated.eventId);
-
-    await safeBroadcast(req);
-    res.json(updated);
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to start token" });
   }
-});
+);
 
+/* =========================
+   COMPLETE
+========================= */
 
-// ================= COMPLETE =================
-router.put("/:id/complete", authMiddleware, adminMiddleware, async (req, res) => {
-  try {
-    const updated = await Queue.findOneAndUpdate(
-      { _id: req.params.id, status: "serving" },
-      { $set: { status: "completed" } },
-      { new: true }
-    );
+router.put("/:id/complete",
+  authMiddleware,
+  roleMiddleware("admin"),
+  async (req, res) => {
+    try {
+      const queueItem = await Queue.findById(req.params.id);
 
-    if (!updated) {
-      return res.status(400).json({
-        message: "Token cannot be completed (invalid state or not found)"
-      });
+      if (!queueItem) {
+        return res.status(404).json({ message: "Queue not found" });
+      }
+
+      if (queueItem.branchId.toString() !== req.user.branchId.toString()) {
+        return res.status(403).json({ message: "Wrong branch" });
+      }
+
+      if (queueItem.status !== "serving") {
+        return res.status(400).json({ message: "Invalid state" });
+      }
+
+      queueItem.status = "completed";
+      await queueItem.save();
+
+      res.json(queueItem);
+
+    } catch (error) {
+      res.status(500).json({ message: "Failed to complete token" });
     }
-
-    await syncEventStatus(updated.eventId);
-    await safeBroadcast(req);
-    res.json(updated);
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to complete token" });
   }
-});
+);
 
+/* =========================
+   CANCEL
+========================= */
 
-// ================= CANCEL =================
-router.put("/:id/cancel", authMiddleware, adminMiddleware, async (req, res) => {
-  try {
-    const updated = await Queue.findOneAndUpdate(
-      {
-        _id: req.params.id,
-        status: { $in: ["waiting", "serving"] }
-      },
-      { $set: { status: "cancelled" } },
-      { new: true }
-    );
+router.put("/:id/cancel",
+  authMiddleware,
+  roleMiddleware("admin"),
+  async (req, res) => {
+    try {
+      const queueItem = await Queue.findById(req.params.id);
 
-    if (!updated) {
-      return res.status(400).json({
-        message: "Token cannot be cancelled"
-      });
+      if (!queueItem) {
+        return res.status(404).json({ message: "Queue not found" });
+      }
+
+      if (queueItem.branchId.toString() !== req.user.branchId.toString()) {
+        return res.status(403).json({ message: "Wrong branch" });
+      }
+
+      if (!["waiting", "serving"].includes(queueItem.status)) {
+        return res.status(400).json({ message: "Invalid state" });
+      }
+
+      queueItem.status = "cancelled";
+      await queueItem.save();
+
+      res.json(queueItem);
+
+    } catch (error) {
+      res.status(500).json({ message: "Failed to cancel token" });
     }
-
-    await syncEventStatus(updated.eventId);
-    await safeBroadcast(req);
-    res.json(updated);
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to cancel token" });
   }
-});
-
-
-// ================= REVOKE =================
-router.put("/:id/revoke", authMiddleware, adminMiddleware, async (req, res) => {
-  try {
-    const updated = await Queue.findOneAndUpdate(
-      { _id: req.params.id, status: "cancelled" },
-      { $set: { status: "waiting" } },
-      { new: true }
-    );
-
-    if (!updated) {
-      return res.status(400).json({
-        message: "Token cannot be revoked"
-      });
-    }
-
-    await syncEventStatus(updated.eventId);
-    await safeBroadcast(req);
-    res.json(updated);
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to revoke token" });
-  }
-});
+);
 
 module.exports = router;

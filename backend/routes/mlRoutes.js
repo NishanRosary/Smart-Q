@@ -2,13 +2,13 @@ const express = require("express");
 const router = express.Router();
 const Queue = require("../models/queue");
 const axios = require("axios");
-const { authMiddleware, adminMiddleware } = require("../middleware/auth");
+const { authMiddleware, roleMiddleware } = require("../middleware/auth");
 
 const ML_SERVICE_URL = process.env.ML_SERVICE_URL || "http://localhost:5001";
 
-// =======================
-// Helper Functions
-// =======================
+/* =======================
+   Helper Functions
+======================= */
 
 const prepareFeatures = (queueItem, additionalData = {}) => {
   const now = new Date();
@@ -20,7 +20,8 @@ const prepareFeatures = (queueItem, additionalData = {}) => {
     hourOfDay: joinedAt.getHours(),
     month: joinedAt.getMonth() + 1,
     dayOfMonth: joinedAt.getDate(),
-    positionInQueue: queueItem.positionInQueue || additionalData.positionInQueue || 1,
+    positionInQueue:
+      queueItem.positionInQueue || additionalData.positionInQueue || 1,
     ...additionalData
   };
 };
@@ -40,19 +41,22 @@ const callMLService = async (endpoint, data) => {
 const getFallbackPrediction = (endpoint) => {
   if (endpoint.includes("waiting-time")) {
     return { waitingTime: 15, unit: "minutes" };
-  } else if (endpoint.includes("queue-length")) {
+  }
+  if (endpoint.includes("queue-length")) {
     return { queueLength: 10 };
-  } else if (endpoint.includes("no-show")) {
+  }
+  if (endpoint.includes("no-show")) {
     return { noShowProbability: 0.15, percentage: 15 };
-  } else if (endpoint.includes("peak-hours")) {
+  }
+  if (endpoint.includes("peak-hours")) {
     return { queueDensity: 20, isPeak: false };
   }
   return {};
 };
 
-// =======================
-// PREDICTION ROUTES (Public)
-// =======================
+/* =======================
+   PUBLIC ML ROUTES
+======================= */
 
 router.post("/predict/waiting-time", async (req, res) => {
   try {
@@ -64,27 +68,23 @@ router.post("/predict/waiting-time", async (req, res) => {
     }
 
     if (!queueItem && !service) {
-      return res.status(400).json({ message: "Token number or service is required" });
-    }
-
-    let position = positionInQueue;
-    if (!position && queueItem) {
-      const waitingCount = await Queue.countDocuments({
-        service: queueItem.service,
-        status: "Waiting",
-        createdAt: { $lt: queueItem.createdAt }
-      });
-      position = waitingCount + 1;
+      return res
+        .status(400)
+        .json({ message: "Token number or service is required" });
     }
 
     const features = prepareFeatures(
       queueItem || { service, joinedAt: new Date() },
-      { positionInQueue: position || 1 }
+      { positionInQueue: positionInQueue || 1 }
     );
 
-    const prediction = await callMLService("/predict/waiting-time", features);
+    const prediction = await callMLService(
+      "/predict/waiting-time",
+      features
+    );
 
     res.json({ ...prediction, features });
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -95,7 +95,8 @@ router.post("/predict/queue-length", async (req, res) => {
     const { service, date, hour } = req.body;
 
     const targetDate = date ? new Date(date) : new Date();
-    const targetHour = hour !== undefined ? hour : targetDate.getHours();
+    const targetHour =
+      hour !== undefined ? hour : targetDate.getHours();
 
     const features = {
       service: service || "General",
@@ -105,9 +106,13 @@ router.post("/predict/queue-length", async (req, res) => {
       dayOfMonth: targetDate.getDate()
     };
 
-    const prediction = await callMLService("/predict/queue-length", features);
+    const prediction = await callMLService(
+      "/predict/queue-length",
+      features
+    );
 
     res.json({ ...prediction, features });
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -130,6 +135,7 @@ router.post("/predict/no-show", async (req, res) => {
     const prediction = await callMLService("/predict/no-show", features);
 
     res.json({ ...prediction, features });
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -141,12 +147,19 @@ router.post("/suggest/best-time", async (req, res) => {
 
     const data = {
       service: service || "General",
-      dayOfWeek: dayOfWeek !== undefined ? dayOfWeek : new Date().getDay()
+      dayOfWeek:
+        dayOfWeek !== undefined
+          ? dayOfWeek
+          : new Date().getDay()
     };
 
-    const suggestions = await callMLService("/suggest/best-time", data);
+    const suggestions = await callMLService(
+      "/suggest/best-time",
+      data
+    );
 
     res.json({ ...suggestions, ...data });
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -157,7 +170,8 @@ router.post("/predict/peak-hours", async (req, res) => {
     const { service, date, hour } = req.body;
 
     const targetDate = date ? new Date(date) : new Date();
-    const targetHour = hour !== undefined ? hour : targetDate.getHours();
+    const targetHour =
+      hour !== undefined ? hour : targetDate.getHours();
 
     const features = {
       service: service || "General",
@@ -167,41 +181,47 @@ router.post("/predict/peak-hours", async (req, res) => {
       dayOfMonth: targetDate.getDate()
     };
 
-    const prediction = await callMLService("/predict/peak-hours", features);
+    const prediction = await callMLService(
+      "/predict/peak-hours",
+      features
+    );
 
     res.json({ current: prediction });
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// =======================
-// ADMIN ROUTES (Protected)
-// =======================
+/* =======================
+   ADMIN ROUTES (Protected)
+======================= */
 
 router.post(
   "/train",
   authMiddleware,
-  adminMiddleware,
+  roleMiddleware("admin"),
   async (req, res) => {
     try {
       const queueData = await Queue.find({});
 
       if (queueData.length === 0) {
-        return res.status(400).json({
-          message: "No training data available."
-        });
+        return res
+          .status(400)
+          .json({ message: "No training data available." });
       }
 
-      const response = await axios.post(`${ML_SERVICE_URL}/train`, {
-        data: queueData
-      });
+      const response = await axios.post(
+        `${ML_SERVICE_URL}/train`,
+        { data: queueData }
+      );
 
       res.json({
         message: "Models trained successfully",
         dataPoints: queueData.length,
         results: response.data
       });
+
     } catch (error) {
       res.status(500).json({
         message: error.message,
@@ -214,14 +234,18 @@ router.post(
 router.get(
   "/status",
   authMiddleware,
-  adminMiddleware,
+  roleMiddleware("admin"),
   async (req, res) => {
     try {
-      const response = await axios.get(`${ML_SERVICE_URL}/health`);
+      const response = await axios.get(
+        `${ML_SERVICE_URL}/health`
+      );
+
       res.json({
         mlService: "connected",
         ...response.data
       });
+
     } catch (error) {
       res.json({
         mlService: "disconnected",

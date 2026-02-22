@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 const User = require("./models/user");
 const Counter = require("./models/counter");
 const Event = require("./models/event");
@@ -65,3 +65,4 @@ const seedData = async () => {
 };
 
 seedData();
+

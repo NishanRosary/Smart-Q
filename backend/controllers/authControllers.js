@@ -1,79 +1,107 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 
-// Generate token
-const generateToken = (id, role) => {
+const ACCESS_TOKEN_EXPIRES_IN = "15m";
+
+const generateAccessToken = (user) => {
   return jwt.sign(
-    { id, role },
-    process.env.JWT_SECRET,
-    { expiresIn: "7d" }
+    { id: user._id, role: user.role },
+    process.env.JWT_ACCESS_SECRET,
+    { expiresIn: ACCESS_TOKEN_EXPIRES_IN }
   );
 };
 
-// REGISTER
 exports.register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, phone, password } = req.body;
 
-    const existingUser = await User.findOne({ email });
+    if (!name || !password || (!email && !phone)) {
+      return res.status(400).json({
+        message: "Name, password, and email or phone are required"
+      });
+    }
+
+    const normalizedEmail = email ? String(email).trim().toLowerCase() : undefined;
+    const normalizedPhone = phone ? String(phone).trim() : undefined;
+
+    const duplicateChecks = [];
+    if (normalizedEmail) duplicateChecks.push({ email: normalizedEmail });
+    if (normalizedPhone) duplicateChecks.push({ phone: normalizedPhone });
+
+    const existingUser = await User.findOne({ $or: duplicateChecks });
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({ message: "User already registered" });
     }
 
     const user = await User.create({
-      name,
-      email,
+      name: String(name).trim(),
+      email: normalizedEmail,
+      phone: normalizedPhone,
       password,
       role: "customer"
     });
 
-    const token = generateToken(user._id, user.role);
-
-    res.status(201).json({
-      token,
+    return res.status(201).json({
+      success: true,
+      message: "Registration successful",
       user: {
         id: user._id,
         name: user.name,
-        email: user.email,
+        email: user.email || null,
+        phone: user.phone || null,
         role: user.role
       }
     });
-
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
-// LOGIN
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { emailOrPhone, password } = req.body;
 
-    const user = await User.findOne({ email });
+    if (!emailOrPhone || !password) {
+      return res.status(400).json({ message: "emailOrPhone and password are required" });
+    }
 
-    if (!user || !user.isActive) {
+    const identifier = String(emailOrPhone).trim();
+
+    const user = await User.findOne({
+      $or: [
+        { email: identifier.toLowerCase() },
+        { phone: identifier }
+      ]
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (!user.isActive) {
+      return res.status(401).json({ message: "Account inactive" });
+    }
+
+    const isPasswordValid = await user.comparePassword(password);
+    if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const isMatch = await user.comparePassword(password);
+    // Token is generated only after all checks pass.
+    const accessToken = generateAccessToken(user);
 
-    if (!isMatch) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
-
-    const token = generateToken(user._id, user.role);
-
-    res.json({
-      token,
+    return res.status(200).json({
+      token: accessToken,
       user: {
         id: user._id,
         name: user.name,
-        email: user.email,
-        role: user.role
+        email: user.email || null,
+        phone: user.phone || null,
+        role: user.role,
+        isActive: user.isActive
       }
     });
-
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error" });
   }
 };

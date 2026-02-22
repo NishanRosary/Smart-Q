@@ -1,29 +1,43 @@
 const jwt = require("jsonwebtoken");
+const User = require("../models/user");
 
-const authMiddleware = (req, res, next) => {
-    const authHeader = req.header("Authorization");
+const authMiddleware = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return res.status(401).json({ message: "No token, authorization denied" });
+      return res.status(401).json({ message: "No token provided" });
     }
 
     const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
 
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
-        req.user = decoded;
-        next();
-    } catch (error) {
-        return res.status(401).json({ message: "Invalid or expired token" });
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.status(401).json({ message: "User not found for token" });
     }
+
+    if (!user.isActive) {
+      return res.status(401).json({ message: "User account is inactive" });
+    }
+
+    req.user = user;
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid or expired token" });
+  }
 };
 
-const adminMiddleware = (req, res, next) => {
-    if (req.user && req.user.role === "admin") {
-        next();
-    } else {
-        return res.status(403).json({ message: "Access denied. Admin only." });
+const roleMiddleware = (...allowedRoles) => {
+  return (req, res, next) => {
+    if (!req.user || !allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({ message: "Forbidden" });
     }
+    next();
+  };
 };
 
-module.exports = { authMiddleware, adminMiddleware };
+module.exports = {
+  authMiddleware,
+  roleMiddleware
+};
