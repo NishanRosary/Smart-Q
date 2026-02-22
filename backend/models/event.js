@@ -38,7 +38,7 @@ const eventSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['Upcoming', 'Ongoing', 'Completed'],
+      enum: ['Upcoming', 'Ongoing', 'Full', 'Completed'],
       default: 'Upcoming'
     },
     crowdLevel: {

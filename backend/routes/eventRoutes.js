@@ -61,16 +61,29 @@ router.get("/", async (req, res) => {
           eventId,
           status: { $ne: "cancelled" }
         });
+        const inProgressTokens = await Queue.countDocuments({
+          eventId,
+          status: "serving"
+        });
 
         const totalTokens = Number(event.totalTokens) || 0;
         const availableTokens = Math.max(totalTokens - joinedTokens, 0);
+        const isFull = availableTokens <= 0;
+
+        let computedStatus = "Upcoming";
+        if (inProgressTokens > 0) {
+          computedStatus = "Ongoing";
+        } else if (isFull) {
+          computedStatus = "Full";
+        }
 
         return {
           ...event.toObject(),
           id: String(event._id),
+          status: computedStatus,
           joinedTokens,
           availableTokens,
-          isFull: availableTokens <= 0
+          isFull
         };
       })
     );

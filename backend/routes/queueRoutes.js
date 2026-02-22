@@ -21,6 +21,35 @@ const getCrowdLevel = (waitingCount) => {
   return "High";
 };
 
+const syncEventStatus = async (eventId) => {
+  if (!eventId) return;
+
+  const event = await Event.findById(eventId);
+  if (!event) return;
+
+  const totalTokens = Number(event.totalTokens) || 0;
+  const joinedCount = await Queue.countDocuments({
+    eventId: String(eventId),
+    status: { $ne: "cancelled" }
+  });
+  const servingCount = await Queue.countDocuments({
+    eventId: String(eventId),
+    status: "serving"
+  });
+
+  let nextStatus = "Upcoming";
+  if (servingCount > 0) {
+    nextStatus = "Ongoing";
+  } else if (totalTokens > 0 && joinedCount >= totalTokens) {
+    nextStatus = "Full";
+  }
+
+  if (event.status !== nextStatus) {
+    event.status = nextStatus;
+    await event.save();
+  }
+};
+
 const buildQueueSnapshot = async () => {
   const waitingQueue = await Queue.find({ status: "waiting" }).sort({ tokenNumber: 1 });
   const servingQueue = await Queue.find({ status: "serving" }).sort({ tokenNumber: 1 });
@@ -165,6 +194,7 @@ router.post("/join", async (req, res) => {
       });
     }
 
+    await syncEventStatus(normalizedEventId);
     await safeBroadcast(req);
 
     res.status(201).json({
@@ -260,6 +290,8 @@ router.put("/:id/start", authMiddleware, adminMiddleware, async (req, res) => {
       });
     }
 
+    await syncEventStatus(updated.eventId);
+
     await safeBroadcast(req);
     res.json(updated);
 
@@ -285,6 +317,7 @@ router.put("/:id/complete", authMiddleware, adminMiddleware, async (req, res) =>
       });
     }
 
+    await syncEventStatus(updated.eventId);
     await safeBroadcast(req);
     res.json(updated);
 
@@ -313,6 +346,7 @@ router.put("/:id/cancel", authMiddleware, adminMiddleware, async (req, res) => {
       });
     }
 
+    await syncEventStatus(updated.eventId);
     await safeBroadcast(req);
     res.json(updated);
 
@@ -338,6 +372,7 @@ router.put("/:id/revoke", authMiddleware, adminMiddleware, async (req, res) => {
       });
     }
 
+    await syncEventStatus(updated.eventId);
     await safeBroadcast(req);
     res.json(updated);
 

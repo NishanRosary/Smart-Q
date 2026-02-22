@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Sidebar from '../shared/Sidebar';
 import QRCodeDisplay from '../shared/QRCodeDisplay';
+import socket from '../../socket';
 import '../../styles/admin.css';
 import '../../styles/global.css';
 
@@ -33,22 +34,28 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Fetch events
+  const fetchEvents = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/events', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      setEvents(response.data || []);
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      setEvents([]);
+    }
+  };
+
+  // Fetch events + keep in sync with queue updates
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/api/events', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-        setEvents(response.data || []);
-      } catch (error) {
-        console.error('Error fetching events:', error);
-        setEvents([]);
-      }
-    };
     fetchEvents();
+
+    socket.on('queue:update', fetchEvents);
+    return () => {
+      socket.off('queue:update', fetchEvents);
+    };
   }, []);
 
   const handleInputChange = (e) => {

@@ -24,6 +24,15 @@ const formatTokenNumber = (tokenValue) => {
   return `T${numeric.padStart(3, '0')}`;
 };
 
+const getEventTokenStats = (event) => {
+  const total = Number(event?.totalTokens) || 0;
+  const available = Number(event?.availableTokens);
+  return {
+    total,
+    available: Number.isFinite(available) ? Math.max(0, available) : 0
+  };
+};
+
 const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData }) => {
   const [step, setStep] = useState(1); // 1: Events, 2: Guest Details, 3: Service Selection, 4: Status
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -353,6 +362,12 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData })
                       <span className="badge badge-red">FULL</span>
                     ) : getCrowdLevelBadge(event.crowdLevel)}
                   </div>
+                  <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                    <span className="badge badge-blue">Total: {getEventTokenStats(event).total}</span>
+                    <span className={`badge ${event.isFull ? 'badge-red' : 'badge-green'}`}>
+                      Available: {getEventTokenStats(event).available}
+                    </span>
+                  </div>
                   <h3 className="event-title">{event.title}</h3>
                   <div className="event-details">
                     <div className="event-detail-item">
@@ -368,10 +383,10 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData })
                       <span>{event.location}</span>
                     </div>
                     <div className="event-detail-item">
-                      <span>Total Tokens: {event.totalTokens ?? 0}</span>
+                      <span>Total Tokens: {getEventTokenStats(event).total}</span>
                     </div>
                     <div className="event-detail-item">
-                      <span>Available: {event.availableTokens ?? 0}</span>
+                      <span>Available: {getEventTokenStats(event).available}</span>
                     </div>
                   </div>
                   <button className="btn-primary" style={{ marginTop: '1rem', width: '100%' }} disabled={Boolean(event.isFull)}>

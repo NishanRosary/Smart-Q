@@ -189,6 +189,15 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
     return <span className={`badge ${getCrowdLevelColor(level)}`}>{level}</span>;
   };
 
+  const getEventTokenStats = (event) => {
+    const total = Number(event?.totalTokens) || 0;
+    const available = Number(event?.availableTokens);
+    return {
+      total,
+      available: Number.isFinite(available) ? Math.max(0, available) : 0
+    };
+  };
+
   const handleQRClick = (event) => {
     setSelectedEvent(event);
     setShowQRModal(true);
@@ -518,12 +527,20 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
           <div className="events-grid">
             {events.map(event => (
               <div key={event.id} className="event-card">
+                {(() => {
+                  const tokenStats = getEventTokenStats(event);
+                  return (
+                    <>
                 <div className="event-header">
                   <span className="event-organization" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <span style={{ fontWeight: 700, color: 'var(--color-primary)' }}>{event.organizationName}</span>
                     <span style={{ opacity: 0.8, fontSize: '0.8rem' }}>({event.organizationType})</span>
                   </span>
                   {getCrowdLevelBadge(event.crowdLevel)}
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                  <span className="badge badge-blue">Total: {tokenStats.total}</span>
+                  <span className={`badge ${event.isFull ? 'badge-red' : 'badge-green'}`}>Available: {tokenStats.available}</span>
                 </div>
                 <h3 className="event-title">{event.title}</h3>
                 <div className="event-details">
@@ -547,11 +564,11 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
                   </div>
                   <div className="event-detail-item">
                     <span><Users size={16} /></span>
-                    <span>Total Tokens: {event.totalTokens ?? 0}</span>
+                    <span>Total Tokens: {tokenStats.total}</span>
                   </div>
                   <div className="event-detail-item">
                     <span><Activity size={16} /></span>
-                    <span>Available: {event.availableTokens ?? 0}</span>
+                    <span>Available: {tokenStats.available}</span>
                   </div>
                 </div>
                 <div className="event-actions">
@@ -570,6 +587,9 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
                     <QrCode size={16} /> QR Code
                   </button>
                 </div>
+                    </>
+                  );
+                })()}
               </div>
             ))}
           </div>
