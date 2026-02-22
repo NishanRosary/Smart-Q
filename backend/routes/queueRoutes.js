@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Queue = require("../models/queue");
+const Event = require("../models/event");
 const { authMiddleware, adminMiddleware } = require("../middleware/auth");
 const { sendQueueRegistrationEmail } = require("../services/emailService");
 
@@ -104,23 +105,42 @@ router.post("/join", async (req, res) => {
     const lastToken = await Queue.findOne().sort({ tokenNumber: -1 });
     const tokenNumber = lastToken ? lastToken.tokenNumber + 1 : 1;
 
-    const parsedEventId = Number(eventId);
+    const normalizedEventId = eventId ? String(eventId) : null;
+
+    if (!normalizedEventId) {
+      return res.status(400).json({ message: "Event is required to join queue" });
+    }
+
+    const selectedEvent = await Event.findById(normalizedEventId);
+    if (!selectedEvent) {
+      return res.status(404).json({ message: "Selected event not found" });
+    }
+
+    const totalTokensForEvent = Number(selectedEvent.totalTokens) || 0;
+    const joinedForEvent = await Queue.countDocuments({
+      eventId: normalizedEventId,
+      status: { $ne: "cancelled" }
+    });
+
+    if (totalTokensForEvent > 0 && joinedForEvent >= totalTokensForEvent) {
+      return res.status(409).json({
+        message: "Queue is full for this event",
+        isFull: true
+      });
+    }
+
     const queuePayload = {
       tokenNumber,
       service,
       guestName: guestName || null,
       guestMobile: guestMobile || null,
       guestEmail: guestEmail || null,
+      eventId: normalizedEventId,
       eventName: eventName || null,
       organizationName: organizationName || null,
       organizationType: organizationType || null,
       status: "waiting"
     };
-
-    // `eventId` is numeric in schema; only persist if it's a valid number.
-    if (!Number.isNaN(parsedEventId) && Number.isFinite(parsedEventId)) {
-      queuePayload.eventId = parsedEventId;
-    }
 
     const newQueue = await Queue.create(queuePayload);
 
@@ -154,6 +174,7 @@ router.post("/join", async (req, res) => {
       totalWaiting,
       estimatedWaitTime,
       crowdLevel,
+      availableTokens: Math.max(totalTokensForEvent - (joinedForEvent + 1), 0),
       status: "waiting",
       queueId: newQueue._id
     });

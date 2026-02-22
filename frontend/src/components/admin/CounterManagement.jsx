@@ -54,7 +54,7 @@ const CounterManagement = ({ onNavigate, goBack, currentPage }) => {
   const eventIdToOrgMap = useMemo(() => {
     const map = new Map();
     events.forEach((event) => {
-      map.set(Number(event.id), normalize(event.organizationName));
+      map.set(String(event.id), normalize(event.organizationName));
     });
     return map;
   }, [events]);
@@ -104,7 +104,7 @@ const CounterManagement = ({ onNavigate, goBack, currentPage }) => {
     if (directOrg) return directOrg;
 
     const fromEventId = token.eventId !== undefined && token.eventId !== null
-      ? eventIdToOrgMap.get(Number(token.eventId))
+      ? eventIdToOrgMap.get(String(token.eventId))
       : '';
     if (fromEventId) return fromEventId;
 

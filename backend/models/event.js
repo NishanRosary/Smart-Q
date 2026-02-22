@@ -26,6 +26,12 @@ const eventSchema = new mongoose.Schema(
       type: String,
       required: true
     },
+    totalTokens: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 9999
+    },
     serviceTypes: {
       type: [String],
       default: []

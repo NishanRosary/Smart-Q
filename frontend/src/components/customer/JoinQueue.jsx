@@ -58,6 +58,10 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData })
   useEffect(() => {
     if (eventData && eventData.event) {
       setSelectedEvent(eventData.event);
+      if (eventData.event.isFull) {
+        setJoinError('This event queue is full.');
+        return;
+      }
       if (eventData.isCustomer) {
         setStep(3);
       } else {
@@ -80,7 +84,9 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData })
   };
 
   const handleEventSelect = (event) => {
+    if (event?.isFull) return;
     setSelectedEvent(event);
+    setJoinError('');
     setStep(2);
   };
 
@@ -94,6 +100,10 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData })
   const handleServiceSubmit = async (e) => {
     e.preventDefault();
     if (!selectedService) return;
+    if (selectedEvent?.isFull) {
+      setJoinError('This event queue is full.');
+      return;
+    }
 
     setLoading(true);
     setJoinError('');
@@ -323,14 +333,25 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData })
           {step === 1 && (
             <div className="events-grid">
               {events.map(event => (
-                <div key={event.id} className="event-card" style={{ cursor: 'pointer', border: selectedEvent?.id === event.id ? '2px solid var(--color-primary)' : 'transparent' }} onClick={() => handleEventSelect(event)}>
+                <div
+                  key={event.id}
+                  className="event-card"
+                  style={{
+                    cursor: event.isFull ? 'not-allowed' : 'pointer',
+                    opacity: event.isFull ? 0.75 : 1,
+                    border: selectedEvent?.id === event.id ? '2px solid var(--color-primary)' : 'transparent'
+                  }}
+                  onClick={() => handleEventSelect(event)}
+                >
                   <div className="event-header">
                     <span className="event-organization" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <Building2 size={16} />
                       <span style={{ fontWeight: 700 }}>{event.organizationName}</span>
                       <span style={{ fontSize: '0.8rem', opacity: 0.8 }}>({event.organizationType})</span>
                     </span>
-                    {getCrowdLevelBadge(event.crowdLevel)}
+                    {event.isFull ? (
+                      <span className="badge badge-red">FULL</span>
+                    ) : getCrowdLevelBadge(event.crowdLevel)}
                   </div>
                   <h3 className="event-title">{event.title}</h3>
                   <div className="event-details">
@@ -346,9 +367,15 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData })
                       <span><MapPin size={16} /></span>
                       <span>{event.location}</span>
                     </div>
+                    <div className="event-detail-item">
+                      <span>Total Tokens: {event.totalTokens ?? 0}</span>
+                    </div>
+                    <div className="event-detail-item">
+                      <span>Available: {event.availableTokens ?? 0}</span>
+                    </div>
                   </div>
-                  <button className="btn-primary" style={{ marginTop: '1rem', width: '100%' }}>
-                    Join This Event <ArrowRight size={16} style={{ marginLeft: '0.5rem' }} />
+                  <button className="btn-primary" style={{ marginTop: '1rem', width: '100%' }} disabled={Boolean(event.isFull)}>
+                    {event.isFull ? 'Queue Full' : <>Join This Event <ArrowRight size={16} style={{ marginLeft: '0.5rem' }} /></>}
                   </button>
                 </div>
               ))}

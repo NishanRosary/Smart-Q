@@ -21,6 +21,7 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
     organizationType: '',
     organizationName: '',
     title: '',
+    totalTokens: '',
     date: '',
     time: '',
     location: '',
@@ -73,6 +74,7 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
         organizationType: '',
         organizationName: '',
         title: '',
+        totalTokens: '',
         date: '',
         time: '',
         location: '',
@@ -160,6 +162,7 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
                   required
                 />
               </div>
+
               <div className="form-group">
                 <label htmlFor="organizationName">Organization Name</label>
                 <input
@@ -174,14 +177,16 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="title">Event Title</label>
+                <label htmlFor="totalTokens">Number of Tokens</label>
                 <input
-                  type="text"
-                  id="title"
-                  name="title"
-                  value={formData.title}
+                  type="number"
+                  id="totalTokens"
+                  name="totalTokens"
+                  min="1"
+                  max="9999"
+                  value={formData.totalTokens}
                   onChange={handleInputChange}
-                  placeholder="Enter event title"
+                  placeholder="Enter total tokens (max 9999)"
                   required
                 />
               </div>
@@ -319,6 +324,8 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
                 <th>Date</th>
                 <th>Time</th>
                 <th>Location</th>
+                <th>Total Tokens</th>
+                <th>Available</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -331,6 +338,8 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
                   <td>{new Date(event.date).toLocaleDateString()}</td>
                   <td>{event.time}</td>
                   <td>{event.location}</td>
+                  <td>{event.totalTokens ?? '-'}</td>
+                  <td>{event.availableTokens ?? '-'}</td>
                   <td>
                     <span className={`badge ${event.status === 'Upcoming' ? 'badge-yellow' :
                         event.status === 'Ongoing' ? 'badge-green' : 'badge-red'

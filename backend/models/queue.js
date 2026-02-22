@@ -11,7 +11,7 @@ const QueueSchema = new mongoose.Schema({
     required: true
   },
   eventId: {
-    type: Number,
+    type: String,
     default: null
   },
   eventName: {

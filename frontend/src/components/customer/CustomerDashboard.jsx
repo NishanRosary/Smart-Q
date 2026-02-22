@@ -195,6 +195,7 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
   };
 
   const handleJoinQueue = (event) => {
+    if (event?.isFull) return;
     onNavigate('join-queue', { event, isCustomer: true });
   };
 
@@ -544,14 +545,23 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
                     <span><Info size={16} /></span>
                     <span>Status: {event.status}</span>
                   </div>
+                  <div className="event-detail-item">
+                    <span><Users size={16} /></span>
+                    <span>Total Tokens: {event.totalTokens ?? 0}</span>
+                  </div>
+                  <div className="event-detail-item">
+                    <span><Activity size={16} /></span>
+                    <span>Available: {event.availableTokens ?? 0}</span>
+                  </div>
                 </div>
                 <div className="event-actions">
                   <button
                     className="btn-primary"
                     onClick={() => handleJoinQueue(event)}
                     style={{ flex: 1 }}
+                    disabled={Boolean(event.isFull)}
                   >
-                    Join Queue
+                    {event.isFull ? 'Queue Full' : 'Join Queue'}
                   </button>
                   <button
                     className="btn-secondary"
