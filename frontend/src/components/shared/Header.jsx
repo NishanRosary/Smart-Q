@@ -267,9 +267,8 @@ const Header = ({ onNavigate, goBack, currentPage, customerData, onLogout }) => 
                 Login
               </button>
               <button
-                className="nav-button"
+                className="nav-button admin-nav-button"
                 onClick={() => onNavigate('admin-login')}
-                style={{ fontSize: '0.875rem' }}
               >
                 Admin
               </button>
