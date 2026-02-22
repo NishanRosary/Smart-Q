@@ -33,6 +33,7 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData })
   const [tokenData, setTokenData] = useState(null);
   const [events, setEvents] = useState([]);
   const [eventsLoading, setEventsLoading] = useState(true);
+  const [joinError, setJoinError] = useState('');
 
   // Fetch events from API
   useEffect(() => {
@@ -95,6 +96,7 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData })
     if (!selectedService) return;
 
     setLoading(true);
+    setJoinError('');
     try {
       const res = await axios.post("http://localhost:5000/api/queue/join", {
         service: selectedService,
@@ -114,17 +116,8 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData })
       setStep(4);
     } catch (error) {
       console.error(error);
-      // Fallback for demo without backend
-      const demoToken = {
-        tokenNumber: Math.floor(Math.random() * 100) + 1,
-        service: selectedService,
-        estimatedWaitTime: 15,
-        position: 1
-      };
-      localStorage.setItem('smartq-active-token', String(demoToken.tokenNumber));
-      localStorage.setItem('smartq-active-service', selectedService);
-      setTokenData(demoToken);
-      setStep(4);
+      const message = error?.response?.data?.message || "Unable to join queue right now. Please try again.";
+      setJoinError(message);
     } finally {
       setLoading(false);
     }
@@ -213,6 +206,11 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData })
               </div>
 
               <form onSubmit={handleServiceSubmit}>
+                {joinError && (
+                  <div style={{ marginBottom: '1rem', color: '#dc2626', fontWeight: 500 }}>
+                    {joinError}
+                  </div>
+                )}
                 <div className="form-group" style={{ marginBottom: '2rem' }}>
                   {availableServices.map((service, index) => (
                     <div
@@ -435,6 +433,11 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData })
               <h3 style={{ marginBottom: '1.5rem', color: 'var(--color-gray-900)' }}>Select Service</h3>
 
               <form onSubmit={handleServiceSubmit}>
+                {joinError && (
+                  <div style={{ marginBottom: '1rem', color: '#dc2626', fontWeight: 500 }}>
+                    {joinError}
+                  </div>
+                )}
                 <div className="form-group" style={{ marginBottom: '2rem' }}>
                   {availableServices.map((service, index) => (
                     <div

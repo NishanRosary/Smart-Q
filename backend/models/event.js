@@ -6,7 +6,11 @@ const eventSchema = new mongoose.Schema(
       type: String,
       required: true
     },
-    organization: {
+    organizationType: {
+      type: String,
+      required: true
+    },
+    organizationName: {
       type: String,
       required: true
     },
@@ -21,6 +25,20 @@ const eventSchema = new mongoose.Schema(
     location: {
       type: String,
       required: true
+    },
+    serviceTypes: {
+      type: [String],
+      default: []
+    },
+    status: {
+      type: String,
+      enum: ['Upcoming', 'Ongoing', 'Completed'],
+      default: 'Upcoming'
+    },
+    crowdLevel: {
+      type: String,
+      enum: ['Low', 'Medium', 'High'],
+      default: 'Medium'
     }
   },
   {

@@ -12,23 +12,30 @@ router.post(
   adminMiddleware,
   async (req, res) => {
     try {
-      const { title, organization, date, time, location } = req.body;
+      const { title, organizationType, organizationName, date, time, location, serviceTypes } = req.body;
+
+      // Validate required fields
+      if (!title || !organizationType || !organizationName || !date || !time || !location) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
 
       const event = new Event({
         title,
-        organization,
+        organizationType,
+        organizationName,
         date,
         time,
-        location
+        location,
+        serviceTypes: serviceTypes || [],
+        status: 'Upcoming',
+        crowdLevel: 'Medium'
       });
 
       await event.save();
 
-      res.status(201).json({
-        message: "Event created successfully",
-        event
-      });
+      res.status(201).json(event);
     } catch (error) {
+      console.error("Event creation error:", error);
       res.status(500).json({ message: error.message });
     }
   }

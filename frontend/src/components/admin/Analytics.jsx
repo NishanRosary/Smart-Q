@@ -74,6 +74,11 @@ const Analytics = ({ onNavigate, goBack, currentPage }) => {
     fetchAnalytics();
   }, []);
 
+  const queueTrendMaxValue = Math.max(
+    1,
+    ...analyticsData.queueTrends.map((item) => Number(item.value) || 0)
+  );
+
   return (
     <div className="admin-layout">
       <Sidebar currentPage={currentPage} onNavigate={onNavigate} goBack={goBack} />
@@ -118,7 +123,7 @@ const Analytics = ({ onNavigate, goBack, currentPage }) => {
             <h3 className="analytics-title">Queue Trends (Today)</h3>
             <div className="chart-container">
               {analyticsData.queueTrends.map((item, index) => {
-                const height = (item.value / maxValue) * 100;
+                const height = (item.value / queueTrendMaxValue) * 100;
                 return (
                   <div key={index} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <div className="chart-bar" style={{ height: `${height}%`, width: '100%' }}>
