@@ -2,12 +2,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import Sidebar from '../shared/Sidebar';
 import axios from 'axios';
 import socket from '../../socket';
-import { getAllEvents } from '../../data/mockData';
 import '../../styles/admin.css';
 import '../../styles/global.css';
 
 const CounterManagement = ({ onNavigate, goBack, currentPage }) => {
   const [queueData, setQueueData] = useState([]);
+  const [events, setEvents] = useState([]);
   const [loadingByCounter, setLoadingByCounter] = useState({});
 
   const getAuthConfig = () => ({
@@ -25,8 +25,18 @@ const CounterManagement = ({ onNavigate, goBack, currentPage }) => {
     }
   };
 
+  const fetchEvents = async () => {
+    try {
+      const res = await axios.get('http://localhost:5000/api/events', getAuthConfig());
+      setEvents(res.data || []);
+    } catch (err) {
+      console.error('Error fetching events:', err);
+    }
+  };
+
   useEffect(() => {
     fetchQueueData();
+    fetchEvents();
 
     socket.on('queue:update', (data) => {
       if (Array.isArray(data.queue)) {
@@ -40,8 +50,6 @@ const CounterManagement = ({ onNavigate, goBack, currentPage }) => {
   }, []);
 
   const normalize = (value) => String(value || '').trim().toLowerCase();
-
-  const events = useMemo(() => getAllEvents() || [], []);
 
   const eventIdToOrgMap = useMemo(() => {
     const map = new Map();

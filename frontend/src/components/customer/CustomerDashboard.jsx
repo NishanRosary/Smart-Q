@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
 import Header from '../shared/Header';
 import QRCodeDisplay from '../shared/QRCodeDisplay';
-import { getEvents } from '../../data/mockData';
 import { onQueueUpdate, getQueueStatus, connectSocket, disconnectSocket } from '../../services/queueService';
 import '../../styles/customer.css';
 import {
@@ -46,7 +46,24 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
   const [activeService, setActiveService] = useState(() => localStorage.getItem('smartq-active-service'));
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const events = getEvents();
+  const [events, setEvents] = useState([]);
+  const [eventsLoading, setEventsLoading] = useState(true);
+
+  // Fetch events from API
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/events');
+        setEvents(response.data || []);
+      } catch (error) {
+        console.error('Error fetching events:', error);
+        setEvents([]);
+      } finally {
+        setEventsLoading(false);
+      }
+    };
+    fetchEvents();
+  }, []);
 
   // Fetch queue status from backend
   const fetchQueueStatus = useCallback(async () => {

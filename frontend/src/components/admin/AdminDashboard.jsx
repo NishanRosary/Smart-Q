@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   ClipboardList,
   Building2,
@@ -10,17 +11,75 @@ import {
   ArrowRight
 } from 'lucide-react';
 import Sidebar from '../shared/Sidebar';
-import { summaryStats, mlPredictions } from '../../data/mockData';
 import '../../styles/admin.css';
 import '../../styles/global.css';
 
 const AdminDashboard = ({ onNavigate, goBack, currentPage }) => {
-  const stats = [
-    { label: 'Total Queues', value: summaryStats.totalQueues, icon: <ClipboardList size={24} />, color: 'var(--color-primary)' },
-    { label: 'Active Counters', value: summaryStats.activeCounters, icon: <Building2 size={24} />, color: 'var(--color-green-light)' },
-    { label: 'Pending Events', value: summaryStats.pendingEvents, icon: <Calendar size={24} />, color: 'var(--color-yellow)' },
-    { label: 'Total Customers', value: summaryStats.totalCustomers, icon: <Users size={24} />, color: '#8B5CF6' },
-    { label: 'Avg Wait Time', value: `${summaryStats.averageWaitTime} min`, icon: <Clock size={24} />, color: '#EF4444' }
+  const [stats, setStats] = useState({
+    totalQueues: 0,
+    activeCounters: 0,
+    pendingEvents: 0,
+    totalCustomers: 0,
+    averageWaitTime: 0
+  });
+  const [predictions, setPredictions] = useState({ peakTimes: [] });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const getAuthConfig = () => ({
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+
+        // Fetch queue data
+        const queueRes = await axios.get('http://localhost:5000/api/queue', getAuthConfig());
+        const queues = queueRes.data || [];
+
+        // Fetch events data
+        const eventsRes = await axios.get('http://localhost:5000/api/events', getAuthConfig());
+        const events = eventsRes.data || [];
+
+        // Fetch predictions data
+        try {
+          const predsRes = await axios.get('http://localhost:5000/api/predictions', getAuthConfig());
+          setPredictions(predsRes.data || { peakTimes: [] });
+        } catch (err) {
+          console.warn('Could not fetch predictions:', err);
+          setPredictions({ peakTimes: [] });
+        }
+
+        // Calculate stats
+        let totalWaitTime = 0;
+        queues.forEach(q => {
+          totalWaitTime += q.estimatedWaitTime || 0;
+        });
+
+        setStats({
+          totalQueues: queues.length,
+          activeCounters: Math.ceil(queues.length / 5) || 0,
+          pendingEvents: events.filter(e => e.status === 'Upcoming').length,
+          totalCustomers: queues.length,
+          averageWaitTime: queues.length > 0 ? Math.round(totalWaitTime / queues.length) : 0
+        });
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  const statItems = [
+    { label: 'Total Queues', value: stats.totalQueues, icon: <ClipboardList size={24} />, color: 'var(--color-primary)' },
+    { label: 'Active Counters', value: stats.activeCounters, icon: <Building2 size={24} />, color: 'var(--color-green-light)' },
+    { label: 'Pending Events', value: stats.pendingEvents, icon: <Calendar size={24} />, color: 'var(--color-yellow)' },
+    { label: 'Total Customers', value: stats.totalCustomers, icon: <Users size={24} />, color: '#8B5CF6' },
+    { label: 'Avg Wait Time', value: `${stats.averageWaitTime} min`, icon: <Clock size={24} />, color: '#EF4444' }
   ];
 
   return (
@@ -32,7 +91,7 @@ const AdminDashboard = ({ onNavigate, goBack, currentPage }) => {
         </div>
 
         <div className="summary-cards">
-          {stats.map((stat, index) => (
+          {statItems.map((stat, index) => (
             <div key={index} className="summary-card">
               <div className="summary-card-header">
                 <span className="summary-card-title">{stat.label}</span>
@@ -100,25 +159,27 @@ const AdminDashboard = ({ onNavigate, goBack, currentPage }) => {
             <h3 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Brain size={20} color="#8B5CF6" /> ML Predictions Preview
             </h3>
-            <div style={{ marginBottom: '1rem', fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>
-              Next Peak Time: <strong>{mlPredictions.peakTimes[0].hour}</strong> ({mlPredictions.peakTimes[0].prediction})
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {mlPredictions.peakTimes.slice(0, 3).map((item, index) => (
-                <div key={index} style={{
-                  padding: '0.75rem',
-                  backgroundColor: 'var(--color-gray-50)',
-                  borderRadius: '8px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}>
-                  <div>
-                    <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>{item.hour}</div>
-                    <div style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>
-                      {item.customers} customers predicted
-                    </div>
-                  </div>
+            {predictions.peakTimes && predictions.peakTimes.length > 0 ? (
+              <>
+                <div style={{ marginBottom: '1rem', fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>
+                  Next Peak Time: <strong>{predictions.peakTimes[0].hour}</strong> ({predictions.peakTimes[0].prediction})
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {predictions.peakTimes.slice(0, 3).map((item, index) => (
+                    <div key={index} style={{
+                      padding: '0.75rem',
+                      backgroundColor: 'var(--color-gray-50)',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}>
+                      <div>
+                        <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>{item.hour}</div>
+                        <div style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>
+                          {item.customers} customers predicted
+                        </div>
+                      </div>
                   <div style={{
                     padding: '0.25rem 0.75rem',
                     borderRadius: '4px',
@@ -132,6 +193,12 @@ const AdminDashboard = ({ onNavigate, goBack, currentPage }) => {
                 </div>
               ))}
             </div>
+              </>
+            ) : (
+              <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--color-gray-500)' }}>
+                No predictions available yet
+              </div>
+            )}
             <button
               className="btn-secondary"
               onClick={() => onNavigate('predictions')}

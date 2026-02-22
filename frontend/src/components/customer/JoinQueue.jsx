@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
-import Header from "../shared/Header";
 import axios from "axios";
+import Header from "../shared/Header";
 import "../../styles/customer.css";
-import { getEvents, services } from '../../data/mockData';
 import {
   Calendar,
   Clock,
@@ -32,12 +31,28 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData })
   const [selectedService, setSelectedService] = useState('');
   const [loading, setLoading] = useState(false);
   const [tokenData, setTokenData] = useState(null);
+  const [events, setEvents] = useState([]);
+  const [eventsLoading, setEventsLoading] = useState(true);
 
-  const events = getEvents();
+  // Fetch events from API
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/events');
+        setEvents(response.data || []);
+      } catch (error) {
+        console.error('Error fetching events:', error);
+        setEvents([]);
+      } finally {
+        setEventsLoading(false);
+      }
+    };
+    fetchEvents();
+  }, []);
 
   const availableServices = selectedEvent?.serviceTypes && selectedEvent.serviceTypes.length > 0
     ? selectedEvent.serviceTypes
-    : services;
+    : [];
 
   useEffect(() => {
     if (eventData && eventData.event) {

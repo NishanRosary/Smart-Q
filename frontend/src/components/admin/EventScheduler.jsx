@@ -1,9 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import Sidebar from '../shared/Sidebar';
 import QRCodeDisplay from '../shared/QRCodeDisplay';
-import { getAllEvents, addEvent, organizationTypes } from '../../data/mockData';
 import '../../styles/admin.css';
 import '../../styles/global.css';
+
+const ORGANIZATION_TYPES = [
+  'Hospital',
+  'Bank',
+  'Interview',
+  'Government Office',
+  'Exam',
+  'Restaurant',
+  'Retail Store',
+  'Other'
+];
 
 const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
   const [formData, setFormData] = useState({
@@ -18,7 +29,26 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
   const [currentService, setCurrentService] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   const [newEvent, setNewEvent] = useState(null);
-  const events = getAllEvents();
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch events
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/events', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+        setEvents(response.data || []);
+      } catch (error) {
+        console.error('Error fetching events:', error);
+        setEvents([]);
+      }
+    };
+    fetchEvents();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -28,21 +58,40 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const event = addEvent(formData);
-    setNewEvent(event);
-    setShowSuccess(true);
-    setFormData({
-      organizationType: '',
-      organizationName: '',
-      title: '',
-      date: '',
-      time: '',
-      location: '',
-      serviceTypes: []
-    });
-    setTimeout(() => setShowSuccess(false), 5000);
+    setLoading(true);
+    try {
+      const response = await axios.post('http://localhost:5000/api/events', formData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      setNewEvent(response.data);
+      setShowSuccess(true);
+      setFormData({
+        organizationType: '',
+        organizationName: '',
+        title: '',
+        date: '',
+        time: '',
+        location: '',
+        serviceTypes: []
+      });
+      // Refresh events list
+      const eventsRes = await axios.get('http://localhost:5000/api/events', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      setEvents(eventsRes.data || []);
+      setTimeout(() => setShowSuccess(false), 5000);
+    } catch (error) {
+      console.error('Error creating event:', error);
+      alert('Failed to create event. Please check the console for details.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAddService = (e) => {
@@ -93,7 +142,7 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
                   required
                 >
                   <option value="">-- Select Organization Type --</option>
-                  {organizationTypes.map(type => (
+                  {ORGANIZATION_TYPES.map(type => (
                     <option key={type} value={type}>{type}</option>
                   ))}
                 </select>
