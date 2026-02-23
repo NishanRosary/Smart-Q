@@ -106,6 +106,49 @@ router.post("/join", joinLimiter, async (req, res) => {
 });
 
 /* =========================
+   GET QUEUE STATUS (PUBLIC)
+========================= */
+
+router.get("/status/:tokenNumber", async (req, res) => {
+  try {
+    const rawToken = String(req.params.tokenNumber || "");
+    const normalizedDigits = rawToken.replace(/\D/g, "");
+    const tokenNumber = Number.parseInt(normalizedDigits, 10);
+
+    if (!Number.isFinite(tokenNumber) || tokenNumber <= 0) {
+      return res.status(400).json({ message: "Invalid token number" });
+    }
+
+    const queueItem = await Queue.findOne({ tokenNumber });
+    if (!queueItem) {
+      return res.status(404).json({ message: "Token not found" });
+    }
+
+    const eventFilter = queueItem.eventId ? { eventId: queueItem.eventId } : {};
+    const waitingFilter = { ...eventFilter, status: "waiting" };
+
+    const [waitingAhead, totalWaiting] = await Promise.all([
+      Queue.countDocuments({ ...waitingFilter, tokenNumber: { $lt: tokenNumber } }),
+      Queue.countDocuments(waitingFilter)
+    ]);
+
+    const position = queueItem.status === "waiting" ? waitingAhead + 1 : 0;
+
+    return res.json({
+      tokenNumber: queueItem.tokenNumber,
+      service: queueItem.service,
+      status: queueItem.status,
+      position,
+      estimatedWaitTime: calculateWaitTime(position),
+      totalWaiting,
+      crowdLevel: getCrowdLevel(totalWaiting)
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to fetch queue status" });
+  }
+});
+
+/* =========================
    GET ALL QUEUES (ADMIN ONLY + BRANCH SAFE)
 ========================= */
 
