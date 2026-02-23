@@ -31,6 +31,17 @@ const getCrowdLevel = (waitingCount) => {
   return "High";
 };
 
+const emitQueueSnapshot = async (req) => {
+  try {
+    const io = req.app.get("io");
+    if (!io) return;
+    const queue = await Queue.find().sort({ tokenNumber: 1 });
+    io.emit("queue:update", { queue });
+  } catch (_) {
+    // Non-blocking: status updates should succeed even if socket emit fails.
+  }
+};
+
 /* =========================
    JOIN QUEUE (Public but Safe)
 ========================= */
@@ -80,7 +91,6 @@ router.post("/join", joinLimiter, async (req, res) => {
       eventName: eventName || null,
       organizationName: organizationName || null,
       organizationType: organizationType || null,
-      branchId: selectedEvent.branchId,
       status: "waiting"
     });
 
@@ -94,6 +104,7 @@ router.post("/join", joinLimiter, async (req, res) => {
       }).catch(() => {});
     }
 
+    await emitQueueSnapshot(req);
     res.status(201).json({
       tokenNumber,
       queueId: newQueue._id,
@@ -149,7 +160,7 @@ router.get("/status/:tokenNumber", async (req, res) => {
 });
 
 /* =========================
-   GET ALL QUEUES (ADMIN ONLY + BRANCH SAFE)
+   GET ALL QUEUES (ADMIN ONLY)
 ========================= */
 
 router.get("/",
@@ -157,9 +168,7 @@ router.get("/",
   roleMiddleware("admin"),
   async (req, res) => {
     try {
-      const queue = await Queue.find({
-        branchId: req.user.branchId
-      }).sort({ tokenNumber: 1 });
+      const queue = await Queue.find().sort({ tokenNumber: 1 });
 
       res.json(queue);
 
@@ -184,16 +193,13 @@ router.put("/:id/start",
         return res.status(404).json({ message: "Queue not found" });
       }
 
-      if (queueItem.branchId.toString() !== req.user.branchId.toString()) {
-        return res.status(403).json({ message: "Wrong branch" });
-      }
-
       if (queueItem.status !== "waiting") {
         return res.status(400).json({ message: "Invalid state" });
       }
 
       queueItem.status = "serving";
       await queueItem.save();
+      await emitQueueSnapshot(req);
 
       res.json(queueItem);
 
@@ -218,16 +224,13 @@ router.put("/:id/complete",
         return res.status(404).json({ message: "Queue not found" });
       }
 
-      if (queueItem.branchId.toString() !== req.user.branchId.toString()) {
-        return res.status(403).json({ message: "Wrong branch" });
-      }
-
       if (queueItem.status !== "serving") {
         return res.status(400).json({ message: "Invalid state" });
       }
 
       queueItem.status = "completed";
       await queueItem.save();
+      await emitQueueSnapshot(req);
 
       res.json(queueItem);
 
@@ -252,21 +255,49 @@ router.put("/:id/cancel",
         return res.status(404).json({ message: "Queue not found" });
       }
 
-      if (queueItem.branchId.toString() !== req.user.branchId.toString()) {
-        return res.status(403).json({ message: "Wrong branch" });
-      }
-
       if (!["waiting", "serving"].includes(queueItem.status)) {
         return res.status(400).json({ message: "Invalid state" });
       }
 
       queueItem.status = "cancelled";
       await queueItem.save();
+      await emitQueueSnapshot(req);
 
       res.json(queueItem);
 
     } catch (error) {
       res.status(500).json({ message: "Failed to cancel token" });
+    }
+  }
+);
+
+/* =========================
+   REVOKE TO WAITING
+========================= */
+
+router.put("/:id/revoke",
+  authMiddleware,
+  roleMiddleware("admin"),
+  async (req, res) => {
+    try {
+      const queueItem = await Queue.findById(req.params.id);
+
+      if (!queueItem) {
+        return res.status(404).json({ message: "Queue not found" });
+      }
+
+      if (!["cancelled", "completed"].includes(queueItem.status)) {
+        return res.status(400).json({ message: "Invalid state" });
+      }
+
+      queueItem.status = "waiting";
+      await queueItem.save();
+      await emitQueueSnapshot(req);
+
+      res.json(queueItem);
+
+    } catch (error) {
+      res.status(500).json({ message: "Failed to revoke token" });
     }
   }
 );
