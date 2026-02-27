@@ -28,39 +28,6 @@ def user_joined():
 
 
 # ─────────────────────────────────────────────────────
-# ONE-TIME SEED — hit this once in Postman to bootstrap
-# ─────────────────────────────────────────────────────
-@app.route('/seed', methods=['POST'])
-def seed():
-    """
-    One-time call to seed initial training data.
-    Hit this once from Postman before going live.
-    """
-    try:
-        from datetime import datetime, timedelta
-        now = datetime.now()
-
-        sample_data = [
-            {'service': 'General',  'positionInQueue': 1,  'totalInQueue': 4,  'waitingTime': 8,  'noShow': False, 'status': 'Waiting',   'joinedAt': (now - timedelta(hours=5)).isoformat()},
-            {'service': 'General',  'positionInQueue': 2,  'totalInQueue': 6,  'waitingTime': 14, 'noShow': False, 'status': 'Waiting',   'joinedAt': (now - timedelta(hours=4)).isoformat()},
-            {'service': 'Cardiology','positionInQueue': 3, 'totalInQueue': 10, 'waitingTime': 22, 'noShow': True,  'status': 'No Show',   'joinedAt': (now - timedelta(hours=3)).isoformat()},
-            {'service': 'General',  'positionInQueue': 1,  'totalInQueue': 3,  'waitingTime': 6,  'noShow': False, 'status': 'Completed', 'joinedAt': (now - timedelta(hours=2)).isoformat()},
-            {'service': 'Cardiology','positionInQueue': 5, 'totalInQueue': 12, 'waitingTime': 30, 'noShow': False, 'status': 'Waiting',   'joinedAt': (now - timedelta(hours=1)).isoformat()},
-        ]
-
-        for record in sample_data:
-            ml_models.on_user_joined(record)
-
-        return jsonify({
-            'message': 'Seed complete',
-            'trained': ml_models.is_trained,
-            'total_records': ml_models.total_records
-        })
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-# ─────────────────────────────────────────────────────
 # EXISTING ENDPOINTS — no changes needed
 # ─────────────────────────────────────────────────────
 @app.route('/predict/waiting-time', methods=['POST'])

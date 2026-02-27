@@ -15,7 +15,6 @@ class QueueMLModels:
         self.models_dir = os.path.join(os.path.dirname(__file__), 'saved_models')
         os.makedirs(self.models_dir, exist_ok=True)
 
-        # Initialize models
         self.waiting_time_model = RandomForestRegressor(n_estimators=100, random_state=42, max_depth=10)
         self.queue_length_model = RandomForestRegressor(n_estimators=100, random_state=42, max_depth=10)
         self.no_show_model = RandomForestClassifier(n_estimators=100, random_state=42, max_depth=10)
@@ -24,21 +23,14 @@ class QueueMLModels:
         self.label_encoders = {}
         self.is_trained = False
         self.total_records = 0
-
-        # Real-time buffer — holds incoming records until threshold
         self.buffer = []
 
-        # Load existing models if available
         self._load_all_models()
 
     # ─────────────────────────────────────────────────────
     # AUTO TRAIN — CALLED WHEN USER JOINS QUEUE
     # ─────────────────────────────────────────────────────
     def on_user_joined(self, queue_record):
-        """
-        Call this automatically every time a user joins.
-        queue_record = single MongoDB document as dict
-        """
         self.buffer.append(queue_record)
         print(f"[ML] Buffer: {len(self.buffer)}/{RETRAIN_EVERY} | Total trained: {self.total_records}")
 
@@ -57,12 +49,12 @@ class QueueMLModels:
     # INTERNAL AUTO TRAIN
     # ─────────────────────────────────────────────────────
     def _auto_train(self):
-        """Trains all models using buffered real-time data"""
         if len(self.buffer) < MIN_REAL_SAMPLES:
             print(f"[ML] Not enough data. Need {MIN_REAL_SAMPLES}, have {len(self.buffer)}")
             return
 
         data = self.buffer.copy()
+        trained_any = False
 
         try:
             r1 = self.train_waiting_time_model(data)
@@ -70,18 +62,18 @@ class QueueMLModels:
             r3 = self.train_no_show_model(data)
             r4 = self.train_peak_hours_model(data)
 
-            self.is_trained = True
-            self.total_records += len(self.buffer)
-            self.buffer = []  # clear buffer after training
+            if any(r.get('score') is not None for r in [r1, r2, r3, r4]):
+                trained_any = True
 
-            # Save metadata
-            self._save_metadata()
-
-            print(f"[ML] ✓ Auto training complete. Total records: {self.total_records}")
-            print(f"[ML]   waiting_time score : {r1.get('score', 'N/A')}")
-            print(f"[ML]   queue_length score : {r2.get('score', 'N/A')}")
-            print(f"[ML]   no_show score      : {r3.get('score', 'N/A')}")
-            print(f"[ML]   peak_hours score   : {r4.get('score', 'N/A')}")
+            if trained_any:
+                self.is_trained = True
+                self.total_records += len(self.buffer)
+                self.buffer = []
+                self._save_metadata()
+                print(f"[ML] ✓ Auto training complete on REAL data. Total: {self.total_records}")
+            else:
+                print("[ML] No models trained — waiting for more real data")
+                self.buffer = []
 
         except Exception as e:
             print(f"[ML] Auto training failed: {e}")
@@ -126,7 +118,8 @@ class QueueMLModels:
         y = df['waitingTime'].fillna(0) if 'waitingTime' in df.columns else pd.Series([0]*len(df))
 
         if len(X) < MIN_REAL_SAMPLES:
-            X, y = self._generate_synthetic_data('waiting_time')
+            print("[ML] Not enough real data yet, skipping waiting_time model.")
+            return {'score': None, 'message': 'Waiting for real data'}
 
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         self.waiting_time_model.fit(X_train, y_train)
@@ -156,7 +149,8 @@ class QueueMLModels:
         y = df['queueLength'].fillna(0)
 
         if len(X) < MIN_REAL_SAMPLES:
-            X, y = self._generate_synthetic_data('queue_length')
+            print("[ML] Not enough real data yet, skipping queue_length model.")
+            return {'score': None, 'message': 'Waiting for real data'}
 
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         self.queue_length_model.fit(X_train, y_train)
@@ -177,7 +171,8 @@ class QueueMLModels:
         y = df['noShow'].fillna(False).astype(int) if 'noShow' in df.columns else pd.Series([0]*len(df))
 
         if len(X) < MIN_REAL_SAMPLES or len(set(y)) < 2:
-            X, y = self._generate_synthetic_data('no_show')
+            print("[ML] Not enough real data yet, skipping no_show model.")
+            return {'score': None, 'message': 'Waiting for real data'}
 
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         self.no_show_model.fit(X_train, y_train)
@@ -203,7 +198,8 @@ class QueueMLModels:
         y = df['queueDensity'].fillna(0)
 
         if len(X) < MIN_REAL_SAMPLES:
-            X, y = self._generate_synthetic_data('peak_hours')
+            print("[ML] Not enough real data yet, skipping peak_hours model.")
+            return {'score': None, 'message': 'Waiting for real data'}
 
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         self.peak_hours_model.fit(X_train, y_train)
@@ -212,33 +208,6 @@ class QueueMLModels:
 
         score = self.peak_hours_model.score(X_test, y_test)
         return {'score': round(score, 4)}
-
-    # ─────────────────────────────────────────────────────
-    # SYNTHETIC DATA — used only when real data < 5
-    # ─────────────────────────────────────────────────────
-    def _generate_synthetic_data(self, model_type):
-        np.random.seed(42)
-        n = 100
-
-        X = pd.DataFrame({
-            'dayOfWeek':       np.random.randint(0, 7, n),
-            'hourOfDay':       np.random.randint(0, 24, n),
-            'month':           np.random.randint(1, 13, n),
-            'dayOfMonth':      np.random.randint(1, 29, n),
-            'service_encoded': np.random.randint(0, 5, n),
-            'positionInQueue': np.random.randint(1, 50, n)
-        })
-
-        if model_type == 'waiting_time':
-            y = X['positionInQueue'] * 2 + X['hourOfDay'] * 0.5 + np.random.normal(0, 5, n)
-        elif model_type == 'queue_length':
-            y = 10 + X['hourOfDay'] * 0.8 + np.random.normal(0, 3, n)
-        elif model_type == 'no_show':
-            y = ((X['hourOfDay'] > 18).astype(int) + (np.random.random(n) > 0.85).astype(int)).clip(0, 1)
-        else:
-            y = 20 + X['hourOfDay'] * 1.5 + np.random.normal(0, 5, n)
-
-        return X, np.maximum(y, 0)
 
     # ─────────────────────────────────────────────────────
     # PREDICTIONS
