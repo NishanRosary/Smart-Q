@@ -38,12 +38,16 @@ API.interceptors.response.use(
 );
 
 export const loginAdmin = async (email, password) => {
-  const response = await API.post("/auth/admin/login", {
-    email,
+  const response = await API.post("/auth/login", {
+    emailOrPhone: email,
     password
   });
 
-  return response.data;
+  // Normalize backend response shape for admin UI compatibility.
+  return {
+    ...response.data,
+    accessToken: response.data?.accessToken || response.data?.token
+  };
 };
 
 export const checkBackendHealth = async () => {

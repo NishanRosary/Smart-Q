@@ -37,7 +37,10 @@ const roleMiddleware = (...allowedRoles) => {
   };
 };
 
+const adminMiddleware = roleMiddleware("admin");
+
 module.exports = {
   authMiddleware,
-  roleMiddleware
+  roleMiddleware,
+  adminMiddleware
 };

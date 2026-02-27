@@ -34,6 +34,9 @@ const AdminLogin = ({ onNavigate }) => {
       );
 
       // 🔥 STORE TOKEN IN LOCALSTORAGE
+      if (!data?.accessToken) {
+        throw new Error("Authentication token missing in login response");
+      }
       localStorage.setItem("token", data.accessToken);
 
       // 🔥 SET AXIOS DEFAULT HEADER
