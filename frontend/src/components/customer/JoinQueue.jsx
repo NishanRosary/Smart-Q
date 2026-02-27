@@ -372,7 +372,7 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData })
                   <div className="event-details">
                     <div className="event-detail-item">
                       <span><Calendar size={16} /></span>
-                      <span>{new Date(event.date).toLocaleDateString()}</span>
+                      <span>{new Date(event.startDate || event.date).toLocaleDateString()}</span>
                     </div>
                     <div className="event-detail-item">
                       <span><Clock size={16} /></span>

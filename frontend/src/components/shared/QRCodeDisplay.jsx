@@ -6,7 +6,8 @@ const QRCodeDisplay = ({ eventData, size = 200 }) => {
   const qrData = JSON.stringify({
     eventId: eventData.id,
     eventTitle: eventData.title,
-    date: eventData.date,
+    startDate: eventData.startDate || eventData.date,
+    endDate: eventData.endDate || eventData.startDate || eventData.date,
     time: eventData.time,
     organizationType: eventData.organizationType,
     location: eventData.location

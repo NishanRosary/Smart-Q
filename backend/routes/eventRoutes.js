@@ -3,6 +3,7 @@ const router = express.Router();
 const Event = require("../models/event");
 const Queue = require("../models/queue");
 const { authMiddleware, roleMiddleware } = require("../middleware/auth");
+const { purgeExpiredEvents } = require("../services/eventCleanupService");
 
 // =======================
 // CREATE EVENT (Admin)
@@ -17,7 +18,8 @@ router.post(
         title,
         organizationType,
         organizationName,
-        date,
+        startDate,
+        endDate,
         time,
         location,
         serviceTypes,
@@ -30,12 +32,28 @@ router.post(
         !title ||
         !organizationType ||
         !organizationName ||
-        !date ||
+        !startDate ||
+        !endDate ||
         !time ||
         !location ||
         !Number.isInteger(parsedTotalTokens)
       ) {
         return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      const parsedStartDate = new Date(`${startDate}T00:00:00`);
+      const parsedEndDate = new Date(`${endDate}T00:00:00`);
+      if (
+        Number.isNaN(parsedStartDate.getTime()) ||
+        Number.isNaN(parsedEndDate.getTime())
+      ) {
+        return res.status(400).json({ message: "Invalid start or end date" });
+      }
+
+      if (parsedEndDate < parsedStartDate) {
+        return res.status(400).json({
+          message: "End date must be the same as or later than start date"
+        });
       }
 
       if (parsedTotalTokens < 1 || parsedTotalTokens > 9999) {
@@ -48,7 +66,9 @@ router.post(
         title,
         organizationType,
         organizationName,
-        date,
+        startDate,
+        endDate,
+        date: startDate,
         time,
         location,
         totalTokens: parsedTotalTokens,
@@ -74,6 +94,7 @@ router.post(
 // =======================
 router.get("/", async (req, res) => {
   try {
+    await purgeExpiredEvents();
     const events = await Event.find().sort({ createdAt: -1 });
 
     const eventsWithAvailability = await Promise.all(

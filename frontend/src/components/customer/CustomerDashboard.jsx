@@ -546,7 +546,7 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
                 <div className="event-details">
                   <div className="event-detail-item">
                     <span><Calendar size={16} /></span>
-                    <span>{new Date(event.date).toLocaleDateString('en-US', {
+                    <span>{new Date(event.startDate || event.date).toLocaleDateString('en-US', {
                       weekday: 'short', year: 'numeric', month: 'short', day: 'numeric'
                     })}</span>
                   </div>
@@ -612,7 +612,7 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
               {selectedEvent.title}
             </p>
             <p style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>
-              {selectedEvent.date} at {selectedEvent.time}
+              {(selectedEvent.startDate || selectedEvent.date)} to {(selectedEvent.endDate || selectedEvent.startDate || selectedEvent.date)} at {selectedEvent.time}
             </p>
           </div>
         </div>

@@ -23,7 +23,8 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
     organizationName: '',
     title: '',
     totalTokens: '',
-    date: '',
+    startDate: '',
+    endDate: '',
     time: '',
     location: '',
     serviceTypes: []
@@ -69,6 +70,10 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (formData.startDate && formData.endDate && formData.endDate < formData.startDate) {
+      alert('End date must be the same as or later than start date.');
+      return;
+    }
     setLoading(true);
     try {
       const response = await axios.post('http://localhost:5000/api/events', formData, {
@@ -83,7 +88,8 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
         organizationName: '',
         title: '',
         totalTokens: '',
-        date: '',
+        startDate: '',
+        endDate: '',
         time: '',
         location: '',
         serviceTypes: []
@@ -216,12 +222,25 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
 
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="date">Date</label>
+                <label htmlFor="startDate">Start Date</label>
                 <input
                   type="date"
-                  id="date"
-                  name="date"
-                  value={formData.date}
+                  id="startDate"
+                  name="startDate"
+                  value={formData.startDate}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="endDate">End Date</label>
+                <input
+                  type="date"
+                  id="endDate"
+                  name="endDate"
+                  value={formData.endDate}
+                  min={formData.startDate || undefined}
                   onChange={handleInputChange}
                   required
                 />
@@ -343,7 +362,8 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
                 <th>Organization</th>
                 <th>Name</th>
                 <th>Event Title</th>
-                <th>Date</th>
+                <th>Start Date</th>
+                <th>End Date</th>
                 <th>Time</th>
                 <th>Location</th>
                 <th>Total Tokens</th>
@@ -355,10 +375,16 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
             <tbody>
               {events.map(event => (
                 <tr key={event.id}>
+                  {(() => {
+                    const startDate = event.startDate || event.date;
+                    const endDate = event.endDate || event.startDate || event.date;
+                    return (
+                      <>
                   <td>{event.organizationType}</td>
                   <td>{event.organizationName || '-'}</td>
                   <td style={{ fontWeight: 600 }}>{event.title}</td>
-                  <td>{new Date(event.date).toLocaleDateString()}</td>
+                  <td>{startDate ? new Date(startDate).toLocaleDateString() : '-'}</td>
+                  <td>{endDate ? new Date(endDate).toLocaleDateString() : '-'}</td>
                   <td>{event.time}</td>
                   <td>{event.location}</td>
                   <td>{event.totalTokens ?? '-'}</td>
@@ -381,6 +407,9 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
                       {deletingEventId === event.id ? 'Deleting...' : 'Delete'}
                     </button>
                   </td>
+                      </>
+                    );
+                  })()}
                 </tr>
               ))}
             </tbody>

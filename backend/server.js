@@ -12,6 +12,7 @@ const otpRoutes = require("./routes/otpRoutes");
 const authRoutes = require("./routes/authRoutes");
 const { sendQueueRegistrationEmail } = require("./services/emailService");
 const { authMiddleware } = require("./middleware/auth");
+const { purgeExpiredEvents } = require("./services/eventCleanupService");
 
 const app = express();
 const server = http.createServer(app);
@@ -105,3 +106,19 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+const runExpiredEventCleanup = async () => {
+  try {
+    const result = await purgeExpiredEvents();
+    if (result.deletedEvents > 0) {
+      console.log(
+        `Expired events cleanup: removed ${result.deletedEvents} event(s) and ${result.deletedQueues} queue item(s)`
+      );
+    }
+  } catch (error) {
+    console.error("Expired events cleanup failed:", error.message);
+  }
+};
+
+runExpiredEventCleanup();
+setInterval(runExpiredEventCleanup, 60 * 60 * 1000);
