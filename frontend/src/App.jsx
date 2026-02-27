@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { checkBackendHealth, setAuthToken } from "./services/api";
+import { checkBackendHealth, getEventById, setAuthToken } from "./services/api";
 import "./styles/global.css";
 
 // Customer Components
@@ -76,6 +76,28 @@ function App() {
     if (token) {
       setAuthToken(token);
     }
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const eventId = params.get("eventId");
+    if (!eventId) return;
+
+    const openEventFromQr = async () => {
+      try {
+        const event = await getEventById(eventId);
+        if (!event) return;
+
+        setCurrentPage("join-queue");
+        setPageData({ event, isCustomer: false });
+        localStorage.setItem("currentPage", "join-queue");
+        window.history.replaceState({}, "", window.location.pathname);
+      } catch (error) {
+        // Keep default page when event lookup fails.
+      }
+    };
+
+    openEventFromQr();
   }, []);
 
   const renderPage = () => {

@@ -2,16 +2,14 @@ import React from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 
 const QRCodeDisplay = ({ eventData, size = 200 }) => {
-  // Create QR code data as JSON string
-  const qrData = JSON.stringify({
-    eventId: eventData.id,
-    eventTitle: eventData.title,
-    startDate: eventData.startDate || eventData.date,
-    endDate: eventData.endDate || eventData.startDate || eventData.date,
-    time: eventData.time,
-    organizationType: eventData.organizationType,
-    location: eventData.location
-  });
+  const eventId = eventData?.id || eventData?._id;
+  const origin =
+    typeof window !== 'undefined' && window.location?.origin
+      ? window.location.origin
+      : 'http://localhost:3000';
+
+  // Deep link into app so camera scanners open the selected event flow directly.
+  const qrData = `${origin}/?eventId=${encodeURIComponent(String(eventId || ''))}`;
 
   return (
     <div style={{ 

@@ -105,6 +105,15 @@ export const verifyCustomerLoginOtp = async ({ email, otp }) => {
   };
 };
 
+export const getEventById = async (eventId) => {
+  const response = await API.get("/events");
+  const events = Array.isArray(response.data) ? response.data : [];
+  return (
+    events.find((event) => String(event.id || event._id) === String(eventId)) ||
+    null
+  );
+};
+
 export const checkBackendHealth = async () => {
   const response = await API.get("/health");
   return response.data;
