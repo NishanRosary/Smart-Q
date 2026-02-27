@@ -544,7 +544,7 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
             textAlign: 'center'
           }}>
             <p style={{ fontSize: '0.875rem', margin: 0 }}>
-              © 2024 Smart'Q. All rights reserved.
+              © 2025 Smart'Q. All rights reserved.
             </p>
           </div>
         </div>
