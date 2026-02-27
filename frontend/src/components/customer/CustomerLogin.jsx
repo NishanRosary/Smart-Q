@@ -2,17 +2,22 @@ import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import Header from '../shared/Header';
 import '../../styles/customer.css';
+import { loginCustomer, registerCustomer, setAuthToken } from '../../services/api';
 
 const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
   const [loginType, setLoginType] = useState('email');
   const [isSignUp, setIsSignUp] = useState(false);
   const [authMode, setAuthMode] = useState('password'); // password or otp
   const [formData, setFormData] = useState({
+    name: '',
     email: '',
     mobile: '',
     password: '',
     otp: ''
   });
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -20,21 +25,98 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
       ...prev,
       [name]: value
     }));
+    if (errorMessage) setErrorMessage('');
+    if (successMessage) setSuccessMessage('');
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    const customerInfo = {
-      name: formData.email ? formData.email.split('@')[0] : formData.mobile,
-      email: formData.email || '',
-      phone: formData.mobile || ''
-    };
-    onNavigate('customer-dashboard', customerInfo);
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    if (!isSignUp && authMode === 'otp') {
+      setErrorMessage('OTP login is not enabled. Please use password login.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      if (isSignUp) {
+        const nameToSave = formData.name?.trim() || (formData.email ? formData.email.split('@')[0] : formData.mobile);
+        await registerCustomer({
+          name: nameToSave,
+          email: formData.email,
+          mobile: formData.mobile,
+          password: formData.password
+        });
+
+        setSuccessMessage('Account created successfully. Please sign in.');
+        setIsSignUp(false);
+        setAuthMode('password');
+        setFormData((prev) => ({
+          ...prev,
+          name: '',
+          password: '',
+          otp: ''
+        }));
+        return;
+      }
+
+      const identifier = loginType === 'email' ? formData.email : formData.mobile;
+      const data = await loginCustomer({
+        emailOrPhone: identifier,
+        password: formData.password
+      });
+
+      if (data?.user?.role !== 'customer') {
+        setErrorMessage('This account is not authorized for customer sign in.');
+        return;
+      }
+
+      if (data?.accessToken) {
+        localStorage.setItem('token', data.accessToken);
+        setAuthToken(data.accessToken);
+      }
+
+      onNavigate('customer-dashboard', {
+        name: data.user?.name || (data.user?.email ? data.user.email.split('@')[0] : ''),
+        email: data.user?.email || '',
+        phone: data.user?.phone || ''
+      });
+    } catch (error) {
+      const msg = error?.response?.data?.message || 'Authentication failed. Please try again.';
+      setErrorMessage(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const toggleLoginType = (type) => {
     setLoginType(type);
     setAuthMode('password'); // Reset to password when switching identifiers
+    setErrorMessage('');
+    setSuccessMessage('');
+    setFormData((prev) => ({
+      ...prev,
+      password: '',
+      otp: ''
+    }));
+  };
+
+  const switchAuthTab = (nextIsSignUp) => {
+    setIsSignUp(nextIsSignUp);
+    setAuthMode('password');
+    setErrorMessage('');
+    setSuccessMessage('');
+    setLoading(false);
+    setFormData((prev) => ({
+      ...prev,
+      password: '',
+      otp: '',
+      // Keep email/mobile so register can suggest what was entered in sign in.
+      name: nextIsSignUp ? prev.name : ''
+    }));
   };
 
   return (
@@ -77,7 +159,7 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
             marginBottom: '2rem'
           }}>
             <button
-              onClick={() => setIsSignUp(false)}
+              onClick={() => switchAuthTab(false)}
               style={{
                 flex: 1,
                 padding: '1rem',
@@ -93,7 +175,7 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
               Sign In
             </button>
             <button
-              onClick={() => setIsSignUp(true)}
+              onClick={() => switchAuthTab(true)}
               style={{
                 flex: 1,
                 padding: '1rem',
@@ -158,6 +240,18 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
             {isSignUp ? (
               // Register Form (All fields)
               <>
+                <div className="form-group">
+                  <label htmlFor="name">Full Name</label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    placeholder="Enter full name"
+                    required
+                  />
+                </div>
                 <div className="form-group">
                   <label htmlFor="email">Email Address</label>
                   <input
@@ -285,8 +379,25 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
               </>
             )}
 
-            <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '1rem', padding: '0.75rem' }}>
-              {isSignUp ? 'Create Account' : 'Sign In'}
+            {(errorMessage || successMessage) && (
+              <p
+                style={{
+                  color: errorMessage ? '#dc2626' : '#16a34a',
+                  marginTop: '0.5rem',
+                  fontWeight: 500
+                }}
+              >
+                {errorMessage || successMessage}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              className="btn-primary"
+              disabled={loading}
+              style={{ width: '100%', marginTop: '1rem', padding: '0.75rem' }}
+            >
+              {loading ? (isSignUp ? 'Creating...' : 'Signing In...') : (isSignUp ? 'Create Account' : 'Sign In')}
             </button>
           </form>
 

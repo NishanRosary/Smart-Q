@@ -77,6 +77,25 @@ exports.register = async (req, res) => {
       }
     });
   } catch (error) {
+    if (error?.code === 11000) {
+      const duplicateField = Object.keys(error.keyPattern || {})[0];
+      if (duplicateField === "email") {
+        return res.status(400).json({ message: "Email already registered" });
+      }
+      if (duplicateField === "phone") {
+        return res.status(400).json({ message: "Mobile number already registered" });
+      }
+      return res.status(400).json({ message: "User already registered" });
+    }
+
+    if (error?.name === "ValidationError") {
+      const firstError = Object.values(error.errors || {})[0];
+      return res.status(400).json({
+        message: firstError?.message || "Invalid registration data"
+      });
+    }
+
+    console.error("Registration error:", error);
     return res.status(500).json({ message: "Server error" });
   }
 };

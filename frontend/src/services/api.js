@@ -19,17 +19,29 @@ export const setAuthToken = (token) => {
 API.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401) {
+    const originalRequest = error.config || {};
+    const requestUrl = String(originalRequest.url || "");
+    const isAuthRequest =
+      requestUrl.includes("/auth/login") ||
+      requestUrl.includes("/auth/admin/login") ||
+      requestUrl.includes("/auth/register") ||
+      requestUrl.includes("/auth/otp");
+
+    // Let login/register errors pass through so UI can show exact backend messages
+    // like "Invalid credentials" instead of redirecting.
+    if (error.response?.status === 401 && !isAuthRequest) {
       try {
         const res = await API.post("/auth/admin/refresh");
         const newToken = res.data.accessToken;
 
         setAuthToken(newToken);
 
-        error.config.headers["Authorization"] = `Bearer ${newToken}`;
-        return API(error.config);
+        originalRequest.headers = originalRequest.headers || {};
+        originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
+        return API(originalRequest);
       } catch (refreshError) {
-        window.location.href = "/admin/login";
+        setAuthToken(null);
+        localStorage.removeItem("token");
       }
     }
 
@@ -38,12 +50,33 @@ API.interceptors.response.use(
 );
 
 export const loginAdmin = async (email, password) => {
-  const response = await API.post("/auth/login", {
-    emailOrPhone: email,
+  const response = await API.post("/auth/admin/login", {
+    email,
     password
   });
 
   // Normalize backend response shape for admin UI compatibility.
+  return {
+    ...response.data,
+    accessToken: response.data?.accessToken || response.data?.token
+  };
+};
+
+export const registerCustomer = async ({ name, email, mobile, password }) => {
+  const response = await API.post("/auth/register", {
+    name,
+    email,
+    phone: mobile,
+    password
+  });
+  return response.data;
+};
+
+export const loginCustomer = async ({ emailOrPhone, password }) => {
+  const response = await API.post("/auth/login", {
+    emailOrPhone,
+    password
+  });
   return {
     ...response.data,
     accessToken: response.data?.accessToken || response.data?.token
