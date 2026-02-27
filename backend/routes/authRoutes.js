@@ -3,9 +3,10 @@ const {
   register,
   login,
   adminLogin,
-  adminRefresh
+  adminRefresh,
+  changePassword
 } = require("../controllers/authControllers");
-const { authMiddleware } = require("../middleware/auth");
+const { authMiddleware, roleMiddleware } = require("../middleware/auth");
 
 const router = express.Router();
 
@@ -20,6 +21,14 @@ router.post("/admin/login", adminLogin);
 
 // POST /api/auth/admin/refresh
 router.post("/admin/refresh", adminRefresh);
+
+// PUT /api/auth/admin/change-password
+router.put(
+  "/admin/change-password",
+  authMiddleware,
+  roleMiddleware("admin"),
+  changePassword
+);
 
 // Example protected route
 router.get("/me", authMiddleware, (req, res) => {

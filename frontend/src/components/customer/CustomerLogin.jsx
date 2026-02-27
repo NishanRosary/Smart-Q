@@ -2,7 +2,13 @@ import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import Header from '../shared/Header';
 import '../../styles/customer.css';
-import { loginCustomer, registerCustomer, setAuthToken } from '../../services/api';
+import {
+  loginCustomer,
+  registerCustomer,
+  sendCustomerLoginOtp,
+  setAuthToken,
+  verifyCustomerLoginOtp
+} from '../../services/api';
 
 const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
   const [loginType, setLoginType] = useState('email');
@@ -16,6 +22,7 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
     otp: ''
   });
   const [loading, setLoading] = useState(false);
+  const [otpSending, setOtpSending] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -33,11 +40,6 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
     e.preventDefault();
     setErrorMessage('');
     setSuccessMessage('');
-
-    if (!isSignUp && authMode === 'otp') {
-      setErrorMessage('OTP login is not enabled. Please use password login.');
-      return;
-    }
 
     try {
       setLoading(true);
@@ -63,11 +65,23 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
         return;
       }
 
-      const identifier = loginType === 'email' ? formData.email : formData.mobile;
-      const data = await loginCustomer({
-        emailOrPhone: identifier,
-        password: formData.password
-      });
+      let data;
+      if (authMode === 'otp') {
+        if (loginType !== 'email') {
+          setErrorMessage('OTP sign in is available only for email login.');
+          return;
+        }
+        data = await verifyCustomerLoginOtp({
+          email: formData.email,
+          otp: formData.otp
+        });
+      } else {
+        const identifier = loginType === 'email' ? formData.email : formData.mobile;
+        data = await loginCustomer({
+          emailOrPhone: identifier,
+          password: formData.password
+        });
+      }
 
       if (data?.user?.role !== 'customer') {
         setErrorMessage('This account is not authorized for customer sign in.');
@@ -89,6 +103,30 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
       setErrorMessage(msg);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSendOtp = async () => {
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    if (loginType !== 'email') {
+      setErrorMessage('OTP can be sent only to email.');
+      return;
+    }
+    if (!formData.email) {
+      setErrorMessage('Enter email to receive OTP.');
+      return;
+    }
+
+    try {
+      setOtpSending(true);
+      const res = await sendCustomerLoginOtp(formData.email);
+      setSuccessMessage(res?.message || 'OTP sent successfully');
+    } catch (error) {
+      setErrorMessage(error?.response?.data?.message || 'Failed to send OTP');
+    } finally {
+      setOtpSending(false);
     }
   };
 
@@ -356,9 +394,11 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
                       <button
                         type="button"
                         className="btn-secondary"
+                        onClick={handleSendOtp}
+                        disabled={otpSending}
                         style={{ whiteSpace: 'nowrap' }}
                       >
-                        Send OTP
+                        {otpSending ? 'Sending...' : 'Send OTP'}
                       </button>
                     </div>
                   </div>

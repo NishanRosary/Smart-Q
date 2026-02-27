@@ -3,8 +3,8 @@ const nodemailer = require("nodemailer");
 const SMTP_HOST = process.env.SMTP_HOST || "smtp.gmail.com";
 const SMTP_PORT = Number(process.env.SMTP_PORT || 465);
 const SMTP_SECURE = String(process.env.SMTP_SECURE || "true").toLowerCase() === "true";
-const SMTP_USER = process.env.SMTP_USER;
-const SMTP_PASS = process.env.SMTP_PASS;
+const SMTP_USER = process.env.SMTP_USER || process.env.EMAIL_USER;
+const SMTP_PASS = process.env.SMTP_PASS || process.env.EMAIL_PASS;
 const SMTP_FROM = process.env.SMTP_FROM || SMTP_USER;
 
 const hasSmtpConfig = () => Boolean(SMTP_USER && SMTP_PASS && SMTP_FROM);
@@ -80,6 +80,39 @@ const sendQueueRegistrationEmail = async ({
   return { sent: true };
 };
 
+const sendLoginOtpEmail = async ({ toEmail, userName, otp }) => {
+  if (!isValidEmail(toEmail)) return { sent: false, reason: "invalid-recipient" };
+  if (!hasSmtpConfig()) return { sent: false, reason: "smtp-not-configured" };
+
+  const transporterInstance = getTransporter();
+  const safeName = userName || "User";
+  const mailOptions = {
+    from: SMTP_FROM,
+    to: toEmail,
+    subject: "Your Smart-Q Login OTP",
+    text:
+      `Hi ${safeName},\n\n` +
+      `Your Smart-Q OTP is ${otp}.\n` +
+      "It will expire in 5 minutes.\n\n" +
+      "If you did not request this, you can ignore this email.",
+    html: `
+      <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;background:#f9fafb;border-radius:12px;border:1px solid #e5e7eb;">
+        <h2 style="margin:0 0 16px;color:#111827;">Smart-Q Login Verification</h2>
+        <p style="margin:0 0 14px;color:#374151;">Hi ${safeName},</p>
+        <p style="margin:0 0 16px;color:#374151;">Use the OTP below to complete your sign in:</p>
+        <div style="background:#ffffff;border:1px solid #e5e7eb;border-radius:10px;padding:16px;text-align:center;">
+          <p style="margin:0;font-size:28px;letter-spacing:6px;color:#111827;"><strong>${otp}</strong></p>
+        </div>
+        <p style="margin:16px 0 0;color:#374151;">This OTP expires in 5 minutes.</p>
+      </div>
+    `
+  };
+
+  await transporterInstance.sendMail(mailOptions);
+  return { sent: true };
+};
+
 module.exports = {
-  sendQueueRegistrationEmail
+  sendQueueRegistrationEmail,
+  sendLoginOtpEmail
 };

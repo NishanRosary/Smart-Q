@@ -24,6 +24,7 @@ import {
 import Sidebar from '../shared/Sidebar';
 import '../../styles/admin.css';
 import '../../styles/global.css';
+import { changeAdminPassword } from '../../services/api';
 
 const AdminSettings = ({ onNavigate, goBack, currentPage }) => {
     const [activeTab, setActiveTab] = useState('profile');
@@ -66,6 +67,9 @@ const AdminSettings = ({ onNavigate, goBack, currentPage }) => {
         newPassword: '',
         confirmPassword: ''
     });
+    const [passwordSaving, setPasswordSaving] = useState(false);
+    const [passwordMessage, setPasswordMessage] = useState('');
+    const [passwordError, setPasswordError] = useState('');
 
     const handleSave = () => {
         setSaved(true);
@@ -80,6 +84,40 @@ const AdminSettings = ({ onNavigate, goBack, currentPage }) => {
 
     const handleLogout = () => {
         onNavigate('landing');
+    };
+
+    const handlePasswordUpdate = async () => {
+        setPasswordMessage('');
+        setPasswordError('');
+
+        if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+            setPasswordError('Please fill all password fields.');
+            return;
+        }
+
+        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+            setPasswordError('New password and confirm password do not match.');
+            return;
+        }
+
+        try {
+            setPasswordSaving(true);
+            const res = await changeAdminPassword({
+                currentPassword: passwordForm.currentPassword,
+                newPassword: passwordForm.newPassword
+            });
+
+            setPasswordMessage(res?.message || 'Password updated successfully');
+            setPasswordForm({
+                currentPassword: '',
+                newPassword: '',
+                confirmPassword: ''
+            });
+        } catch (error) {
+            setPasswordError(error?.response?.data?.message || 'Failed to update password');
+        } finally {
+            setPasswordSaving(false);
+        }
     };
 
     const tabs = [
@@ -430,8 +468,27 @@ const AdminSettings = ({ onNavigate, goBack, currentPage }) => {
                                 </div>
                             </div>
 
-                            <button className="btn-primary" onClick={handleSave} style={{ marginTop: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <Shield size={16} /> Update Password
+                            {(passwordError || passwordMessage) && (
+                                <p
+                                    style={{
+                                        marginTop: '1rem',
+                                        marginBottom: 0,
+                                        color: passwordError ? 'var(--color-red)' : 'var(--color-green)',
+                                        fontWeight: 600,
+                                        fontSize: '0.875rem'
+                                    }}
+                                >
+                                    {passwordError || passwordMessage}
+                                </p>
+                            )}
+
+                            <button
+                                className="btn-primary"
+                                onClick={handlePasswordUpdate}
+                                disabled={passwordSaving}
+                                style={{ marginTop: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                            >
+                                <Shield size={16} /> {passwordSaving ? 'Updating...' : 'Update Password'}
                             </button>
                         </div>
 

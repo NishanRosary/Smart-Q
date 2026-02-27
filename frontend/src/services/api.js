@@ -25,7 +25,8 @@ API.interceptors.response.use(
       requestUrl.includes("/auth/login") ||
       requestUrl.includes("/auth/admin/login") ||
       requestUrl.includes("/auth/register") ||
-      requestUrl.includes("/auth/otp");
+      requestUrl.includes("/auth/otp") ||
+      requestUrl.includes("/otp/");
 
     // Let login/register errors pass through so UI can show exact backend messages
     // like "Invalid credentials" instead of redirecting.
@@ -77,6 +78,27 @@ export const loginCustomer = async ({ emailOrPhone, password }) => {
     emailOrPhone,
     password
   });
+  return {
+    ...response.data,
+    accessToken: response.data?.accessToken || response.data?.token
+  };
+};
+
+export const changeAdminPassword = async ({ currentPassword, newPassword }) => {
+  const response = await API.put("/auth/admin/change-password", {
+    currentPassword,
+    newPassword
+  });
+  return response.data;
+};
+
+export const sendCustomerLoginOtp = async (email) => {
+  const response = await API.post("/otp/send-otp", { email });
+  return response.data;
+};
+
+export const verifyCustomerLoginOtp = async ({ email, otp }) => {
+  const response = await API.post("/otp/verify-otp", { email, otp });
   return {
     ...response.data,
     accessToken: response.data?.accessToken || response.data?.token
