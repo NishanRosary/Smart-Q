@@ -7,266 +7,293 @@ import joblib
 import os
 from datetime import datetime
 
+MIN_REAL_SAMPLES = 5        # minimum real records before training
+RETRAIN_EVERY = 5           # retrain after every 5 new records
+
 class QueueMLModels:
     def __init__(self):
         self.models_dir = os.path.join(os.path.dirname(__file__), 'saved_models')
         os.makedirs(self.models_dir, exist_ok=True)
-        
+
         # Initialize models
         self.waiting_time_model = RandomForestRegressor(n_estimators=100, random_state=42, max_depth=10)
         self.queue_length_model = RandomForestRegressor(n_estimators=100, random_state=42, max_depth=10)
         self.no_show_model = RandomForestClassifier(n_estimators=100, random_state=42, max_depth=10)
         self.peak_hours_model = RandomForestRegressor(n_estimators=100, random_state=42, max_depth=10)
-        
+
         self.label_encoders = {}
         self.is_trained = False
-        
+        self.total_records = 0
+
+        # Real-time buffer — holds incoming records until threshold
+        self.buffer = []
+
+        # Load existing models if available
+        self._load_all_models()
+
+    # ─────────────────────────────────────────────────────
+    # AUTO TRAIN — CALLED WHEN USER JOINS QUEUE
+    # ─────────────────────────────────────────────────────
+    def on_user_joined(self, queue_record):
+        """
+        Call this automatically every time a user joins.
+        queue_record = single MongoDB document as dict
+        """
+        self.buffer.append(queue_record)
+        print(f"[ML] Buffer: {len(self.buffer)}/{RETRAIN_EVERY} | Total trained: {self.total_records}")
+
+        if len(self.buffer) >= RETRAIN_EVERY:
+            print("[ML] Threshold reached — starting auto training...")
+            self._auto_train()
+
+        return {
+            "buffered": True,
+            "buffer_size": len(self.buffer),
+            "trains_at": RETRAIN_EVERY,
+            "total_records": self.total_records
+        }
+
+    # ─────────────────────────────────────────────────────
+    # INTERNAL AUTO TRAIN
+    # ─────────────────────────────────────────────────────
+    def _auto_train(self):
+        """Trains all models using buffered real-time data"""
+        if len(self.buffer) < MIN_REAL_SAMPLES:
+            print(f"[ML] Not enough data. Need {MIN_REAL_SAMPLES}, have {len(self.buffer)}")
+            return
+
+        data = self.buffer.copy()
+
+        try:
+            r1 = self.train_waiting_time_model(data)
+            r2 = self.train_queue_length_model(data)
+            r3 = self.train_no_show_model(data)
+            r4 = self.train_peak_hours_model(data)
+
+            self.is_trained = True
+            self.total_records += len(self.buffer)
+            self.buffer = []  # clear buffer after training
+
+            # Save metadata
+            self._save_metadata()
+
+            print(f"[ML] ✓ Auto training complete. Total records: {self.total_records}")
+            print(f"[ML]   waiting_time score : {r1.get('score', 'N/A')}")
+            print(f"[ML]   queue_length score : {r2.get('score', 'N/A')}")
+            print(f"[ML]   no_show score      : {r3.get('score', 'N/A')}")
+            print(f"[ML]   peak_hours score   : {r4.get('score', 'N/A')}")
+
+        except Exception as e:
+            print(f"[ML] Auto training failed: {e}")
+
+    # ─────────────────────────────────────────────────────
+    # FEATURE PREPARATION
+    # ─────────────────────────────────────────────────────
     def prepare_features(self, df, fit_encoders=False):
-        """Prepare features from raw data"""
         df = df.copy()
-        
-        # Extract time features
+
         if 'joinedAt' in df.columns:
             df['joinedAt'] = pd.to_datetime(df['joinedAt'])
-            df['dayOfWeek'] = df['joinedAt'].dt.dayofweek
-            df['hourOfDay'] = df['joinedAt'].dt.hour
-            df['month'] = df['joinedAt'].dt.month
+            df['dayOfWeek']  = df['joinedAt'].dt.dayofweek
+            df['hourOfDay']  = df['joinedAt'].dt.hour
+            df['month']      = df['joinedAt'].dt.month
             df['dayOfMonth'] = df['joinedAt'].dt.day
-        
-        # Encode categorical features
+
         if 'service' in df.columns:
             if fit_encoders or 'service' not in self.label_encoders:
                 self.label_encoders['service'] = LabelEncoder()
-                df['service_encoded'] = self.label_encoders['service'].fit_transform(df['service'])
+                df['service_encoded'] = self.label_encoders['service'].fit_transform(df['service'].astype(str))
             else:
-                # Handle unseen services during inference without failing.
                 encoder = self.label_encoders['service']
                 known = set(encoder.classes_)
                 df['service_encoded'] = df['service'].apply(
-                    lambda value: int(encoder.transform([value])[0]) if value in known else -1
+                    lambda v: int(encoder.transform([v])[0]) if v in known else -1
                 )
-        
+
         return df
-    
+
+    # ─────────────────────────────────────────────────────
+    # TRAIN INDIVIDUAL MODELS
+    # ─────────────────────────────────────────────────────
     def train_waiting_time_model(self, data):
-        """Train model to predict waiting time"""
         df = pd.DataFrame(data)
         df = self.prepare_features(df, fit_encoders=True)
-        
-        # Features for waiting time prediction
+
         feature_cols = ['dayOfWeek', 'hourOfDay', 'month', 'dayOfMonth', 'service_encoded', 'positionInQueue']
-        feature_cols = [col for col in feature_cols if col in df.columns]
-        
+        feature_cols = [c for c in feature_cols if c in df.columns]
+
         X = df[feature_cols].fillna(0)
-        y = df['waitingTime'].fillna(0)
-        
-        if len(X) < 10:
-            # Generate synthetic data for initial training
+        y = df['waitingTime'].fillna(0) if 'waitingTime' in df.columns else pd.Series([0]*len(df))
+
+        if len(X) < MIN_REAL_SAMPLES:
             X, y = self._generate_synthetic_data('waiting_time')
-        
+
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         self.waiting_time_model.fit(X_train, y_train)
-        
-        # Save model
+
         joblib.dump(self.waiting_time_model, os.path.join(self.models_dir, 'waiting_time_model.pkl'))
-        joblib.dump(self.label_encoders, os.path.join(self.models_dir, 'label_encoders.pkl'))
-        
-        return {'score': self.waiting_time_model.score(X_test, y_test)}
-    
+        joblib.dump(self.label_encoders,     os.path.join(self.models_dir, 'label_encoders.pkl'))
+
+        score = self.waiting_time_model.score(X_test, y_test)
+        return {'score': round(score, 4)}
+
     def train_queue_length_model(self, data):
-        """Train model to predict queue length"""
         df = pd.DataFrame(data)
         df = self.prepare_features(df, fit_encoders=True)
-        
+
         feature_cols = ['dayOfWeek', 'hourOfDay', 'month', 'dayOfMonth', 'service_encoded']
-        feature_cols = [col for col in feature_cols if col in df.columns]
-        
+        feature_cols = [c for c in feature_cols if c in df.columns]
+
         X = df[feature_cols].fillna(0)
-        
-        # Calculate queue length (number of people waiting)
-        df['queueLength'] = df.groupby(['dayOfWeek', 'hourOfDay', 'service'])['status'].transform(
-            lambda x: (x == 'Waiting').sum()
-        )
+
+        if 'status' in df.columns:
+            df['queueLength'] = df.groupby(['dayOfWeek', 'hourOfDay'])['status'].transform(
+                lambda x: (x == 'Waiting').sum()
+            )
+        else:
+            df['queueLength'] = df.get('totalInQueue', pd.Series([0]*len(df)))
+
         y = df['queueLength'].fillna(0)
-        
-        if len(X) < 10:
+
+        if len(X) < MIN_REAL_SAMPLES:
             X, y = self._generate_synthetic_data('queue_length')
-        
+
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         self.queue_length_model.fit(X_train, y_train)
-        
+
         joblib.dump(self.queue_length_model, os.path.join(self.models_dir, 'queue_length_model.pkl'))
-        
-        return {'score': self.queue_length_model.score(X_test, y_test)}
-    
+
+        score = self.queue_length_model.score(X_test, y_test)
+        return {'score': round(score, 4)}
+
     def train_no_show_model(self, data):
-        """Train model to predict no-show probability"""
         df = pd.DataFrame(data)
         df = self.prepare_features(df, fit_encoders=True)
-        
+
         feature_cols = ['dayOfWeek', 'hourOfDay', 'month', 'dayOfMonth', 'service_encoded', 'positionInQueue']
-        feature_cols = [col for col in feature_cols if col in df.columns]
-        
+        feature_cols = [c for c in feature_cols if c in df.columns]
+
         X = df[feature_cols].fillna(0)
-        y = df['noShow'].fillna(False).astype(int)
-        
-        if len(X) < 10:
+        y = df['noShow'].fillna(False).astype(int) if 'noShow' in df.columns else pd.Series([0]*len(df))
+
+        if len(X) < MIN_REAL_SAMPLES or len(set(y)) < 2:
             X, y = self._generate_synthetic_data('no_show')
-        
+
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         self.no_show_model.fit(X_train, y_train)
-        
+
         joblib.dump(self.no_show_model, os.path.join(self.models_dir, 'no_show_model.pkl'))
-        
-        return {'score': self.no_show_model.score(X_test, y_test)}
-    
+
+        score = self.no_show_model.score(X_test, y_test)
+        return {'score': round(score, 4)}
+
     def train_peak_hours_model(self, data):
-        """Train model to predict peak hours"""
         df = pd.DataFrame(data)
         df = self.prepare_features(df, fit_encoders=True)
-        
-        # Calculate queue density per hour
-        df['queueDensity'] = df.groupby(['dayOfWeek', 'hourOfDay'])['status'].transform('count')
-        
+
+        if 'status' in df.columns:
+            df['queueDensity'] = df.groupby(['dayOfWeek', 'hourOfDay'])['status'].transform('count')
+        else:
+            df['queueDensity'] = df.get('totalInQueue', pd.Series([0]*len(df)))
+
         feature_cols = ['dayOfWeek', 'hourOfDay', 'month', 'dayOfMonth', 'service_encoded']
-        feature_cols = [col for col in feature_cols if col in df.columns]
-        
+        feature_cols = [c for c in feature_cols if c in df.columns]
+
         X = df[feature_cols].fillna(0)
         y = df['queueDensity'].fillna(0)
-        
-        if len(X) < 10:
+
+        if len(X) < MIN_REAL_SAMPLES:
             X, y = self._generate_synthetic_data('peak_hours')
-        
+
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         self.peak_hours_model.fit(X_train, y_train)
-        
+
         joblib.dump(self.peak_hours_model, os.path.join(self.models_dir, 'peak_hours_model.pkl'))
-        
-        return {'score': self.peak_hours_model.score(X_test, y_test)}
-    
+
+        score = self.peak_hours_model.score(X_test, y_test)
+        return {'score': round(score, 4)}
+
+    # ─────────────────────────────────────────────────────
+    # SYNTHETIC DATA — used only when real data < 5
+    # ─────────────────────────────────────────────────────
     def _generate_synthetic_data(self, model_type):
-        """Generate synthetic training data when real data is insufficient"""
         np.random.seed(42)
-        n_samples = 100
-        
+        n = 100
+
         X = pd.DataFrame({
-            'dayOfWeek': np.random.randint(0, 7, n_samples),
-            'hourOfDay': np.random.randint(0, 24, n_samples),
-            'month': np.random.randint(1, 13, n_samples),
-            'dayOfMonth': np.random.randint(1, 29, n_samples),
-            'service_encoded': np.random.randint(0, 5, n_samples),
-            'positionInQueue': np.random.randint(1, 50, n_samples)
+            'dayOfWeek':       np.random.randint(0, 7, n),
+            'hourOfDay':       np.random.randint(0, 24, n),
+            'month':           np.random.randint(1, 13, n),
+            'dayOfMonth':      np.random.randint(1, 29, n),
+            'service_encoded': np.random.randint(0, 5, n),
+            'positionInQueue': np.random.randint(1, 50, n)
         })
-        
+
         if model_type == 'waiting_time':
-            y = X['positionInQueue'] * 2 + X['hourOfDay'] * 0.5 + np.random.normal(0, 5, n_samples)
-            y = np.maximum(y, 0)
+            y = X['positionInQueue'] * 2 + X['hourOfDay'] * 0.5 + np.random.normal(0, 5, n)
         elif model_type == 'queue_length':
-            y = 10 + X['hourOfDay'] * 0.8 + np.random.normal(0, 3, n_samples)
-            y = np.maximum(y, 0)
+            y = 10 + X['hourOfDay'] * 0.8 + np.random.normal(0, 3, n)
         elif model_type == 'no_show':
-            y = (X['hourOfDay'] > 18).astype(int) + (np.random.random(n_samples) > 0.85).astype(int)
-            y = np.minimum(y, 1)
-        else:  # peak_hours
-            y = 20 + X['hourOfDay'] * 1.5 + np.random.normal(0, 5, n_samples)
-            y = np.maximum(y, 0)
-        
-        return X, y
-    
+            y = ((X['hourOfDay'] > 18).astype(int) + (np.random.random(n) > 0.85).astype(int)).clip(0, 1)
+        else:
+            y = 20 + X['hourOfDay'] * 1.5 + np.random.normal(0, 5, n)
+
+        return X, np.maximum(y, 0)
+
+    # ─────────────────────────────────────────────────────
+    # PREDICTIONS
+    # ─────────────────────────────────────────────────────
     def predict_waiting_time(self, features):
-        """Predict waiting time in minutes"""
         try:
-            # Load model if not loaded
-            if not hasattr(self.waiting_time_model, 'feature_importances_'):
-                model_path = os.path.join(self.models_dir, 'waiting_time_model.pkl')
-                if os.path.exists(model_path):
-                    self.waiting_time_model = joblib.load(model_path)
-                    encoders_path = os.path.join(self.models_dir, 'label_encoders.pkl')
-                    if os.path.exists(encoders_path):
-                        self.label_encoders = joblib.load(encoders_path)
-            
+            self._load_model_if_needed('waiting_time')
             df = pd.DataFrame([features])
             df = self.prepare_features(df)
-            
-            feature_cols = ['dayOfWeek', 'hourOfDay', 'month', 'dayOfMonth', 'service_encoded', 'positionInQueue']
-            feature_cols = [col for col in feature_cols if col in df.columns]
-            
-            X = df[feature_cols].fillna(0)
-            prediction = self.waiting_time_model.predict(X)[0]
-            
-            return max(0, round(prediction, 2))
+            cols = [c for c in ['dayOfWeek', 'hourOfDay', 'month', 'dayOfMonth', 'service_encoded', 'positionInQueue'] if c in df.columns]
+            return max(0, round(float(self.waiting_time_model.predict(df[cols].fillna(0))[0]), 2))
         except Exception as e:
-            # Return default prediction
+            print(f"[ML] predict_waiting_time error: {e}")
             return features.get('positionInQueue', 0) * 2
-    
+
     def predict_queue_length(self, features):
-        """Predict queue length"""
         try:
-            model_path = os.path.join(self.models_dir, 'queue_length_model.pkl')
-            if os.path.exists(model_path):
-                self.queue_length_model = joblib.load(model_path)
-            
+            self._load_model_if_needed('queue_length')
             df = pd.DataFrame([features])
             df = self.prepare_features(df)
-            
-            feature_cols = ['dayOfWeek', 'hourOfDay', 'month', 'dayOfMonth', 'service_encoded']
-            feature_cols = [col for col in feature_cols if col in df.columns]
-            
-            X = df[feature_cols].fillna(0)
-            prediction = self.queue_length_model.predict(X)[0]
-            
-            return max(0, round(prediction))
+            cols = [c for c in ['dayOfWeek', 'hourOfDay', 'month', 'dayOfMonth', 'service_encoded'] if c in df.columns]
+            return max(0, round(float(self.queue_length_model.predict(df[cols].fillna(0))[0])))
         except Exception as e:
+            print(f"[ML] predict_queue_length error: {e}")
             return 10
-    
+
     def predict_no_show_probability(self, features):
-        """Predict no-show probability (0-1)"""
         try:
-            model_path = os.path.join(self.models_dir, 'no_show_model.pkl')
-            if os.path.exists(model_path):
-                self.no_show_model = joblib.load(model_path)
-            
+            self._load_model_if_needed('no_show')
             df = pd.DataFrame([features])
             df = self.prepare_features(df)
-            
-            feature_cols = ['dayOfWeek', 'hourOfDay', 'month', 'dayOfMonth', 'service_encoded', 'positionInQueue']
-            feature_cols = [col for col in feature_cols if col in df.columns]
-            
-            X = df[feature_cols].fillna(0)
-            probability = self.no_show_model.predict_proba(X)[0][1]
-            
-            return round(probability, 3)
+            cols = [c for c in ['dayOfWeek', 'hourOfDay', 'month', 'dayOfMonth', 'service_encoded', 'positionInQueue'] if c in df.columns]
+            prob = self.no_show_model.predict_proba(df[cols].fillna(0))[0][1]
+            return round(float(prob), 3)
         except Exception as e:
+            print(f"[ML] predict_no_show error: {e}")
             return 0.15
-    
+
     def predict_peak_hours(self, features):
-        """Predict queue density for peak hours"""
         try:
-            model_path = os.path.join(self.models_dir, 'peak_hours_model.pkl')
-            if os.path.exists(model_path):
-                self.peak_hours_model = joblib.load(model_path)
-            
+            self._load_model_if_needed('peak_hours')
             df = pd.DataFrame([features])
             df = self.prepare_features(df)
-            
-            feature_cols = ['dayOfWeek', 'hourOfDay', 'month', 'dayOfMonth', 'service_encoded']
-            feature_cols = [col for col in feature_cols if col in df.columns]
-            
-            X = df[feature_cols].fillna(0)
-            prediction = self.peak_hours_model.predict(X)[0]
-            
-            return max(0, round(prediction, 2))
+            cols = [c for c in ['dayOfWeek', 'hourOfDay', 'month', 'dayOfMonth', 'service_encoded'] if c in df.columns]
+            return max(0, round(float(self.peak_hours_model.predict(df[cols].fillna(0))[0]), 2))
         except Exception as e:
+            print(f"[ML] predict_peak_hours error: {e}")
             return 20
-    
+
     def suggest_best_time(self, service, day_of_week=None):
-        """Suggest best time to visit based on historical data"""
         try:
-            # Predict for all hours of the day
-            best_times = []
             target_day = day_of_week if day_of_week is not None else datetime.now().weekday()
-            
-            for hour in range(9, 18):  # Business hours 9 AM to 6 PM
+            best_times = []
+
+            for hour in range(9, 18):
                 features = {
                     'service': service,
                     'dayOfWeek': target_day,
@@ -275,29 +302,53 @@ class QueueMLModels:
                     'dayOfMonth': datetime.now().day,
                     'positionInQueue': 1
                 }
-                
-                queue_length = self.predict_queue_length(features)
-                waiting_time = self.predict_waiting_time(features)
-                
-                # Score: lower is better (less crowded, less waiting)
-                score = queue_length * 0.6 + waiting_time * 0.4
-                
-                best_times.append({
-                    'hour': hour,
-                    'queueLength': queue_length,
-                    'waitingTime': waiting_time,
-                    'score': score
-                })
-            
-            # Sort by score and return top 3
+                q = self.predict_queue_length(features)
+                w = self.predict_waiting_time(features)
+                best_times.append({'hour': hour, 'queueLength': q, 'waitingTime': w, 'score': q * 0.6 + w * 0.4})
+
             best_times.sort(key=lambda x: x['score'])
-            return [{'hour': t['hour'], 'queueLength': t['queueLength'], 'waitingTime': t['waitingTime']} 
-                   for t in best_times[:3]]
+            return [{'hour': t['hour'], 'queueLength': t['queueLength'], 'waitingTime': t['waitingTime']}
+                    for t in best_times[:3]]
         except Exception as e:
-            # Default suggestions
             return [
                 {'hour': 10, 'queueLength': 5, 'waitingTime': 10},
                 {'hour': 14, 'queueLength': 7, 'waitingTime': 14},
                 {'hour': 16, 'queueLength': 6, 'waitingTime': 12}
             ]
 
+    # ─────────────────────────────────────────────────────
+    # SAVE / LOAD HELPERS
+    # ─────────────────────────────────────────────────────
+    def _load_model_if_needed(self, model_type):
+        paths = {
+            'waiting_time': ('waiting_time_model.pkl', 'waiting_time_model'),
+            'queue_length': ('queue_length_model.pkl', 'queue_length_model'),
+            'no_show':      ('no_show_model.pkl',      'no_show_model'),
+            'peak_hours':   ('peak_hours_model.pkl',   'peak_hours_model'),
+        }
+        filename, attr = paths[model_type]
+        model = getattr(self, attr)
+        if not hasattr(model, 'feature_importances_'):
+            path = os.path.join(self.models_dir, filename)
+            if os.path.exists(path):
+                setattr(self, attr, joblib.load(path))
+                encoders_path = os.path.join(self.models_dir, 'label_encoders.pkl')
+                if os.path.exists(encoders_path):
+                    self.label_encoders = joblib.load(encoders_path)
+
+    def _load_all_models(self):
+        for model_type in ['waiting_time', 'queue_length', 'no_show', 'peak_hours']:
+            self._load_model_if_needed(model_type)
+
+        meta_path = os.path.join(self.models_dir, 'metadata.pkl')
+        if os.path.exists(meta_path):
+            meta = joblib.load(meta_path)
+            self.is_trained    = meta.get('is_trained', False)
+            self.total_records = meta.get('total_records', 0)
+            print(f"[ML] Models loaded. Trained on {self.total_records} records.")
+
+    def _save_metadata(self):
+        joblib.dump(
+            {'is_trained': self.is_trained, 'total_records': self.total_records},
+            os.path.join(self.models_dir, 'metadata.pkl')
+        )
