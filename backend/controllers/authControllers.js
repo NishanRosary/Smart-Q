@@ -11,6 +11,30 @@ const generateAccessToken = (user) => {
   );
 };
 
+const findUserByIdentifier = async (identifierInput) => {
+  const identifier = String(identifierInput).trim();
+  return User.findOne({
+    $or: [{ email: identifier.toLowerCase() }, { phone: identifier }]
+  });
+};
+
+const sendLoginResponse = (res, user) => {
+  const accessToken = generateAccessToken(user);
+
+  return res.status(200).json({
+    token: accessToken,
+    accessToken,
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email || null,
+      phone: user.phone || null,
+      role: user.role,
+      isActive: user.isActive
+    }
+  });
+};
+
 exports.register = async (req, res) => {
   try {
     const { name, email, phone, password } = req.body;
@@ -65,14 +89,7 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: "emailOrPhone and password are required" });
     }
 
-    const identifier = String(emailOrPhone).trim();
-
-    const user = await User.findOne({
-      $or: [
-        { email: identifier.toLowerCase() },
-        { phone: identifier }
-      ]
-    });
+    const user = await findUserByIdentifier(emailOrPhone);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -87,21 +104,46 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // Token is generated only after all checks pass.
-    const accessToken = generateAccessToken(user);
-
-    return res.status(200).json({
-      token: accessToken,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email || null,
-        phone: user.phone || null,
-        role: user.role,
-        isActive: user.isActive
-      }
-    });
+    return sendLoginResponse(res, user);
   } catch (error) {
     return res.status(500).json({ message: "Server error" });
   }
+};
+
+exports.adminLogin = async (req, res) => {
+  try {
+    const emailOrPhone = req.body.emailOrPhone || req.body.email;
+    const { password } = req.body;
+
+    if (!emailOrPhone || !password) {
+      return res.status(400).json({ message: "email and password are required" });
+    }
+
+    const user = await findUserByIdentifier(emailOrPhone);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.role !== "admin") {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+
+    if (!user.isActive) {
+      return res.status(401).json({ message: "Account inactive" });
+    }
+
+    const isPasswordValid = await user.comparePassword(password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    return sendLoginResponse(res, user);
+  } catch (error) {
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.adminRefresh = async (req, res) => {
+  return res.status(501).json({ message: "Refresh token flow is not implemented" });
 };

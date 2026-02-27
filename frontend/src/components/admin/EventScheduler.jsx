@@ -33,6 +33,7 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
   const [newEvent, setNewEvent] = useState(null);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [deletingEventId, setDeletingEventId] = useState('');
 
   const fetchEvents = async () => {
     try {
@@ -87,13 +88,7 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
         location: '',
         serviceTypes: []
       });
-      // Refresh events list
-      const eventsRes = await axios.get('http://localhost:5000/api/events', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      setEvents(eventsRes.data || []);
+      await fetchEvents();
       setTimeout(() => setShowSuccess(false), 5000);
     } catch (error) {
       console.error('Error creating event:', error);
@@ -119,6 +114,26 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
       ...prev,
       serviceTypes: prev.serviceTypes.filter((_, i) => i !== index)
     }));
+  };
+
+  const handleDeleteEvent = async (eventId) => {
+    const shouldDelete = window.confirm('Delete this scheduled event? This will also remove its queue tokens.');
+    if (!shouldDelete) return;
+
+    setDeletingEventId(eventId);
+    try {
+      await axios.delete(`http://localhost:5000/api/events/${eventId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      await fetchEvents();
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      alert(error.response?.data?.message || 'Failed to delete event.');
+    } finally {
+      setDeletingEventId('');
+    }
   };
 
   return (
@@ -334,6 +349,7 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
                 <th>Total Tokens</th>
                 <th>Available</th>
                 <th>Status</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
@@ -353,6 +369,17 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
                       }`}>
                       {event.status}
                     </span>
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      onClick={() => handleDeleteEvent(event.id)}
+                      disabled={deletingEventId === event.id}
+                      style={{ color: '#DC2626', borderColor: '#FCA5A5' }}
+                    >
+                      {deletingEventId === event.id ? 'Deleting...' : 'Delete'}
+                    </button>
                   </td>
                 </tr>
               ))}

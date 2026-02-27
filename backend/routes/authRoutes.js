@@ -1,5 +1,10 @@
 const express = require("express");
-const { register, login } = require("../controllers/authControllers");
+const {
+  register,
+  login,
+  adminLogin,
+  adminRefresh
+} = require("../controllers/authControllers");
 const { authMiddleware } = require("../middleware/auth");
 
 const router = express.Router();
@@ -9,6 +14,12 @@ router.post("/register", register);
 
 // POST /api/auth/login
 router.post("/login", login);
+
+// POST /api/auth/admin/login
+router.post("/admin/login", adminLogin);
+
+// POST /api/auth/admin/refresh
+router.post("/admin/refresh", adminRefresh);
 
 // Example protected route
 router.get("/me", authMiddleware, (req, res) => {
