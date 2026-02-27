@@ -80,15 +80,16 @@ const Header = ({ onNavigate, goBack, currentPage, customerData, onLogout }) => 
             onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
           >
             <img
-              src="/favicon.jpg"
+              src={theme === 'dark' ? "/Smart'Q dark theme.jpg" : "/smartq-logo.jpg"}
               alt="Smart'Q"
               style={{
                 height: '36px',
                 width: '36px',
                 borderRadius: '10px',
-                objectFit: 'cover',
+                objectFit: 'contain',
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12)',
                 border: '1.5px solid rgba(37, 99, 235, 0.2)',
+                backgroundColor: 'var(--bg-primary)',
               }}
             />
             <span style={{
