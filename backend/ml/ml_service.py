@@ -19,6 +19,8 @@ def user_joined():
     """
     try:
         record = request.json
+        if record is None:
+            return jsonify({'error': 'Invalid or missing JSON payload'}), 400
         result = ml_models.on_user_joined(record)
         return jsonify(result)
     except Exception as e:
@@ -64,7 +66,10 @@ def seed():
 @app.route('/predict/waiting-time', methods=['POST'])
 def predict_waiting_time():
     try:
-        prediction = ml_models.predict_waiting_time(request.json)
+        data = request.json
+        if data is None:
+            return jsonify({'error': 'Invalid or missing JSON payload'}), 400
+        prediction = ml_models.predict_waiting_time(data)
         return jsonify({'waitingTime': prediction, 'unit': 'minutes'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -97,6 +102,8 @@ def predict_peak_hours():
 def suggest_best_time():
     try:
         data = request.json
+        if data is None:
+            return jsonify({'error': 'Invalid or missing JSON payload'}), 400
         suggestions = ml_models.suggest_best_time(data.get('service', 'General'), data.get('dayOfWeek'))
         return jsonify({'suggestions': suggestions})
     except Exception as e:
