@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Queue = require("../models/queue");
+const Event = require("../models/event");
 const { authMiddleware, adminMiddleware } = require("../middleware/auth");
 const { sendQueueRegistrationEmail } = require("../services/emailService");
 const axios = require("axios"); // ← ADD THIS
@@ -160,10 +161,35 @@ const broadcastQueueUpdate = async (io) => {
 // =======================
 router.post("/join", async (req, res) => {
   try {
-    const { service, guestName, guestMobile, guestEmail, email, isCustomerUser } = req.body;
+    const {
+      service,
+      guestName,
+      guestMobile,
+      guestEmail,
+      email,
+      isCustomerUser,
+      eventId,
+      eventName,
+      organizationName,
+      organizationType
+    } = req.body;
 
-    if (!service) {
-      return res.status(400).json({ message: "Service is required" });
+    if (!service || !eventId) {
+      return res.status(400).json({ message: "Service and eventId are required" });
+    }
+
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    const joinedTokensForEvent = await Queue.countDocuments({
+      eventId: String(eventId),
+      status: { $ne: "cancelled" }
+    });
+    const totalTokensForEvent = Number(event.totalTokens) || 0;
+    if (joinedTokensForEvent >= totalTokensForEvent) {
+      return res.status(400).json({ message: "This event queue is full" });
     }
 
     const count = await Queue.countDocuments();
@@ -173,7 +199,12 @@ router.post("/join", async (req, res) => {
       tokenNumber,
       service,
       guestName: guestName || null,
-      guestMobile: guestMobile || null
+      guestMobile: guestMobile || null,
+      guestEmail: guestEmail || email || null,
+      eventId: String(eventId),
+      eventName: eventName || event.title || null,
+      organizationName: organizationName || event.organizationName || null,
+      organizationType: organizationType || event.organizationType || null
     });
 
     await newQueue.save();
