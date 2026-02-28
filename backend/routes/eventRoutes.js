@@ -56,6 +56,14 @@ router.post(
         });
       }
 
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      if (parsedEndDate < todayStart) {
+        return res.status(400).json({
+          message: "End date cannot be in the past"
+        });
+      }
+
       if (parsedTotalTokens < 1 || parsedTotalTokens > 9999) {
         return res.status(400).json({
           message: "Total tokens must be between 1 and 9999"
@@ -94,7 +102,12 @@ router.post(
 // =======================
 router.get("/", async (req, res) => {
   try {
-    await purgeExpiredEvents();
+    try {
+      await purgeExpiredEvents();
+    } catch (cleanupError) {
+      console.error("Expired events cleanup error:", cleanupError.message);
+    }
+
     const events = await Event.find().sort({ createdAt: -1 });
 
     const eventsWithAvailability = await Promise.all(

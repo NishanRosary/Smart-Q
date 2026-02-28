@@ -98,7 +98,7 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
       setTimeout(() => setShowSuccess(false), 5000);
     } catch (error) {
       console.error('Error creating event:', error);
-      alert('Failed to create event. Please check the console for details.');
+      alert(error.response?.data?.message || 'Failed to create event. Please check the console for details.');
     } finally {
       setLoading(false);
     }
