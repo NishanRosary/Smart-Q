@@ -7,6 +7,7 @@ require("dotenv").config();
 const connectDB = require("./config/db");
 const queueRoutes = require("./routes/queueRoutes");
 const eventRoutes = require("./routes/eventRoutes");
+const eventHistoryRoutes = require("./routes/eventHistoryRoutes");
 const mlRoutes = require("./routes/mlRoutes");
 const otpRoutes = require("./routes/otpRoutes");
 const authRoutes = require("./routes/authRoutes");
@@ -39,6 +40,7 @@ connectDB();
 app.use("/api/auth", authRoutes);
 app.use("/api/queue", queueRoutes);
 app.use("/api/events", eventRoutes);
+app.use("/api/event-history", eventHistoryRoutes);
 app.use("/api/ml", mlRoutes);
 app.use("/api/otp", otpRoutes);
 

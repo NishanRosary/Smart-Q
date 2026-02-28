@@ -13,6 +13,7 @@ import WelcomePage from "./components/customer/WelcomePage";
 import AdminLogin from "./components/admin/AdminLogin";
 import AdminDashboard from "./components/admin/AdminDashboard";
 import EventScheduler from "./components/admin/EventScheduler";
+import EventHistory from "./components/admin/EventHistory";
 import QueueManagement from "./components/admin/QueueManagement";
 import CounterManagement from "./components/admin/CounterManagement";
 import Analytics from "./components/admin/Analytics";
@@ -126,6 +127,9 @@ function App() {
 
       case "event-scheduler":
         return <EventScheduler onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
+
+      case "event-history":
+        return <EventHistory onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
 
       case "queue-management":
         return <QueueManagement onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;

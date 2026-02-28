@@ -1,5 +1,6 @@
 const Event = require("../models/event");
 const Queue = require("../models/queue");
+const EventHistory = require("../models/eventHistory");
 
 const parseDateValue = (value) => {
   if (!value) return null;
@@ -44,17 +45,69 @@ const purgeExpiredEvents = async () => {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
-  const events = await Event.find({}, { _id: 1, endDate: 1, date: 1 });
-  const expiredEventIds = events
-    .filter((event) => {
-      const expiryDate = getEventExpiryDate(event);
-      return expiryDate && expiryDate < todayStart;
-    })
-    .map((event) => String(event._id));
+  const events = await Event.find();
+  const expiredEvents = events.filter((event) => {
+    const expiryDate = getEventExpiryDate(event);
+    return expiryDate && expiryDate < todayStart;
+  });
 
-  if (expiredEventIds.length === 0) {
+  if (expiredEvents.length === 0) {
     return { deletedEvents: 0, deletedQueues: 0 };
   }
+
+  // Archive each expired event to history before deleting
+  for (const event of expiredEvents) {
+    const eventIdStr = String(event._id);
+
+    // Check if already archived (avoid duplicates)
+    const alreadyArchived = await EventHistory.findOne({ originalEventId: eventIdStr });
+    if (!alreadyArchived) {
+      // Capture queue stats
+      const usersJoined = await Queue.countDocuments({
+        eventId: eventIdStr,
+        status: { $ne: "cancelled" }
+      });
+      const usersCompleted = await Queue.countDocuments({
+        eventId: eventIdStr,
+        status: "completed"
+      });
+      const usersCancelled = await Queue.countDocuments({
+        eventId: eventIdStr,
+        status: "cancelled"
+      });
+      const usersServing = await Queue.countDocuments({
+        eventId: eventIdStr,
+        status: "serving"
+      });
+
+      const historyRecord = new EventHistory({
+        originalEventId: eventIdStr,
+        title: event.title,
+        organizationType: event.organizationType,
+        organizationName: event.organizationName,
+        startDate: event.startDate,
+        endDate: event.endDate,
+        date: event.date,
+        time: event.time,
+        location: event.location,
+        totalTokens: event.totalTokens,
+        serviceTypes: event.serviceTypes || [],
+        status: "Completed",
+        crowdLevel: event.crowdLevel || "Medium",
+        deletionReason: "expired",
+        deletedAt: new Date(),
+        usersJoined,
+        usersCompleted,
+        usersCancelled,
+        usersServing,
+        eventCreatedAt: event.createdAt
+      });
+
+      await historyRecord.save();
+    }
+  }
+
+  const expiredEventIds = expiredEvents.map((event) => String(event._id));
 
   const queueResult = await Queue.deleteMany({ eventId: { $in: expiredEventIds } });
   const eventResult = await Event.deleteMany({ _id: { $in: expiredEventIds } });

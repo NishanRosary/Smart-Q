@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Event = require("../models/event");
 const Queue = require("../models/queue");
+const EventHistory = require("../models/eventHistory");
 const { authMiddleware, roleMiddleware } = require("../middleware/auth");
 const { purgeExpiredEvents } = require("../services/eventCleanupService");
 
@@ -169,13 +170,58 @@ router.delete(
         return res.status(404).json({ message: "Event not found" });
       }
 
+      // Capture queue stats before deletion
+      const eventIdStr = String(id);
+      const usersJoined = await Queue.countDocuments({
+        eventId: eventIdStr,
+        status: { $ne: "cancelled" }
+      });
+      const usersCompleted = await Queue.countDocuments({
+        eventId: eventIdStr,
+        status: "completed"
+      });
+      const usersCancelled = await Queue.countDocuments({
+        eventId: eventIdStr,
+        status: "cancelled"
+      });
+      const usersServing = await Queue.countDocuments({
+        eventId: eventIdStr,
+        status: "serving"
+      });
+
+      // Archive the event to history before deleting
+      const historyRecord = new EventHistory({
+        originalEventId: eventIdStr,
+        title: event.title,
+        organizationType: event.organizationType,
+        organizationName: event.organizationName,
+        startDate: event.startDate,
+        endDate: event.endDate,
+        date: event.date,
+        time: event.time,
+        location: event.location,
+        totalTokens: event.totalTokens,
+        serviceTypes: event.serviceTypes || [],
+        status: event.status || "Completed",
+        crowdLevel: event.crowdLevel || "Medium",
+        deletionReason: "manual",
+        deletedAt: new Date(),
+        usersJoined,
+        usersCompleted,
+        usersCancelled,
+        usersServing,
+        eventCreatedAt: event.createdAt
+      });
+
+      await historyRecord.save();
+
       // Delete related queue entries for this event to avoid orphaned records.
-      await Queue.deleteMany({ eventId: String(id) });
+      await Queue.deleteMany({ eventId: eventIdStr });
       await Event.findByIdAndDelete(id);
 
       return res.json({
         success: true,
-        message: "Event deleted successfully"
+        message: "Event deleted and archived to history successfully"
       });
     } catch (error) {
       return res.status(500).json({ message: error.message });
