@@ -342,28 +342,92 @@ router.get("/", authMiddleware, adminMiddleware, async (req, res) => {
 // START SERVING (Admin)
 // =======================
 router.put("/:id/start", authMiddleware, adminMiddleware, async (req, res) => {
-  const updated = await Queue.findByIdAndUpdate(
-    req.params.id,
-    { status: "serving" },
-    { new: true }
-  );
-  const io = req.app.get("io");
-  if (io) await broadcastQueueUpdate(io);
-  res.json(updated);
+  try {
+    const updated = await Queue.findByIdAndUpdate(
+      req.params.id,
+      { status: "serving" },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: "Queue entry not found" });
+    }
+
+    const io = req.app.get("io");
+    if (io) await broadcastQueueUpdate(io);
+    return res.json(updated);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
 });
 
 // =======================
 // COMPLETE (Admin)
 // =======================
 router.put("/:id/complete", authMiddleware, adminMiddleware, async (req, res) => {
-  const updated = await Queue.findByIdAndUpdate(
-    req.params.id,
-    { status: "completed" },
-    { new: true }
-  );
-  const io = req.app.get("io");
-  if (io) await broadcastQueueUpdate(io);
-  res.json(updated);
+  try {
+    const updated = await Queue.findByIdAndUpdate(
+      req.params.id,
+      { status: "completed" },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: "Queue entry not found" });
+    }
+
+    const io = req.app.get("io");
+    if (io) await broadcastQueueUpdate(io);
+    return res.json(updated);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+});
+
+// =======================
+// CANCEL (Admin)
+// =======================
+router.put("/:id/cancel", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const updated = await Queue.findByIdAndUpdate(
+      req.params.id,
+      { status: "cancelled" },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: "Queue entry not found" });
+    }
+
+    const io = req.app.get("io");
+    if (io) await broadcastQueueUpdate(io);
+    return res.json(updated);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+});
+
+// =======================
+// REVOKE (Admin)
+// =======================
+router.put("/:id/revoke", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const updated = await Queue.findByIdAndUpdate(
+      req.params.id,
+      { status: "waiting" },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: "Queue entry not found" });
+    }
+
+    const io = req.app.get("io");
+    if (io) await broadcastQueueUpdate(io);
+    return res.json(updated);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
 });
 
 module.exports = router;

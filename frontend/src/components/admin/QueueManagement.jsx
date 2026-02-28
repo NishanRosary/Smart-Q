@@ -26,16 +26,14 @@ const QueueManagement = ({ onNavigate, goBack, currentPage }) => {
   useEffect(() => {
     fetchQueueData();
 
-    socket.on("queue:update", (data) => {
-      if (Array.isArray(data.queue)) {
-        setQueueData(data.queue);
-      } else {
-        setQueueData([]);
-      }
-    });
+    const handleQueueUpdate = async () => {
+      await fetchQueueData();
+    };
+
+    socket.on("queue:update", handleQueueUpdate);
 
     return () => {
-      socket.off("queue:update");
+      socket.off("queue:update", handleQueueUpdate);
     };
   }, []);
 
@@ -195,6 +193,9 @@ const QueueManagement = ({ onNavigate, goBack, currentPage }) => {
             <div className="action-buttons">
               <button className="action-btn btn-danger" onClick={() => completeQueue(queue._id)}>
                 Complete
+              </button>
+              <button className="action-btn btn-danger" onClick={() => cancelQueue(queue._id)}>
+                Cancel
               </button>
             </div>
           )

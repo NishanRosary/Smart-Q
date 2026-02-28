@@ -38,14 +38,14 @@ const CounterManagement = ({ onNavigate, goBack, currentPage }) => {
     fetchQueueData();
     fetchEvents();
 
-    socket.on('queue:update', (data) => {
-      if (Array.isArray(data.queue)) {
-        setQueueData(data.queue);
-      }
-    });
+    const handleQueueUpdate = async () => {
+      await fetchQueueData();
+    };
+
+    socket.on('queue:update', handleQueueUpdate);
 
     return () => {
-      socket.off('queue:update');
+      socket.off('queue:update', handleQueueUpdate);
     };
   }, []);
 
