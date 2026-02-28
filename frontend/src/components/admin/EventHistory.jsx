@@ -144,11 +144,15 @@ const EventHistory = ({ onNavigate, goBack, currentPage }) => {
         }
     };
 
-    // Summary stats
-    const totalArchived = history.length;
-    const manuallyDeleted = history.filter(r => r.deletionReason === 'manual').length;
-    const autoExpired = history.filter(r => r.deletionReason === 'expired').length;
-    const totalUsersServed = history.reduce((sum, r) => sum + (r.usersCompleted || 0), 0);
+    // Check if a specific filter/search is active
+    const isFiltered = searchTerm.trim() !== '' || filterReason !== 'all';
+
+    // Dynamic summary stats - show filtered data when filtered, otherwise show all
+    const dataForStats = isFiltered ? filteredHistory : history;
+    const totalCompleted = dataForStats.filter(r => r.deletionReason === 'completed').length;
+    const manuallyDeleted = dataForStats.filter(r => r.deletionReason === 'manual').length;
+    const autoExpired = dataForStats.filter(r => r.deletionReason === 'expired').length;
+    const totalUsersServed = dataForStats.reduce((sum, r) => sum + (r.usersCompleted || 0), 0);
 
     return (
         <div className="admin-layout">
@@ -167,20 +171,54 @@ const EventHistory = ({ onNavigate, goBack, currentPage }) => {
                     </div>
                 </div>
 
-                {/* Summary Stats */}
+                {/* Summary Stats - dynamic based on filter */}
                 <div className="summary-cards" style={{ marginBottom: '1.5rem' }}>
+                    {isFiltered && (
+                        <div style={{
+                            gridColumn: '1 / -1',
+                            padding: '0.5rem 1rem',
+                            backgroundColor: 'var(--color-primary-bg)',
+                            borderRadius: '8px',
+                            fontSize: '0.85rem',
+                            color: 'var(--color-primary)',
+                            fontWeight: 600,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem'
+                        }}>
+                            <Filter size={14} />
+                            Showing stats for {filteredHistory.length} filtered {filteredHistory.length === 1 ? 'event' : 'events'}
+                            <button
+                                onClick={() => { setSearchTerm(''); setFilterReason('all'); }}
+                                style={{
+                                    marginLeft: 'auto',
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'var(--color-primary)',
+                                    cursor: 'pointer',
+                                    fontWeight: 600,
+                                    fontSize: '0.85rem',
+                                    textDecoration: 'underline',
+                                    padding: 0
+                                }}
+                            >
+                                Clear filters
+                            </button>
+                        </div>
+                    )}
+
                     <div className="summary-card">
                         <div className="summary-card-header">
-                            <span className="summary-card-title">Total Archived</span>
+                            <span className="summary-card-title">Total Completed</span>
                             <div
                                 className="summary-card-icon"
                                 style={{ backgroundColor: '#8B5CF620', color: '#8B5CF6' }}
                             >
-                                <Archive size={20} />
+                                <CheckCircle size={20} />
                             </div>
                         </div>
-                        <div className="summary-card-value">{totalArchived}</div>
-                        <div className="summary-card-change">All time</div>
+                        <div className="summary-card-value">{totalCompleted}</div>
+                        <div className="summary-card-change">{isFiltered ? 'Filtered results' : 'All time'}</div>
                     </div>
 
                     <div className="summary-card">
@@ -194,7 +232,7 @@ const EventHistory = ({ onNavigate, goBack, currentPage }) => {
                             </div>
                         </div>
                         <div className="summary-card-value">{manuallyDeleted}</div>
-                        <div className="summary-card-change">Admin removals</div>
+                        <div className="summary-card-change">{isFiltered ? 'Filtered results' : 'Admin removals'}</div>
                     </div>
 
                     <div className="summary-card">
@@ -208,7 +246,7 @@ const EventHistory = ({ onNavigate, goBack, currentPage }) => {
                             </div>
                         </div>
                         <div className="summary-card-value">{autoExpired}</div>
-                        <div className="summary-card-change">Past end date</div>
+                        <div className="summary-card-change">{isFiltered ? 'Filtered results' : 'Past end date'}</div>
                     </div>
 
                     <div className="summary-card">
@@ -218,11 +256,11 @@ const EventHistory = ({ onNavigate, goBack, currentPage }) => {
                                 className="summary-card-icon"
                                 style={{ backgroundColor: 'var(--color-green-bg)', color: 'var(--color-green)' }}
                             >
-                                <CheckCircle size={20} />
+                                <Users size={20} />
                             </div>
                         </div>
                         <div className="summary-card-value">{totalUsersServed}</div>
-                        <div className="summary-card-change">Completed across all events</div>
+                        <div className="summary-card-change">{isFiltered ? 'Filtered results' : 'Completed across all events'}</div>
                     </div>
                 </div>
 
@@ -271,9 +309,9 @@ const EventHistory = ({ onNavigate, goBack, currentPage }) => {
                             style={{ minWidth: '180px' }}
                         >
                             <option value="all">All Reasons</option>
+                            <option value="completed">Completed</option>
                             <option value="manual">Manually Deleted</option>
                             <option value="expired">Auto-Expired</option>
-                            <option value="completed">Completed</option>
                         </select>
                     </div>
                 </div>
@@ -316,10 +354,10 @@ const EventHistory = ({ onNavigate, goBack, currentPage }) => {
                             <Archive size={48} style={{ opacity: 0.3 }} />
                             <div>
                                 <p style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.25rem' }}>
-                                    {searchTerm || filterReason !== 'all' ? 'No matching events found' : 'No event history yet'}
+                                    {isFiltered ? 'No matching events found' : 'No event history yet'}
                                 </p>
                                 <p style={{ fontSize: '0.875rem', margin: 0 }}>
-                                    {searchTerm || filterReason !== 'all'
+                                    {isFiltered
                                         ? 'Try adjusting your search or filter criteria.'
                                         : 'Deleted and expired events will appear here automatically.'}
                                 </p>

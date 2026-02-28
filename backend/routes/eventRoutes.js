@@ -155,6 +155,81 @@ router.get("/", async (req, res) => {
 });
 
 // =======================
+// COMPLETE EVENT (Admin)
+// =======================
+router.post(
+  "/:id/complete",
+  authMiddleware,
+  roleMiddleware("admin"),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      const event = await Event.findById(id);
+      if (!event) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+
+      // Capture queue stats before completion
+      const eventIdStr = String(id);
+      const usersJoined = await Queue.countDocuments({
+        eventId: eventIdStr,
+        status: { $ne: "cancelled" }
+      });
+      const usersCompleted = await Queue.countDocuments({
+        eventId: eventIdStr,
+        status: "completed"
+      });
+      const usersCancelled = await Queue.countDocuments({
+        eventId: eventIdStr,
+        status: "cancelled"
+      });
+      const usersServing = await Queue.countDocuments({
+        eventId: eventIdStr,
+        status: "serving"
+      });
+
+      // Archive the event to history as completed
+      const historyRecord = new EventHistory({
+        originalEventId: eventIdStr,
+        title: event.title,
+        organizationType: event.organizationType,
+        organizationName: event.organizationName,
+        startDate: event.startDate,
+        endDate: event.endDate,
+        date: event.date,
+        time: event.time,
+        location: event.location,
+        totalTokens: event.totalTokens,
+        serviceTypes: event.serviceTypes || [],
+        status: "Completed",
+        crowdLevel: event.crowdLevel || "Medium",
+        deletionReason: "completed",
+        deletedAt: new Date(),
+        usersJoined,
+        usersCompleted,
+        usersCancelled,
+        usersServing,
+        eventCreatedAt: event.createdAt
+      });
+
+      await historyRecord.save();
+
+      // Remove queue entries and the event
+      await Queue.deleteMany({ eventId: eventIdStr });
+      await Event.findByIdAndDelete(id);
+
+      return res.json({
+        success: true,
+        message: "Event marked as completed and archived to history"
+      });
+    } catch (error) {
+      return res.status(500).json({ message: error.message });
+    }
+  }
+);
+
+// =======================
 // DELETE EVENT (Admin)
 // =======================
 router.delete(

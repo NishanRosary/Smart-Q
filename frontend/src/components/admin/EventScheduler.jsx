@@ -35,6 +35,7 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [deletingEventId, setDeletingEventId] = useState('');
+  const [completingEventId, setCompletingEventId] = useState('');
 
   const fetchEvents = async () => {
     try {
@@ -120,6 +121,26 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
       ...prev,
       serviceTypes: prev.serviceTypes.filter((_, i) => i !== index)
     }));
+  };
+
+  const handleCompleteEvent = async (eventId) => {
+    const shouldComplete = window.confirm('Mark this event as completed? It will be moved to Event History.');
+    if (!shouldComplete) return;
+
+    setCompletingEventId(eventId);
+    try {
+      await axios.post(`http://localhost:5000/api/events/${eventId}/complete`, {}, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      await fetchEvents();
+    } catch (error) {
+      console.error('Error completing event:', error);
+      alert(error.response?.data?.message || 'Failed to complete event.');
+    } finally {
+      setCompletingEventId('');
+    }
   };
 
   const handleDeleteEvent = async (eventId) => {
@@ -380,33 +401,44 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
                     const endDate = event.endDate || event.startDate || event.date;
                     return (
                       <>
-                  <td>{event.organizationType}</td>
-                  <td>{event.organizationName || '-'}</td>
-                  <td style={{ fontWeight: 600 }}>{event.title}</td>
-                  <td>{startDate ? new Date(startDate).toLocaleDateString() : '-'}</td>
-                  <td>{endDate ? new Date(endDate).toLocaleDateString() : '-'}</td>
-                  <td>{event.time}</td>
-                  <td>{event.location}</td>
-                  <td>{event.totalTokens ?? '-'}</td>
-                  <td>{event.availableTokens ?? '-'}</td>
-                  <td>
-                    <span className={`badge ${event.status === 'Upcoming' ? 'badge-yellow' :
-                        event.status === 'Ongoing' ? 'badge-green' : 'badge-red'
-                      }`}>
-                      {event.status}
-                    </span>
-                  </td>
-                  <td>
-                    <button
-                      type="button"
-                      className="btn-secondary"
-                      onClick={() => handleDeleteEvent(event.id)}
-                      disabled={deletingEventId === event.id}
-                      style={{ color: '#DC2626', borderColor: '#FCA5A5' }}
-                    >
-                      {deletingEventId === event.id ? 'Deleting...' : 'Delete'}
-                    </button>
-                  </td>
+                        <td>{event.organizationType}</td>
+                        <td>{event.organizationName || '-'}</td>
+                        <td style={{ fontWeight: 600 }}>{event.title}</td>
+                        <td>{startDate ? new Date(startDate).toLocaleDateString() : '-'}</td>
+                        <td>{endDate ? new Date(endDate).toLocaleDateString() : '-'}</td>
+                        <td>{event.time}</td>
+                        <td>{event.location}</td>
+                        <td>{event.totalTokens ?? '-'}</td>
+                        <td>{event.availableTokens ?? '-'}</td>
+                        <td>
+                          <span className={`badge ${event.status === 'Upcoming' ? 'badge-yellow' :
+                            event.status === 'Ongoing' ? 'badge-green' : 'badge-red'
+                            }`}>
+                            {event.status}
+                          </span>
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <button
+                              type="button"
+                              className="btn-secondary"
+                              onClick={() => handleCompleteEvent(event.id)}
+                              disabled={completingEventId === event.id || deletingEventId === event.id}
+                              style={{ color: '#059669', borderColor: '#A7F3D0', fontSize: '0.85rem' }}
+                            >
+                              {completingEventId === event.id ? 'Completing...' : 'Complete'}
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-secondary"
+                              onClick={() => handleDeleteEvent(event.id)}
+                              disabled={deletingEventId === event.id || completingEventId === event.id}
+                              style={{ color: '#DC2626', borderColor: '#FCA5A5', fontSize: '0.85rem' }}
+                            >
+                              {deletingEventId === event.id ? 'Deleting...' : 'Delete'}
+                            </button>
+                          </div>
+                        </td>
                       </>
                     );
                   })()}
@@ -421,4 +453,3 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
 };
 
 export default EventScheduler;
-
