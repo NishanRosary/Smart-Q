@@ -399,6 +399,12 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
                   {(() => {
                     const startDate = event.startDate || event.date;
                     const endDate = event.endDate || event.startDate || event.date;
+                    const canComplete = event.isFull && (event.activeQueueCount === 0);
+                    const completeTooltip = !event.isFull
+                      ? 'Tokens are still available. All tokens must be used first.'
+                      : event.activeQueueCount > 0
+                        ? 'Queue has active entries (waiting/serving). All must be completed or cancelled.'
+                        : 'Mark this event as completed';
                     return (
                       <>
                         <td>{event.organizationType}</td>
@@ -423,8 +429,15 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
                               type="button"
                               className="btn-secondary"
                               onClick={() => handleCompleteEvent(event.id)}
-                              disabled={completingEventId === event.id || deletingEventId === event.id}
-                              style={{ color: '#059669', borderColor: '#A7F3D0', fontSize: '0.85rem' }}
+                              disabled={!canComplete || completingEventId === event.id || deletingEventId === event.id}
+                              title={completeTooltip}
+                              style={{
+                                color: canComplete ? '#059669' : '#9CA3AF',
+                                borderColor: canComplete ? '#A7F3D0' : '#E5E7EB',
+                                fontSize: '0.85rem',
+                                cursor: canComplete ? 'pointer' : 'not-allowed',
+                                opacity: canComplete ? 1 : 0.6
+                              }}
                             >
                               {completingEventId === event.id ? 'Completing...' : 'Complete'}
                             </button>

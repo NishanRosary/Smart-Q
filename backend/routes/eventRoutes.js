@@ -125,6 +125,12 @@ router.get("/", async (req, res) => {
           status: "serving"
         });
 
+        // Count active (waiting + serving) queue entries
+        const activeQueueCount = await Queue.countDocuments({
+          eventId,
+          status: { $in: ["waiting", "serving"] }
+        });
+
         const totalTokens = Number(event.totalTokens) || 0;
         const availableTokens = Math.max(totalTokens - joinedTokens, 0);
         const isFull = availableTokens <= 0;
@@ -142,7 +148,8 @@ router.get("/", async (req, res) => {
           status: computedStatus,
           joinedTokens,
           availableTokens,
-          isFull
+          isFull,
+          activeQueueCount
         };
       })
     );
@@ -170,12 +177,35 @@ router.post(
         return res.status(404).json({ message: "Event not found" });
       }
 
-      // Capture queue stats before completion
       const eventIdStr = String(id);
+
+      // Validate: all tokens must be used
       const usersJoined = await Queue.countDocuments({
         eventId: eventIdStr,
         status: { $ne: "cancelled" }
       });
+      const totalTokens = Number(event.totalTokens) || 0;
+      const availableTokens = Math.max(totalTokens - usersJoined, 0);
+
+      if (availableTokens > 0) {
+        return res.status(400).json({
+          message: "Cannot complete event: tokens are still available. All tokens must be used first."
+        });
+      }
+
+      // Validate: no active (waiting/serving) queue entries
+      const activeQueueCount = await Queue.countDocuments({
+        eventId: eventIdStr,
+        status: { $in: ["waiting", "serving"] }
+      });
+
+      if (activeQueueCount > 0) {
+        return res.status(400).json({
+          message: "Cannot complete event: there are still active queue entries (waiting or being served). All must be completed or cancelled first."
+        });
+      }
+
+      // Capture queue stats before completion
       const usersCompleted = await Queue.countDocuments({
         eventId: eventIdStr,
         status: "completed"
@@ -184,10 +214,7 @@ router.post(
         eventId: eventIdStr,
         status: "cancelled"
       });
-      const usersServing = await Queue.countDocuments({
-        eventId: eventIdStr,
-        status: "serving"
-      });
+      const usersServing = 0; // Already verified no serving entries
 
       // Archive the event to history as completed
       const historyRecord = new EventHistory({
