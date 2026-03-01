@@ -13,7 +13,6 @@ import {
 const OTP_COOLDOWN_SECONDS = 60;
 
 const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
-  const [loginType, setLoginType] = useState('email');
   const [isSignUp, setIsSignUp] = useState(false);
   const [authMode, setAuthMode] = useState('password'); // 'password' | 'otp'
   const [formData, setFormData] = useState({
@@ -81,18 +80,13 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
 
       let data;
       if (authMode === 'otp') {
-        if (loginType !== 'email') {
-          setErrorMessage('OTP sign in is available only for email login.');
-          return;
-        }
         data = await verifyCustomerLoginOtp({
           email: formData.email,
           otp: formData.otp
         });
       } else {
-        const identifier = loginType === 'email' ? formData.email : formData.mobile;
         data = await loginCustomer({
-          emailOrPhone: identifier,
+          emailOrPhone: formData.email,
           password: formData.password
         });
       }
@@ -124,10 +118,6 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
     setErrorMessage('');
     setSuccessMessage('');
 
-    if (loginType !== 'email') {
-      setErrorMessage('OTP can be sent only to email.');
-      return;
-    }
     if (!formData.email) {
       setErrorMessage('Enter your registered email to receive OTP.');
       return;
@@ -143,14 +133,10 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
     } finally {
       setOtpSending(false);
     }
-  }, [formData.email, loginType]);
+  }, [formData.email]);
 
   // Forgot password handler — switches to OTP mode and auto-sends OTP
   const handleForgotPassword = async () => {
-    if (loginType !== 'email') {
-      setErrorMessage('Forgot password via OTP is available only for email login. Switch to Email first.');
-      return;
-    }
     if (!formData.email) {
       setAuthMode('otp');
       setErrorMessage('Please enter your registered email first, then click Send OTP.');
@@ -162,18 +148,7 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
     await handleSendOtp();
   };
 
-  const toggleLoginType = (type) => {
-    setLoginType(type);
-    setAuthMode('password');
-    setErrorMessage('');
-    setSuccessMessage('');
-    setOtpCooldown(0);
-    setFormData((prev) => ({
-      ...prev,
-      password: '',
-      otp: ''
-    }));
-  };
+
 
   const switchAuthTab = (nextIsSignUp) => {
     setIsSignUp(nextIsSignUp);
@@ -274,49 +249,7 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
             </button>
           </div>
 
-          {/* Login Field Type Toggle (Only for Sign In) */}
-          {!isSignUp && (
-            <div style={{
-              display: 'flex',
-              padding: '0.25rem',
-              backgroundColor: 'var(--color-gray-100)',
-              borderRadius: '8px',
-              marginBottom: '2rem'
-            }}>
-              <button
-                onClick={() => toggleLoginType('email')}
-                style={{
-                  flex: 1,
-                  padding: '0.5rem',
-                  backgroundColor: loginType === 'email' ? 'var(--color-white)' : 'transparent',
-                  color: loginType === 'email' ? 'var(--color-gray-900)' : 'var(--color-gray-500)',
-                  boxShadow: loginType === 'email' ? '0 1px 3px 0 rgba(0, 0, 0, 0.1)' : 'none',
-                  borderRadius: '6px',
-                  fontWeight: 600,
-                  fontSize: '0.875rem',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                Email
-              </button>
-              <button
-                onClick={() => toggleLoginType('mobile')}
-                style={{
-                  flex: 1,
-                  padding: '0.5rem',
-                  backgroundColor: loginType === 'mobile' ? 'var(--color-white)' : 'transparent',
-                  color: loginType === 'mobile' ? 'var(--color-gray-900)' : 'var(--color-gray-500)',
-                  boxShadow: loginType === 'mobile' ? '0 1px 3px 0 rgba(0, 0, 0, 0.1)' : 'none',
-                  borderRadius: '6px',
-                  fontWeight: 600,
-                  fontSize: '0.875rem',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                Mobile
-              </button>
-            </div>
-          )}
+
 
           <form onSubmit={handleLogin}>
             {isSignUp ? (
@@ -374,33 +307,18 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
             ) : (
               // Sign In Form
               <>
-                {loginType === 'email' ? (
-                  <div className="form-group">
-                    <label htmlFor="email">Email Address</label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      placeholder="name@gmail.com"
-                      required
-                    />
-                  </div>
-                ) : (
-                  <div className="form-group">
-                    <label htmlFor="mobile">Mobile Number</label>
-                    <input
-                      type="tel"
-                      id="mobile"
-                      name="mobile"
-                      value={formData.mobile}
-                      onChange={handleInputChange}
-                      placeholder="Enter Number"
-                      required
-                    />
-                  </div>
-                )}
+                <div className="form-group">
+                  <label htmlFor="email">Email Address</label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="name@gmail.com"
+                    required
+                  />
+                </div>
 
                 {authMode === 'otp' ? (
                   /* ───── OTP Mode ───── */
