@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { ArrowLeft, Mail, KeyRound, ShieldCheck } from 'lucide-react';
 import Header from '../shared/Header';
 import '../../styles/customer.css';
 import {
@@ -10,10 +10,12 @@ import {
   verifyCustomerLoginOtp
 } from '../../services/api';
 
+const OTP_COOLDOWN_SECONDS = 60;
+
 const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
   const [loginType, setLoginType] = useState('email');
   const [isSignUp, setIsSignUp] = useState(false);
-  const [authMode, setAuthMode] = useState('password'); // password or otp
+  const [authMode, setAuthMode] = useState('password'); // 'password' | 'otp'
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -23,8 +25,20 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
   });
   const [loading, setLoading] = useState(false);
   const [otpSending, setOtpSending] = useState(false);
+  const [otpCooldown, setOtpCooldown] = useState(0);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const cooldownRef = useRef(null);
+
+  // Countdown timer for OTP resend cooldown
+  useEffect(() => {
+    if (otpCooldown > 0) {
+      cooldownRef.current = setTimeout(() => {
+        setOtpCooldown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearTimeout(cooldownRef.current);
+  }, [otpCooldown]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -106,7 +120,7 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
     }
   };
 
-  const handleSendOtp = async () => {
+  const handleSendOtp = useCallback(async () => {
     setErrorMessage('');
     setSuccessMessage('');
 
@@ -115,26 +129,45 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
       return;
     }
     if (!formData.email) {
-      setErrorMessage('Enter email to receive OTP.');
+      setErrorMessage('Enter your registered email to receive OTP.');
       return;
     }
 
     try {
       setOtpSending(true);
       const res = await sendCustomerLoginOtp(formData.email);
-      setSuccessMessage(res?.message || 'OTP sent successfully');
+      setSuccessMessage(res?.message || 'OTP sent to your email successfully!');
+      setOtpCooldown(OTP_COOLDOWN_SECONDS);
     } catch (error) {
       setErrorMessage(error?.response?.data?.message || 'Failed to send OTP');
     } finally {
       setOtpSending(false);
     }
+  }, [formData.email, loginType]);
+
+  // Forgot password handler — switches to OTP mode and auto-sends OTP
+  const handleForgotPassword = async () => {
+    if (loginType !== 'email') {
+      setErrorMessage('Forgot password via OTP is available only for email login. Switch to Email first.');
+      return;
+    }
+    if (!formData.email) {
+      setAuthMode('otp');
+      setErrorMessage('Please enter your registered email first, then click Send OTP.');
+      return;
+    }
+    setAuthMode('otp');
+    setFormData((prev) => ({ ...prev, password: '', otp: '' }));
+    // Auto-send OTP when switching via forgot password
+    await handleSendOtp();
   };
 
   const toggleLoginType = (type) => {
     setLoginType(type);
-    setAuthMode('password'); // Reset to password when switching identifiers
+    setAuthMode('password');
     setErrorMessage('');
     setSuccessMessage('');
+    setOtpCooldown(0);
     setFormData((prev) => ({
       ...prev,
       password: '',
@@ -148,14 +181,21 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
     setErrorMessage('');
     setSuccessMessage('');
     setLoading(false);
+    setOtpCooldown(0);
     setFormData((prev) => ({
       ...prev,
       password: '',
       otp: '',
-      // Keep email/mobile so register can suggest what was entered in sign in.
       name: nextIsSignUp ? prev.name : ''
     }));
   };
+
+  const otpButtonDisabled = otpSending || otpCooldown > 0;
+  const otpButtonLabel = otpSending
+    ? 'Sending...'
+    : otpCooldown > 0
+      ? `Resend (${otpCooldown}s)`
+      : 'Send OTP';
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -183,10 +223,14 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
               marginBottom: '0.5rem',
               fontWeight: 700
             }}>
-              {isSignUp ? 'Create Account' : 'Welcome Back'}
+              {isSignUp ? 'Create Account' : (authMode === 'otp' ? 'OTP Verification' : 'Welcome Back')}
             </h2>
             <p style={{ color: 'var(--color-gray-500)' }}>
-              {isSignUp ? 'Enter your details to register' : 'Please enter your details to sign in'}
+              {isSignUp
+                ? 'Enter your details to register'
+                : authMode === 'otp'
+                  ? 'Enter the OTP sent to your email to sign in'
+                  : 'Please enter your details to sign in'}
             </p>
           </div>
 
@@ -328,7 +372,7 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
                 </div>
               </>
             ) : (
-              // Sign In Form (Existing logic)
+              // Sign In Form
               <>
                 {loginType === 'email' ? (
                   <div className="form-group">
@@ -358,63 +402,126 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
                   </div>
                 )}
 
-                {/* Auth Mode Toggle (Password/OTP) - Only for Login */}
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
-                  <button
-                    type="button"
-                    onClick={() => setAuthMode(authMode === 'password' ? 'otp' : 'password')}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: 'var(--color-primary)',
-                      fontSize: '0.875rem',
-                      padding: 0,
-                      textDecoration: 'underline'
-                    }}
-                  >
-                    {authMode === 'password' ? 'Login via OTP' : 'Login via Password'}
-                  </button>
-                </div>
-
                 {authMode === 'otp' ? (
-                  <div className="form-group">
-                    <label htmlFor="otp">One Time Password</label>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <input
-                        type="text"
-                        id="otp"
-                        name="otp"
-                        value={formData.otp}
-                        onChange={handleInputChange}
-                        placeholder="Enter 6-digit OTP"
-                        maxLength="6"
-                        style={{ letterSpacing: '0.25em', textAlign: 'center' }}
-                        required
-                      />
+                  /* ───── OTP Mode ───── */
+                  <>
+                    {/* OTP info banner */}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      padding: '0.75rem 1rem',
+                      background: 'linear-gradient(135deg, #eff6ff, #f0fdf4)',
+                      borderRadius: '8px',
+                      marginBottom: '1rem',
+                      border: '1px solid #bfdbfe'
+                    }}>
+                      <ShieldCheck size={18} style={{ color: '#2563eb', flexShrink: 0 }} />
+                      <span style={{ fontSize: '0.8rem', color: '#1e40af' }}>
+                        A 6-digit OTP has been sent to your registered email. It expires in 5 minutes.
+                      </span>
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="otp" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <KeyRound size={14} /> One Time Password
+                      </label>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <input
+                          type="text"
+                          id="otp"
+                          name="otp"
+                          value={formData.otp}
+                          onChange={handleInputChange}
+                          placeholder="Enter 6-digit OTP"
+                          maxLength="6"
+                          style={{ letterSpacing: '0.25em', textAlign: 'center', fontWeight: 600, fontSize: '1.1rem' }}
+                          required
+                          autoFocus
+                        />
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          onClick={handleSendOtp}
+                          disabled={otpButtonDisabled}
+                          style={{
+                            whiteSpace: 'nowrap',
+                            minWidth: '110px',
+                            opacity: otpButtonDisabled ? 0.6 : 1,
+                            cursor: otpButtonDisabled ? 'not-allowed' : 'pointer'
+                          }}
+                        >
+                          {otpButtonLabel}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Back to password link */}
+                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '0.25rem' }}>
                       <button
                         type="button"
-                        className="btn-secondary"
-                        onClick={handleSendOtp}
-                        disabled={otpSending}
-                        style={{ whiteSpace: 'nowrap' }}
+                        onClick={() => {
+                          setAuthMode('password');
+                          setFormData((prev) => ({ ...prev, otp: '' }));
+                          setErrorMessage('');
+                          setSuccessMessage('');
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--color-gray-500)',
+                          fontSize: '0.8rem',
+                          cursor: 'pointer',
+                          textDecoration: 'underline',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.3rem'
+                        }}
                       >
-                        {otpSending ? 'Sending...' : 'Send OTP'}
+                        <ArrowLeft size={13} /> Back to password login
                       </button>
                     </div>
-                  </div>
+                  </>
                 ) : (
-                  <div className="form-group">
-                    <label htmlFor="password">Password</label>
-                    <input
-                      type="password"
-                      id="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      placeholder="Enter Password"
-                      required
-                    />
-                  </div>
+                  /* ───── Password Mode ───── */
+                  <>
+                    <div className="form-group">
+                      <label htmlFor="password">Password</label>
+                      <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleInputChange}
+                        placeholder="Enter Password"
+                        required
+                      />
+                    </div>
+
+                    {/* Forgot Password link */}
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-0.5rem', marginBottom: '0.25rem' }}>
+                      <button
+                        type="button"
+                        onClick={handleForgotPassword}
+                        disabled={otpSending}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--color-primary)',
+                          fontSize: '0.8rem',
+                          padding: 0,
+                          cursor: 'pointer',
+                          fontWeight: 500,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.3rem'
+                        }}
+                      >
+                        <Mail size={13} />
+                        {otpSending ? 'Sending OTP...' : 'Forgot Password? Login via OTP'}
+                      </button>
+                    </div>
+                  </>
                 )}
               </>
             )}
@@ -424,7 +531,11 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
                 style={{
                   color: errorMessage ? '#dc2626' : '#16a34a',
                   marginTop: '0.5rem',
-                  fontWeight: 500
+                  fontWeight: 500,
+                  fontSize: '0.875rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem'
                 }}
               >
                 {errorMessage || successMessage}
@@ -437,7 +548,9 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
               disabled={loading}
               style={{ width: '100%', marginTop: '1rem', padding: '0.75rem' }}
             >
-              {loading ? (isSignUp ? 'Creating...' : 'Signing In...') : (isSignUp ? 'Create Account' : 'Sign In')}
+              {loading
+                ? (isSignUp ? 'Creating...' : (authMode === 'otp' ? 'Verifying OTP...' : 'Signing In...'))
+                : (isSignUp ? 'Create Account' : (authMode === 'otp' ? 'Verify OTP & Sign In' : 'Sign In'))}
             </button>
           </form>
 
