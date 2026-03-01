@@ -10,9 +10,9 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
     waitTimePredictions: [],
     crowdForecast: [],
     mlModelStats: {
-      modelAccuracy: 0,
-      predictionsToday: 0,
-      avgAccuracy: 0,
+      modelAccuracy: null,
+      predictionsToday: null,
+      avgAccuracy: null,
       lastUpdated: 'N/A'
     }
   });
@@ -33,23 +33,22 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
           waitTimePredictions: [],
           crowdForecast: [],
           mlModelStats: {
-            modelAccuracy: 88,
-            predictionsToday: 0,
-            avgAccuracy: 88,
-            lastUpdated: 'Just now'
+            modelAccuracy: null,
+            predictionsToday: null,
+            avgAccuracy: null,
+            lastUpdated: 'N/A'
           }
         });
       } catch (error) {
         console.error('Error fetching predictions:', error);
-        // Use default values if API fails
         setPredictions({
           peakTimes: [],
           waitTimePredictions: [],
           crowdForecast: [],
           mlModelStats: {
-            modelAccuracy: 88,
-            predictionsToday: 0,
-            avgAccuracy: 88,
+            modelAccuracy: null,
+            predictionsToday: null,
+            avgAccuracy: null,
             lastUpdated: 'N/A'
           }
         });
@@ -103,19 +102,19 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
           <div className="card">
             <div style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)', marginBottom: '0.5rem' }}>Model Accuracy</div>
             <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--color-green-light)' }}>
-              {predictions.mlModelStats.modelAccuracy}%
+              {Number.isFinite(predictions.mlModelStats.modelAccuracy) ? `${predictions.mlModelStats.modelAccuracy}%` : 'N/A'}
             </div>
           </div>
           <div className="card">
             <div style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)', marginBottom: '0.5rem' }}>Predictions Today</div>
             <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--color-primary)' }}>
-              {predictions.mlModelStats.predictionsToday}
+              {Number.isFinite(predictions.mlModelStats.predictionsToday) ? predictions.mlModelStats.predictionsToday : 'N/A'}
             </div>
           </div>
           <div className="card">
             <div style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)', marginBottom: '0.5rem' }}>Avg Accuracy</div>
             <div style={{ fontSize: '2rem', fontWeight: 700, color: '#8B5CF6' }}>
-              {predictions.mlModelStats.avgAccuracy}%
+              {Number.isFinite(predictions.mlModelStats.avgAccuracy) ? `${predictions.mlModelStats.avgAccuracy}%` : 'N/A'}
             </div>
           </div>
           <div className="card">
@@ -158,7 +157,9 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
                       </div>
                       <div style={{ textAlign: 'right' }}>
                         <div style={{ fontWeight: 600, color: 'var(--color-gray-900)' }}>{item.customers} customers</div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--color-gray-500)' }}>{item.confidence}% confidence</div>
+                        {Number.isFinite(item.confidence) && (
+                          <div style={{ fontSize: '0.75rem', color: 'var(--color-gray-500)' }}>{item.confidence}% confidence</div>
+                        )}
                       </div>
                     </div>
                     <div style={{
@@ -208,15 +209,17 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
                         {item.actualWait && ` | Actual: ${item.actualWait} min`}
                       </div>
                     </div>
-                    <div style={{
-                      padding: '0.5rem 1rem',
-                      backgroundColor: item.accuracy >= 90 ? 'var(--color-green-bg)' : item.accuracy >= 80 ? 'var(--color-yellow-bg)' : 'var(--color-red-bg)',
-                      borderRadius: '6px',
-                      fontWeight: 600,
-                      color: item.accuracy >= 90 ? 'var(--color-green)' : item.accuracy >= 80 ? 'var(--color-yellow)' : 'var(--color-red)'
-                    }}>
-                      {item.accuracy}%
-                    </div>
+                    {Number.isFinite(item.accuracy) && (
+                      <div style={{
+                        padding: '0.5rem 1rem',
+                        backgroundColor: item.accuracy >= 90 ? 'var(--color-green-bg)' : item.accuracy >= 80 ? 'var(--color-yellow-bg)' : 'var(--color-red-bg)',
+                        borderRadius: '6px',
+                        fontWeight: 600,
+                        color: item.accuracy >= 90 ? 'var(--color-green)' : item.accuracy >= 80 ? 'var(--color-yellow)' : 'var(--color-red)'
+                      }}>
+                        {item.accuracy}%
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

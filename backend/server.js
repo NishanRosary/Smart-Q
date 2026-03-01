@@ -9,6 +9,7 @@ const queueRoutes = require("./routes/queueRoutes");
 const eventRoutes = require("./routes/eventRoutes");
 const eventHistoryRoutes = require("./routes/eventHistoryRoutes");
 const mlRoutes = require("./routes/mlRoutes");
+const predictionRoutes = require("./routes/predictionRoutes");
 const otpRoutes = require("./routes/otpRoutes");
 const authRoutes = require("./routes/authRoutes");
 const { sendQueueRegistrationEmail } = require("./services/emailService");
@@ -42,6 +43,7 @@ app.use("/api/queue", queueRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/event-history", eventHistoryRoutes);
 app.use("/api/ml", mlRoutes);
+app.use("/api/predictions", predictionRoutes);
 app.use("/api/otp", otpRoutes);
 
 app.get("/api/test-protected", authMiddleware, (req, res) => {

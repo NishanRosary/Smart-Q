@@ -483,7 +483,7 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
                           backgroundColor: item.accuracy >= 90 ? 'var(--color-green-bg)' : 'var(--color-yellow-bg)',
                           color: item.accuracy >= 90 ? 'var(--color-green)' : 'var(--color-yellow)'
                         }}>
-                          {item.accuracy}%
+                          {Number.isFinite(item.accuracy) ? `${item.accuracy}%` : 'ML'}
                         </div>
                       </div>
                     </div>
@@ -504,12 +504,20 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <Brain size={16} color="var(--color-primary)" />
                   <span style={{ fontSize: '0.8125rem', color: 'var(--color-gray-500)' }}>Model Accuracy:</span>
-                  <span style={{ fontWeight: 700, color: 'var(--color-gray-900)' }}>{displayPredictions.mlModelStats.modelAccuracy}%</span>
+                  <span style={{ fontWeight: 700, color: 'var(--color-gray-900)' }}>
+                    {Number.isFinite(displayPredictions.mlModelStats.modelAccuracy)
+                      ? `${displayPredictions.mlModelStats.modelAccuracy}%`
+                      : 'N/A'}
+                  </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <TrendingUp size={16} color="var(--color-green)" />
                   <span style={{ fontSize: '0.8125rem', color: 'var(--color-gray-500)' }}>Predictions Today:</span>
-                  <span style={{ fontWeight: 700, color: 'var(--color-gray-900)' }}>{displayPredictions.mlModelStats.predictionsToday}</span>
+                  <span style={{ fontWeight: 700, color: 'var(--color-gray-900)' }}>
+                    {Number.isFinite(displayPredictions.mlModelStats.predictionsToday)
+                      ? displayPredictions.mlModelStats.predictionsToday
+                      : 'N/A'}
+                  </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <Activity size={16} color="var(--color-primary)" />

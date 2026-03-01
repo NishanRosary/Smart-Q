@@ -10,7 +10,7 @@ const Analytics = ({ onNavigate, goBack, currentPage }) => {
     peakHours: [],
     servicePopularity: []
   });
-  const [mlModelAccuracy, setMlModelAccuracy] = useState(0);
+  const [mlModelAccuracy, setMlModelAccuracy] = useState(null);
   const [predictions, setPredictions] = useState({ peakTimes: [] });
   const [loading, setLoading] = useState(true);
 
@@ -58,12 +58,12 @@ const Analytics = ({ onNavigate, goBack, currentPage }) => {
         try {
           const predsRes = await axios.get('http://localhost:5000/api/predictions', getAuthConfig());
           setPredictions(predsRes.data || { peakTimes: [] });
+          setMlModelAccuracy(predsRes?.data?.mlModelStats?.modelAccuracy ?? null);
         } catch (err) {
           console.warn('Could not fetch predictions:', err);
           setPredictions({ peakTimes: [] });
+          setMlModelAccuracy(null);
         }
-
-        setMlModelAccuracy(88);
       } catch (error) {
         console.error('Error fetching analytics:', error);
       } finally {
@@ -101,7 +101,9 @@ const Analytics = ({ onNavigate, goBack, currentPage }) => {
             <div>
               <h3 style={{ margin: 0, marginBottom: '0.5rem' }}>🤖 ML Model Performance</h3>
               <p style={{ margin: 0, opacity: 0.9, fontSize: '0.875rem' }}>
-                Real-time predictions with {mlModelAccuracy}% accuracy
+                {Number.isFinite(mlModelAccuracy)
+                  ? `Real-time predictions with ${mlModelAccuracy}% accuracy`
+                  : 'Predictions appear after model training is complete'}
               </p>
             </div>
             <button
@@ -224,9 +226,11 @@ const Analytics = ({ onNavigate, goBack, currentPage }) => {
                           }}>
                             {item.prediction}
                           </span>
-                          <span style={{ fontSize: '0.75rem', color: 'var(--color-gray-500)' }}>
-                            {item.confidence}%
-                          </span>
+                          {Number.isFinite(item.confidence) && (
+                            <span style={{ fontSize: '0.75rem', color: 'var(--color-gray-500)' }}>
+                              {item.confidence}%
+                            </span>
+                          )}
                         </div>
                       </div>
                     <div style={{

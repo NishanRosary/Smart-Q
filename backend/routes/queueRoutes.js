@@ -4,6 +4,7 @@ const Queue = require("../models/queue");
 const Event = require("../models/event");
 const { authMiddleware, adminMiddleware } = require("../middleware/auth");
 const { sendQueueRegistrationEmail } = require("../services/emailService");
+const { getPredictionsIfTrained } = require("../services/mlPredictionService");
 const axios = require("axios"); // ← ADD THIS
 
 const ML_SERVICE_URL = "http://localhost:5001"; // ← ADD THIS
@@ -54,70 +55,12 @@ const getCrowdLevel = (waitingCount) => {
 };
 
 const getPredictions = async (tokenNumber, service) => {
-  const now = new Date();
-  const hour = now.getHours();
-
   const totalWaiting = await Queue.countDocuments({ status: "waiting" });
-  const serviceWaiting = await Queue.countDocuments({ status: "waiting", service });
-
-  const peakTimes = [];
-  for (let h = 0; h < 6; h++) {
-    const futureHour = (hour + h) % 24;
-    let prediction = "Low";
-    let confidence = 60 + Math.floor(Math.random() * 15);
-    let customers = Math.floor(Math.random() * 20) + 5;
-
-    if (futureHour >= 10 && futureHour <= 12) {
-      prediction = "High";
-      confidence = 85 + Math.floor(Math.random() * 10);
-      customers = 50 + Math.floor(Math.random() * 40);
-    } else if (futureHour >= 14 && futureHour <= 16) {
-      prediction = "Medium";
-      confidence = 70 + Math.floor(Math.random() * 15);
-      customers = 30 + Math.floor(Math.random() * 25);
-    }
-
-    peakTimes.push({
-      hour: `${String(futureHour).padStart(2, "0")}:00`,
-      prediction,
-      confidence,
-      customers
-    });
-  }
-
-  const waitTimePredictions = [];
-  for (let i = 0; i < 4; i++) {
-    const futureWaiting = Math.max(1, totalWaiting - i * 3 + Math.floor(Math.random() * 4));
-    const predictedWait = calculateWaitTime(futureWaiting);
-    waitTimePredictions.push({
-      time: i === 0 ? "Now" : `+${i} hour${i > 1 ? "s" : ""}`,
-      predictedWait,
-      accuracy: Math.max(75, 95 - i * 5 + Math.floor(Math.random() * 5))
-    });
-  }
-
-  const optimalVisitTimes = [
-    { time: "08:00-09:00", score: 92 + Math.floor(Math.random() * 6), waitTime: 3 + Math.floor(Math.random() * 4), crowdLevel: "Low" },
-    { time: "13:00-14:00", score: 82 + Math.floor(Math.random() * 8), waitTime: 6 + Math.floor(Math.random() * 5), crowdLevel: "Low" },
-    { time: "16:00-17:00", score: 75 + Math.floor(Math.random() * 10), waitTime: 10 + Math.floor(Math.random() * 6), crowdLevel: "Medium" }
-  ];
-
-  return {
-    peakTimes,
-    waitTimePredictions,
-    optimalVisitTimes,
-    totalWaiting,
-    serviceWaiting,
-    crowdLevel: getCrowdLevel(totalWaiting),
-    mlModelStats: {
-      isSimulated: true,
-      note: "These values are simulated for demo purposes.",
-      modelAccuracy: null,
-      predictionsToday: null,
-      avgAccuracy: null,
-      lastUpdated: null
-    }
-  };
+  return getPredictionsIfTrained({
+    service,
+    positionInQueue: Math.max(1, Number(tokenNumber || 1)),
+    totalWaiting
+  });
 };
 
 const broadcastQueueUpdate = async (io) => {

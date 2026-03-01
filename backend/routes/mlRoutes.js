@@ -33,25 +33,17 @@ const callMLService = async (endpoint, data) => {
     });
     return response.data;
   } catch (error) {
-    console.error(`ML Service Error (${endpoint}):`, error.message);
-    return getFallbackPrediction(endpoint);
+    throw new Error(`ML Service Error (${endpoint}): ${error.message}`);
   }
 };
 
-const getFallbackPrediction = (endpoint) => {
-  if (endpoint.includes("waiting-time")) {
-    return { waitingTime: 15, unit: "minutes" };
+const ensureModelTrained = async () => {
+  try {
+    const response = await axios.get(`${ML_SERVICE_URL}/health`, { timeout: 3000 });
+    return Boolean(response.data?.trained);
+  } catch {
+    return false;
   }
-  if (endpoint.includes("queue-length")) {
-    return { queueLength: 10 };
-  }
-  if (endpoint.includes("no-show")) {
-    return { noShowProbability: 0.15, percentage: 15 };
-  }
-  if (endpoint.includes("peak-hours")) {
-    return { queueDensity: 20, isPeak: false };
-  }
-  return {};
 };
 
 /* =======================
@@ -60,6 +52,10 @@ const getFallbackPrediction = (endpoint) => {
 
 router.post("/predict/waiting-time", async (req, res) => {
   try {
+    if (!(await ensureModelTrained())) {
+      return res.status(409).json({ message: "ML model is not trained yet." });
+    }
+
     const { tokenNumber, service, positionInQueue } = req.body;
 
     let queueItem = null;
@@ -92,6 +88,10 @@ router.post("/predict/waiting-time", async (req, res) => {
 
 router.post("/predict/queue-length", async (req, res) => {
   try {
+    if (!(await ensureModelTrained())) {
+      return res.status(409).json({ message: "ML model is not trained yet." });
+    }
+
     const { service, date, hour } = req.body;
 
     const targetDate = date ? new Date(date) : new Date();
@@ -120,6 +120,10 @@ router.post("/predict/queue-length", async (req, res) => {
 
 router.post("/predict/no-show", async (req, res) => {
   try {
+    if (!(await ensureModelTrained())) {
+      return res.status(409).json({ message: "ML model is not trained yet." });
+    }
+
     const { tokenNumber, service, positionInQueue } = req.body;
 
     let queueItem = null;
@@ -143,6 +147,10 @@ router.post("/predict/no-show", async (req, res) => {
 
 router.post("/suggest/best-time", async (req, res) => {
   try {
+    if (!(await ensureModelTrained())) {
+      return res.status(409).json({ message: "ML model is not trained yet." });
+    }
+
     const { service, dayOfWeek } = req.body;
 
     const data = {
@@ -167,6 +175,10 @@ router.post("/suggest/best-time", async (req, res) => {
 
 router.post("/predict/peak-hours", async (req, res) => {
   try {
+    if (!(await ensureModelTrained())) {
+      return res.status(409).json({ message: "ML model is not trained yet." });
+    }
+
     const { service, date, hour } = req.body;
 
     const targetDate = date ? new Date(date) : new Date();
