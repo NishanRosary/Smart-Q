@@ -38,163 +38,135 @@ const callMLService = async (endpoint, data) => {
 };
 
 const ensureModelTrained = async () => {
-  const health = await getMLHealth({ mlServiceUrl: ML_SERVICE_URL, timeoutMs: 3000 });
+  const health = await getMLHealth({
+    mlServiceUrl: ML_SERVICE_URL,
+    timeoutMs: 3000
+  });
   return Boolean(health?.trained);
 };
 
 /* =======================
-   PUBLIC ML ROUTES
+   UNIFIED PREDICT ROUTE
 ======================= */
 
-router.post("/predict/waiting-time", async (req, res) => {
+router.post("/predict", async (req, res) => {
   try {
     if (!(await ensureModelTrained())) {
       return res.status(409).json({ message: "ML model is not trained yet." });
     }
 
-    const { tokenNumber, service, positionInQueue } = req.body;
+    const { type } = req.body;
 
-    let queueItem = null;
-    if (tokenNumber) {
-      queueItem = await Queue.findOne({ tokenNumber });
+    if (!type) {
+      return res.status(400).json({ message: "Prediction type is required." });
     }
 
-    if (!queueItem && !service) {
-      return res
-        .status(400)
-        .json({ message: "Token number or service is required" });
+    let endpoint = "";
+    let features = {};
+
+    switch (type) {
+      case "waiting-time": {
+        const { tokenNumber, service, positionInQueue } = req.body;
+
+        let queueItem = null;
+        if (tokenNumber) {
+          queueItem = await Queue.findOne({ tokenNumber });
+        }
+
+        if (!queueItem && !service) {
+          return res
+            .status(400)
+            .json({ message: "Token number or service is required" });
+        }
+
+        features = prepareFeatures(
+          queueItem || { service, joinedAt: new Date() },
+          { positionInQueue: positionInQueue || 1 }
+        );
+
+        endpoint = "/predict/waiting-time";
+        break;
+      }
+
+      case "queue-length": {
+        const { service, date, hour } = req.body;
+        const targetDate = date ? new Date(date) : new Date();
+        const targetHour =
+          hour !== undefined ? hour : targetDate.getHours();
+
+        features = {
+          service: service || "General",
+          dayOfWeek: targetDate.getDay(),
+          hourOfDay: targetHour,
+          month: targetDate.getMonth() + 1,
+          dayOfMonth: targetDate.getDate()
+        };
+
+        endpoint = "/predict/queue-length";
+        break;
+      }
+
+      case "no-show": {
+        const { tokenNumber, service, positionInQueue } = req.body;
+
+        let queueItem = null;
+        if (tokenNumber) {
+          queueItem = await Queue.findOne({ tokenNumber });
+        }
+
+        features = prepareFeatures(
+          queueItem || { service, joinedAt: new Date() },
+          { positionInQueue: positionInQueue || 1 }
+        );
+
+        endpoint = "/predict/no-show";
+        break;
+      }
+
+      case "peak-hours": {
+        const { service, date, hour } = req.body;
+        const targetDate = date ? new Date(date) : new Date();
+        const targetHour =
+          hour !== undefined ? hour : targetDate.getHours();
+
+        features = {
+          service: service || "General",
+          dayOfWeek: targetDate.getDay(),
+          hourOfDay: targetHour,
+          month: targetDate.getMonth() + 1,
+          dayOfMonth: targetDate.getDate()
+        };
+
+        endpoint = "/predict/peak-hours";
+        break;
+      }
+
+      case "best-time": {
+        const { service, dayOfWeek } = req.body;
+
+        features = {
+          service: service || "General",
+          dayOfWeek:
+            dayOfWeek !== undefined
+              ? dayOfWeek
+              : new Date().getDay()
+        };
+
+        endpoint = "/suggest/best-time";
+        break;
+      }
+
+      default:
+        return res.status(400).json({ message: "Invalid prediction type." });
     }
 
-    const features = prepareFeatures(
-      queueItem || { service, joinedAt: new Date() },
-      { positionInQueue: positionInQueue || 1 }
-    );
+    const prediction = await callMLService(endpoint, features);
 
-    const prediction = await callMLService(
-      "/predict/waiting-time",
+    res.json({
+      type,
+      prediction,
       features
-    );
-
-    res.json({ ...prediction, features });
-
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-router.post("/predict/queue-length", async (req, res) => {
-  try {
-    if (!(await ensureModelTrained())) {
-      return res.status(409).json({ message: "ML model is not trained yet." });
-    }
-
-    const { service, date, hour } = req.body;
-
-    const targetDate = date ? new Date(date) : new Date();
-    const targetHour =
-      hour !== undefined ? hour : targetDate.getHours();
-
-    const features = {
-      service: service || "General",
-      dayOfWeek: targetDate.getDay(),
-      hourOfDay: targetHour,
-      month: targetDate.getMonth() + 1,
-      dayOfMonth: targetDate.getDate()
-    };
-
-    const prediction = await callMLService(
-      "/predict/queue-length",
-      features
-    );
-
-    res.json({ ...prediction, features });
-
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-router.post("/predict/no-show", async (req, res) => {
-  try {
-    if (!(await ensureModelTrained())) {
-      return res.status(409).json({ message: "ML model is not trained yet." });
-    }
-
-    const { tokenNumber, service, positionInQueue } = req.body;
-
-    let queueItem = null;
-    if (tokenNumber) {
-      queueItem = await Queue.findOne({ tokenNumber });
-    }
-
-    const features = prepareFeatures(
-      queueItem || { service, joinedAt: new Date() },
-      { positionInQueue: positionInQueue || 1 }
-    );
-
-    const prediction = await callMLService("/predict/no-show", features);
-
-    res.json({ ...prediction, features });
-
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-router.post("/suggest/best-time", async (req, res) => {
-  try {
-    if (!(await ensureModelTrained())) {
-      return res.status(409).json({ message: "ML model is not trained yet." });
-    }
-
-    const { service, dayOfWeek } = req.body;
-
-    const data = {
-      service: service || "General",
-      dayOfWeek:
-        dayOfWeek !== undefined
-          ? dayOfWeek
-          : new Date().getDay()
-    };
-
-    const suggestions = await callMLService(
-      "/suggest/best-time",
-      data
-    );
-
-    res.json({ ...suggestions, ...data });
-
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-router.post("/predict/peak-hours", async (req, res) => {
-  try {
-    if (!(await ensureModelTrained())) {
-      return res.status(409).json({ message: "ML model is not trained yet." });
-    }
-
-    const { service, date, hour } = req.body;
-
-    const targetDate = date ? new Date(date) : new Date();
-    const targetHour =
-      hour !== undefined ? hour : targetDate.getHours();
-
-    const features = {
-      service: service || "General",
-      dayOfWeek: targetDate.getDay(),
-      hourOfDay: targetHour,
-      month: targetDate.getMonth() + 1,
-      dayOfMonth: targetDate.getDate()
-    };
-
-    const prediction = await callMLService(
-      "/predict/peak-hours",
-      features
-    );
-
-    res.json({ current: prediction });
+    });
 
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -202,7 +174,7 @@ router.post("/predict/peak-hours", async (req, res) => {
 });
 
 /* =======================
-   ADMIN ROUTES (Protected)
+   ADMIN ROUTES
 ======================= */
 
 router.post(
