@@ -1,4 +1,6 @@
-const axios = require("axios");
+const { callMLInference, getMLHealth } = require("../../src/services/mlSafeWrapper");
+const { isPredictionBundle } = require("../../src/utils/mlValidation");
+const logger = require("../../src/utils/mlLogger");
 
 const ML_SERVICE_URL = process.env.ML_SERVICE_URL || "http://localhost:5001";
 
@@ -18,12 +20,8 @@ const mapBestTimeScore = (queueLength, waitingTime) => {
 };
 
 const getHealth = async () => {
-  try {
-    const response = await axios.get(`${ML_SERVICE_URL}/health`, { timeout: 3000 });
-    return response.data || {};
-  } catch {
-    return null;
-  }
+  const health = await getMLHealth({ mlServiceUrl: ML_SERVICE_URL, timeoutMs: 3000 });
+  return health && typeof health === "object" ? health : null;
 };
 
 const getPredictionsIfTrained = async ({ service = "General", positionInQueue = 1, totalWaiting = 0 } = {}) => {
@@ -33,10 +31,13 @@ const getPredictionsIfTrained = async ({ service = "General", positionInQueue = 
   }
 
   const now = new Date();
-  const call = async (endpoint, payload) => {
-    const response = await axios.post(`${ML_SERVICE_URL}${endpoint}`, payload, { timeout: 5000 });
-    return response.data || {};
-  };
+  const call = async (endpoint, payload) =>
+    callMLInference({
+      endpoint,
+      payload,
+      mlServiceUrl: ML_SERVICE_URL,
+      timeoutMs: 5000
+    });
 
   try {
     const peakTimes = await Promise.all(
@@ -95,7 +96,7 @@ const getPredictionsIfTrained = async ({ service = "General", positionInQueue = 
       };
     });
 
-    return {
+    const result = {
       peakTimes,
       waitTimePredictions,
       optimalVisitTimes,
@@ -111,8 +112,15 @@ const getPredictionsIfTrained = async ({ service = "General", positionInQueue = 
         lastUpdated: now.toISOString()
       }
     };
+
+    if (!isPredictionBundle(result)) {
+      logger.warn("Prediction bundle shape invalid; returning null fallback");
+      return null;
+    }
+
+    return result;
   } catch (error) {
-    console.error("ML prediction build failed:", error.message);
+    logger.error("ML prediction build failed", { message: error.message });
     return null;
   }
 };

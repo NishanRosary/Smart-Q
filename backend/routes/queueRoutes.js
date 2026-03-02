@@ -5,23 +5,29 @@ const Event = require("../models/event");
 const { authMiddleware, adminMiddleware } = require("../middleware/auth");
 const { sendQueueRegistrationEmail } = require("../services/emailService");
 const { getPredictionsIfTrained } = require("../services/mlPredictionService");
-const axios = require("axios"); // ← ADD THIS
+const mlConfig = require("../../src/config/mlConfig");
+const { callMLInference } = require("../../src/services/mlSafeWrapper");
 
-const ML_SERVICE_URL = "http://localhost:5001"; // ← ADD THIS
+const ML_SERVICE_URL = process.env.ML_SERVICE_URL || "http://localhost:5001";
 
 // =======================
 // ML NOTIFICATION HELPER
 // =======================
 const notifyMLUserJoined = async (queueRecord) => {
   try {
-    await axios.post(`${ML_SERVICE_URL}/queue/joined`, {
-      service:         queueRecord.service,
-      positionInQueue: queueRecord.position,
-      totalInQueue:    queueRecord.totalWaiting,
-      waitingTime:     queueRecord.estimatedWaitTime,
-      noShow:          false,
-      status:          "waiting",
-      joinedAt:        new Date().toISOString()
+    await callMLInference({
+      endpoint: "/queue/joined",
+      payload: {
+        service: queueRecord.service,
+        positionInQueue: queueRecord.position,
+        totalInQueue: queueRecord.totalWaiting,
+        waitingTime: queueRecord.estimatedWaitTime,
+        noShow: false,
+        status: "waiting",
+        joinedAt: new Date().toISOString()
+      },
+      mlServiceUrl: ML_SERVICE_URL,
+      timeoutMs: mlConfig.inferenceTimeoutMs
     });
     console.log(`[ML] Notified — Token #${queueRecord.tokenNumber} joined`);
   } catch (err) {

@@ -126,3 +126,11 @@ const runExpiredEventCleanup = async () => {
 
 runExpiredEventCleanup();
 setInterval(runExpiredEventCleanup, 60 * 60 * 1000);
+
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled Promise Rejection:", reason);
+});
+
+process.on("uncaughtException", (error) => {
+  console.error("Uncaught Exception:", error);
+});

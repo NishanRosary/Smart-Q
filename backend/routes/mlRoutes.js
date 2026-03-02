@@ -3,6 +3,8 @@ const router = express.Router();
 const Queue = require("../models/queue");
 const axios = require("axios");
 const { authMiddleware, roleMiddleware } = require("../middleware/auth");
+const mlConfig = require("../../src/config/mlConfig");
+const { callMLInference, getMLHealth } = require("../../src/services/mlSafeWrapper");
 
 const ML_SERVICE_URL = process.env.ML_SERVICE_URL || "http://localhost:5001";
 
@@ -27,23 +29,17 @@ const prepareFeatures = (queueItem, additionalData = {}) => {
 };
 
 const callMLService = async (endpoint, data) => {
-  try {
-    const response = await axios.post(`${ML_SERVICE_URL}${endpoint}`, data, {
-      timeout: 5000
-    });
-    return response.data;
-  } catch (error) {
-    throw new Error(`ML Service Error (${endpoint}): ${error.message}`);
-  }
+  return callMLInference({
+    endpoint,
+    payload: data,
+    mlServiceUrl: ML_SERVICE_URL,
+    timeoutMs: mlConfig.inferenceTimeoutMs
+  });
 };
 
 const ensureModelTrained = async () => {
-  try {
-    const response = await axios.get(`${ML_SERVICE_URL}/health`, { timeout: 3000 });
-    return Boolean(response.data?.trained);
-  } catch {
-    return false;
-  }
+  const health = await getMLHealth({ mlServiceUrl: ML_SERVICE_URL, timeoutMs: 3000 });
+  return Boolean(health?.trained);
 };
 
 /* =======================
