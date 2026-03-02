@@ -30,6 +30,14 @@ const eventSchema = new mongoose.Schema(
       type: String,
       required: true
     },
+    startTime: {
+      type: String,
+      required: false
+    },
+    endTime: {
+      type: String,
+      required: false
+    },
     location: {
       type: String,
       required: true

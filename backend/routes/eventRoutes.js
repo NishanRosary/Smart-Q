@@ -4,7 +4,7 @@ const Event = require("../models/event");
 const Queue = require("../models/queue");
 const EventHistory = require("../models/eventHistory");
 const { authMiddleware, roleMiddleware } = require("../middleware/auth");
-const { purgeExpiredEvents } = require("../services/eventCleanupService");
+const { purgeExpiredEvents, isEventExpired } = require("../services/eventCleanupService");
 
 // =======================
 // CREATE EVENT (Admin)
@@ -21,11 +21,15 @@ router.post(
         organizationName,
         startDate,
         endDate,
+        startTime,
+        endTime,
         time,
         location,
         serviceTypes,
         totalTokens
       } = req.body;
+      const normalizedStartTime = startTime || time;
+      const normalizedEndTime = endTime || startTime || time;
 
       const parsedTotalTokens = Number(totalTokens);
 
@@ -35,7 +39,8 @@ router.post(
         !organizationName ||
         !startDate ||
         !endDate ||
-        !time ||
+        !normalizedStartTime ||
+        !normalizedEndTime ||
         !location ||
         !Number.isInteger(parsedTotalTokens)
       ) {
@@ -57,6 +62,19 @@ router.post(
         });
       }
 
+      const isValidTime = (value) => /^([01]\d|2[0-3]):([0-5]\d)$/.test(String(value || ""));
+      if (!isValidTime(normalizedStartTime) || !isValidTime(normalizedEndTime)) {
+        return res.status(400).json({
+          message: "Invalid start or end time format"
+        });
+      }
+
+      if (startDate === endDate && normalizedEndTime <= normalizedStartTime) {
+        return res.status(400).json({
+          message: "End time must be later than start time for single-day events"
+        });
+      }
+
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
       if (parsedEndDate < todayStart) {
@@ -71,6 +89,11 @@ router.post(
         });
       }
 
+      const timeRange =
+        normalizedStartTime === normalizedEndTime
+          ? normalizedStartTime
+          : `${normalizedStartTime} - ${normalizedEndTime}`;
+
       const event = new Event({
         title,
         organizationType,
@@ -78,7 +101,9 @@ router.post(
         startDate,
         endDate,
         date: startDate,
-        time,
+        time: timeRange,
+        startTime: normalizedStartTime,
+        endTime: normalizedEndTime,
         location,
         totalTokens: parsedTotalTokens,
         serviceTypes: serviceTypes || [],
@@ -110,9 +135,10 @@ router.get("/", async (req, res) => {
     }
 
     const events = await Event.find().sort({ createdAt: -1 });
+    const activeEvents = events.filter((event) => !isEventExpired(event));
 
     const eventsWithAvailability = await Promise.all(
-      events.map(async (event) => {
+      activeEvents.map(async (event) => {
         const eventId = String(event._id);
 
         const joinedTokens = await Queue.countDocuments({
@@ -226,6 +252,8 @@ router.post(
         endDate: event.endDate,
         date: event.date,
         time: event.time,
+        startTime: event.startTime,
+        endTime: event.endTime,
         location: event.location,
         totalTokens: event.totalTokens,
         serviceTypes: event.serviceTypes || [],
@@ -301,6 +329,8 @@ router.delete(
         endDate: event.endDate,
         date: event.date,
         time: event.time,
+        startTime: event.startTime,
+        endTime: event.endTime,
         location: event.location,
         totalTokens: event.totalTokens,
         serviceTypes: event.serviceTypes || [],

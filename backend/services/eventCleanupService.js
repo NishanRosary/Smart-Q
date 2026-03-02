@@ -23,6 +23,33 @@ const parseDateValue = (value) => {
   return null;
 };
 
+const parseTimeValue = (value, fallback = { hours: 23, minutes: 59 }) => {
+  if (!value || typeof value !== "string") {
+    return fallback;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return fallback;
+  }
+
+  const hhmmMatch = trimmed.match(/^([01]\d|2[0-3]):([0-5]\d)$/);
+  if (hhmmMatch) {
+    return {
+      hours: Number(hhmmMatch[1]),
+      minutes: Number(hhmmMatch[2])
+    };
+  }
+
+  // Legacy range support: "09:00 - 17:00"
+  if (trimmed.includes("-")) {
+    const parts = trimmed.split("-").map((p) => p.trim());
+    return parseTimeValue(parts[parts.length - 1], fallback);
+  }
+
+  return fallback;
+};
+
 const getEventExpiryDate = (event) => {
   const endDateValue = event.endDate || event.date;
   if (!endDateValue) return null;
@@ -30,25 +57,31 @@ const getEventExpiryDate = (event) => {
   const parsedDate = parseDateValue(endDateValue);
   if (!parsedDate) return null;
 
+  const endTimeValue = event.endTime || event.time;
+  const { hours, minutes } = parseTimeValue(endTimeValue);
+
   return new Date(
     parsedDate.getFullYear(),
     parsedDate.getMonth(),
     parsedDate.getDate(),
-    23,
-    59,
+    hours,
+    minutes,
     59,
     999
   );
 };
 
+const isEventExpired = (event, now = new Date()) => {
+  const expiryDate = getEventExpiryDate(event);
+  return Boolean(expiryDate && expiryDate < now);
+};
+
 const purgeExpiredEvents = async () => {
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
+  const now = new Date();
 
   const events = await Event.find();
   const expiredEvents = events.filter((event) => {
-    const expiryDate = getEventExpiryDate(event);
-    return expiryDate && expiryDate < todayStart;
+    return isEventExpired(event, now);
   });
 
   if (expiredEvents.length === 0) {
@@ -89,6 +122,8 @@ const purgeExpiredEvents = async () => {
         endDate: event.endDate,
         date: event.date,
         time: event.time,
+        startTime: event.startTime,
+        endTime: event.endTime,
         location: event.location,
         totalTokens: event.totalTokens,
         serviceTypes: event.serviceTypes || [],
@@ -119,5 +154,7 @@ const purgeExpiredEvents = async () => {
 };
 
 module.exports = {
-  purgeExpiredEvents
+  purgeExpiredEvents,
+  getEventExpiryDate,
+  isEventExpired
 };

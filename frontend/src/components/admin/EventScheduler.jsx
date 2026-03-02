@@ -25,7 +25,8 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
     totalTokens: '',
     startDate: '',
     endDate: '',
-    time: '',
+    startTime: '',
+    endTime: '',
     location: '',
     serviceTypes: []
   });
@@ -75,6 +76,17 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
       alert('End date must be the same as or later than start date.');
       return;
     }
+    if (
+      formData.startDate &&
+      formData.endDate &&
+      formData.startDate === formData.endDate &&
+      formData.startTime &&
+      formData.endTime &&
+      formData.endTime <= formData.startTime
+    ) {
+      alert('End time must be later than start time for single-day events.');
+      return;
+    }
     setLoading(true);
     try {
       const response = await axios.post('http://localhost:5000/api/events', formData, {
@@ -91,7 +103,8 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
         totalTokens: '',
         startDate: '',
         endDate: '',
-        time: '',
+        startTime: '',
+        endTime: '',
         location: '',
         serviceTypes: []
       });
@@ -102,6 +115,19 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
       alert(error.response?.data?.message || 'Failed to create event. Please check the console for details.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const formatTime = (timeStr) => {
+    if (!timeStr) return '-';
+    try {
+      const [hours, minutes] = timeStr.split(':');
+      const h = parseInt(hours, 10);
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      const h12 = h % 12 || 12;
+      return `${h12}:${minutes} ${ampm}`;
+    } catch {
+      return timeStr;
     }
   };
 
@@ -268,12 +294,24 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="time">Time</label>
+                <label htmlFor="startTime">Start Time</label>
                 <input
                   type="time"
-                  id="time"
-                  name="time"
-                  value={formData.time}
+                  id="startTime"
+                  name="startTime"
+                  value={formData.startTime}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="endTime">End Time</label>
+                <input
+                  type="time"
+                  id="endTime"
+                  name="endTime"
+                  value={formData.endTime}
                   onChange={handleInputChange}
                   required
                 />
@@ -385,7 +423,8 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
                 <th>Event Title</th>
                 <th>Start Date</th>
                 <th>End Date</th>
-                <th>Time</th>
+                <th>Start Time</th>
+                <th>End Time</th>
                 <th>Location</th>
                 <th>Total Tokens</th>
                 <th>Available</th>
@@ -399,6 +438,11 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
                   {(() => {
                     const startDate = event.startDate || event.date;
                     const endDate = event.endDate || event.startDate || event.date;
+                    const [legacyStartTime, legacyEndTime] = String(event.time || '').includes('-')
+                      ? String(event.time).split('-').map((t) => t.trim())
+                      : [event.time, event.time];
+                    const startTime = event.startTime || legacyStartTime;
+                    const endTime = event.endTime || legacyEndTime;
                     const canComplete = event.isFull && (event.activeQueueCount === 0);
                     const completeTooltip = !event.isFull
                       ? 'Tokens are still available. All tokens must be used first.'
@@ -412,7 +456,8 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
                         <td style={{ fontWeight: 600 }}>{event.title}</td>
                         <td>{startDate ? new Date(startDate).toLocaleDateString() : '-'}</td>
                         <td>{endDate ? new Date(endDate).toLocaleDateString() : '-'}</td>
-                        <td>{event.time}</td>
+                        <td>{formatTime(startTime)}</td>
+                        <td>{formatTime(endTime)}</td>
                         <td>{event.location}</td>
                         <td>{event.totalTokens ?? '-'}</td>
                         <td>{event.availableTokens ?? '-'}</td>

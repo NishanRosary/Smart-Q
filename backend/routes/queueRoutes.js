@@ -5,6 +5,7 @@ const Event = require("../models/event");
 const { authMiddleware, adminMiddleware } = require("../middleware/auth");
 const { sendQueueRegistrationEmail } = require("../services/emailService");
 const { getPredictionsIfTrained } = require("../services/mlPredictionService");
+const { purgeExpiredEvents, isEventExpired } = require("../services/eventCleanupService");
 const axios = require("axios"); // ← ADD THIS
 
 const ML_SERVICE_URL = "http://localhost:5001"; // ← ADD THIS
@@ -124,6 +125,13 @@ router.post("/join", async (req, res) => {
     const event = await Event.findById(eventId);
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
+    }
+
+    if (isEventExpired(event)) {
+      await purgeExpiredEvents();
+      return res.status(400).json({
+        message: "This event has ended and is no longer available"
+      });
     }
 
     const joinedTokensForEvent = await Queue.countDocuments({
