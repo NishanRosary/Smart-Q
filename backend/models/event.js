@@ -14,6 +14,18 @@ const eventSchema = new mongoose.Schema(
       type: String,
       required: true
     },
+    doctorName: {
+      type: String,
+      required: false
+    },
+    profession: {
+      type: String,
+      required: false
+    },
+    hrOrPocName: {
+      type: String,
+      required: false
+    },
     startDate: {
       type: String,
       required: true

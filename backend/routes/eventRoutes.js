@@ -19,6 +19,9 @@ router.post(
         title,
         organizationType,
         organizationName,
+        doctorName,
+        profession,
+        hrOrPocName,
         startDate,
         endDate,
         startTime,
@@ -89,6 +92,26 @@ router.post(
         });
       }
 
+      const normalizedDoctorName = String(doctorName || "").trim();
+      const normalizedProfession = String(profession || "").trim();
+      const normalizedHrOrPocName = String(hrOrPocName || "").trim();
+
+      if (organizationType === "Hospital") {
+        if (!normalizedDoctorName || !normalizedProfession) {
+          return res.status(400).json({
+            message: "Doctor name and profession are required for Hospital events"
+          });
+        }
+      }
+
+      if (organizationType === "Interview") {
+        if (!normalizedHrOrPocName) {
+          return res.status(400).json({
+            message: "HR name / POC name is required for Interview events"
+          });
+        }
+      }
+
       const timeRange =
         normalizedStartTime === normalizedEndTime
           ? normalizedStartTime
@@ -98,6 +121,9 @@ router.post(
         title,
         organizationType,
         organizationName,
+        doctorName: normalizedDoctorName || undefined,
+        profession: normalizedProfession || undefined,
+        hrOrPocName: normalizedHrOrPocName || undefined,
         startDate,
         endDate,
         date: startDate,
@@ -248,6 +274,9 @@ router.post(
         title: event.title,
         organizationType: event.organizationType,
         organizationName: event.organizationName,
+        doctorName: event.doctorName,
+        profession: event.profession,
+        hrOrPocName: event.hrOrPocName,
         startDate: event.startDate,
         endDate: event.endDate,
         date: event.date,
@@ -325,6 +354,9 @@ router.delete(
         title: event.title,
         organizationType: event.organizationType,
         organizationName: event.organizationName,
+        doctorName: event.doctorName,
+        profession: event.profession,
+        hrOrPocName: event.hrOrPocName,
         startDate: event.startDate,
         endDate: event.endDate,
         date: event.date,

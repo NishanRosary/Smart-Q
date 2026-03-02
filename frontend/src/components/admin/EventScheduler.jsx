@@ -21,6 +21,9 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
   const [formData, setFormData] = useState({
     organizationType: '',
     organizationName: '',
+    doctorName: '',
+    profession: '',
+    hrOrPocName: '',
     title: '',
     totalTokens: '',
     startDate: '',
@@ -64,10 +67,22 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => {
+      if (name === 'organizationType') {
+        return {
+          ...prev,
+          organizationType: value,
+          doctorName: '',
+          profession: '',
+          hrOrPocName: ''
+        };
+      }
+
+      return {
+        ...prev,
+        [name]: value
+      };
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -87,6 +102,16 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
       alert('End time must be later than start time for single-day events.');
       return;
     }
+    if (formData.organizationType === 'Hospital') {
+      if (!formData.doctorName.trim() || !formData.profession.trim()) {
+        alert('Doctor Name and Profession are required for Hospital events.');
+        return;
+      }
+    }
+    if (formData.organizationType === 'Interview' && !formData.hrOrPocName.trim()) {
+      alert('HR Name / POC Name is required for Interview events.');
+      return;
+    }
     setLoading(true);
     try {
       const response = await axios.post('http://localhost:5000/api/events', formData, {
@@ -99,6 +124,9 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
       setFormData({
         organizationType: '',
         organizationName: '',
+        doctorName: '',
+        profession: '',
+        hrOrPocName: '',
         title: '',
         totalTokens: '',
         startDate: '',
@@ -266,6 +294,53 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
                 />
               </div>
             </div>
+
+            {formData.organizationType === 'Hospital' && (
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="doctorName">Doctor Name</label>
+                  <input
+                    type="text"
+                    id="doctorName"
+                    name="doctorName"
+                    value={formData.doctorName}
+                    onChange={handleInputChange}
+                    placeholder="Enter doctor name"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="profession">Profession</label>
+                  <input
+                    type="text"
+                    id="profession"
+                    name="profession"
+                    value={formData.profession}
+                    onChange={handleInputChange}
+                    placeholder="Enter profession"
+                    required
+                  />
+                </div>
+              </div>
+            )}
+
+            {formData.organizationType === 'Interview' && (
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="hrOrPocName">HR Name / POC Name</label>
+                  <input
+                    type="text"
+                    id="hrOrPocName"
+                    name="hrOrPocName"
+                    value={formData.hrOrPocName}
+                    onChange={handleInputChange}
+                    placeholder="Enter HR or POC name"
+                    required
+                  />
+                </div>
+              </div>
+            )}
 
             <div className="form-row">
               <div className="form-group">
