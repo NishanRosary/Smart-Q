@@ -61,11 +61,11 @@ const getCrowdLevel = (waitingCount) => {
   return "High";
 };
 
-const getPredictions = async (tokenNumber, service) => {
+const getPredictions = async (positionInQueue, service) => {
   const totalWaiting = await Queue.countDocuments({ status: "waiting" });
   return getPredictionsIfTrained({
     service,
-    positionInQueue: Math.max(1, Number(tokenNumber || 1)),
+    positionInQueue: Math.max(1, Number(positionInQueue || 1)),
     totalWaiting
   });
 };
@@ -175,7 +175,7 @@ router.post("/join", async (req, res) => {
     const estimatedWaitTime = calculateWaitTime(position);
     const crowdLevel = getCrowdLevel(totalWaiting);
 
-    const predictions = await getPredictions(tokenNumber, service);
+    const predictions = await getPredictions(position, service);
 
     // ── NOTIFY ML SERVICE AUTOMATICALLY ──
     await notifyMLUserJoined({
@@ -265,7 +265,7 @@ router.get("/status/:tokenNumber", async (req, res) => {
     const totalWaiting = await Queue.countDocuments({ status: "waiting" });
     const estimatedWaitTime = calculateWaitTime(position);
     const crowdLevel = getCrowdLevel(totalWaiting);
-    const predictions = await getPredictions(tokenNum, myEntry.service);
+    const predictions = await getPredictions(position, myEntry.service);
 
     res.json({
       tokenNumber: myEntry.tokenNumber,

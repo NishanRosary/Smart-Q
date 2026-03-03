@@ -44,7 +44,6 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
   const [lastUpdated, setLastUpdated] = useState(null);
   const [activeToken, setActiveToken] = useState(() => localStorage.getItem('smartq-active-token'));
   const [activeService, setActiveService] = useState(() => localStorage.getItem('smartq-active-service'));
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [events, setEvents] = useState([]);
   const [eventsLoading, setEventsLoading] = useState(true);
@@ -83,9 +82,7 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
         status: data.status,
         totalWaiting: data.totalWaiting
       });
-      if (data.predictions) {
-        setPredictions(data.predictions);
-      }
+      setPredictions(data.predictions || null);
       setLastUpdated(new Date());
     } catch (error) {
       console.error('Failed to fetch queue status:', error);

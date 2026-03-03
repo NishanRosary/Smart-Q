@@ -11,10 +11,8 @@ const ORGANIZATION_TYPES = [
   'Bank',
   'Interview',
   'Government Office',
-  'Exam',
-  'Restaurant',
-  'Retail Store',
-  'Other'
+  'Bangalore One Office',
+  'Others',
 ];
 
 const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
