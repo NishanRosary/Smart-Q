@@ -50,6 +50,12 @@ async function loginRejectsIncorrectPasswordExample() {
   }
 }
 
+describe("auth login example", () => {
+  test("incorrect password returns 401 and no token", async () => {
+    await loginRejectsIncorrectPasswordExample();
+  });
+});
+
 module.exports = {
   loginRejectsIncorrectPasswordExample
 };
