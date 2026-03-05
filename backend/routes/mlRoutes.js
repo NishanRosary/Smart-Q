@@ -8,6 +8,83 @@ const { callMLInference, getMLHealth } = require("../../src/services/mlSafeWrapp
 
 const ML_SERVICE_URL = process.env.ML_SERVICE_URL || "http://localhost:5001";
 
+const isNonEmptyString = (value) =>
+  typeof value === "string" && value.trim().length > 0;
+
+const toPositiveIntOrNull = (value) => {
+  if (value === undefined || value === null || value === "") return null;
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed <= 0) return null;
+  return parsed;
+};
+
+const isValidDateString = (value) => {
+  if (value === undefined || value === null || value === "") return true;
+  const parsed = new Date(value);
+  return !Number.isNaN(parsed.getTime());
+};
+
+const isValidHour = (value) => {
+  if (value === undefined || value === null || value === "") return true;
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed >= 0 && parsed <= 23;
+};
+
+const isValidDayOfWeek = (value) => {
+  if (value === undefined || value === null || value === "") return true;
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed >= 0 && parsed <= 6;
+};
+
+const validatePredictPayload = (body) => {
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return "Invalid input data";
+  }
+
+  const { type } = body;
+  if (!isNonEmptyString(type)) {
+    return "Prediction type is required.";
+  }
+
+  switch (type) {
+    case "waiting-time":
+    case "no-show": {
+      const hasToken = toPositiveIntOrNull(body.tokenNumber) !== null;
+      const hasService = isNonEmptyString(body.service);
+      const position =
+        body.positionInQueue === undefined
+          ? 1
+          : toPositiveIntOrNull(body.positionInQueue);
+
+      if (!hasToken && !hasService) {
+        return "Token number or service is required";
+      }
+      if (body.tokenNumber !== undefined && !hasToken) {
+        return "tokenNumber must be a positive integer";
+      }
+      if (position === null) {
+        return "positionInQueue must be a positive integer";
+      }
+      return null;
+    }
+
+    case "queue-length":
+    case "peak-hours":
+      if (!isValidDateString(body.date)) return "date must be a valid date";
+      if (!isValidHour(body.hour)) return "hour must be an integer between 0 and 23";
+      return null;
+
+    case "best-time":
+      if (!isValidDayOfWeek(body.dayOfWeek)) {
+        return "dayOfWeek must be an integer between 0 and 6";
+      }
+      return null;
+
+    default:
+      return "Invalid prediction type.";
+  }
+};
+
 /* =======================
    Helper Functions
 ======================= */
@@ -51,6 +128,11 @@ const ensureModelTrained = async () => {
 
 router.post("/predict", async (req, res) => {
   try {
+    const payloadError = validatePredictPayload(req.body);
+    if (payloadError) {
+      return res.status(400).json({ message: payloadError });
+    }
+
     if (!(await ensureModelTrained())) {
       return res.status(409).json({ message: "ML model is not trained yet." });
     }
@@ -67,21 +149,24 @@ router.post("/predict", async (req, res) => {
     switch (type) {
       case "waiting-time": {
         const { tokenNumber, service, positionInQueue } = req.body;
+        const normalizedToken = toPositiveIntOrNull(tokenNumber);
+        const normalizedPosition = toPositiveIntOrNull(positionInQueue) || 1;
+        const normalizedService = isNonEmptyString(service) ? service.trim() : undefined;
 
         let queueItem = null;
-        if (tokenNumber) {
-          queueItem = await Queue.findOne({ tokenNumber });
+        if (normalizedToken !== null) {
+          queueItem = await Queue.findOne({ tokenNumber: normalizedToken });
         }
 
-        if (!queueItem && !service) {
+        if (!queueItem && !normalizedService) {
           return res
             .status(400)
             .json({ message: "Token number or service is required" });
         }
 
         features = prepareFeatures(
-          queueItem || { service, joinedAt: new Date() },
-          { positionInQueue: positionInQueue || 1 }
+          queueItem || { service: normalizedService, joinedAt: new Date() },
+          { positionInQueue: normalizedPosition }
         );
 
         endpoint = "/predict/waiting-time";
@@ -92,10 +177,10 @@ router.post("/predict", async (req, res) => {
         const { service, date, hour } = req.body;
         const targetDate = date ? new Date(date) : new Date();
         const targetHour =
-          hour !== undefined ? hour : targetDate.getHours();
+          hour !== undefined ? Number(hour) : targetDate.getHours();
 
         features = {
-          service: service || "General",
+          service: isNonEmptyString(service) ? service.trim() : "General",
           dayOfWeek: targetDate.getDay(),
           hourOfDay: targetHour,
           month: targetDate.getMonth() + 1,
@@ -108,15 +193,18 @@ router.post("/predict", async (req, res) => {
 
       case "no-show": {
         const { tokenNumber, service, positionInQueue } = req.body;
+        const normalizedToken = toPositiveIntOrNull(tokenNumber);
+        const normalizedPosition = toPositiveIntOrNull(positionInQueue) || 1;
+        const normalizedService = isNonEmptyString(service) ? service.trim() : undefined;
 
         let queueItem = null;
-        if (tokenNumber) {
-          queueItem = await Queue.findOne({ tokenNumber });
+        if (normalizedToken !== null) {
+          queueItem = await Queue.findOne({ tokenNumber: normalizedToken });
         }
 
         features = prepareFeatures(
-          queueItem || { service, joinedAt: new Date() },
-          { positionInQueue: positionInQueue || 1 }
+          queueItem || { service: normalizedService, joinedAt: new Date() },
+          { positionInQueue: normalizedPosition }
         );
 
         endpoint = "/predict/no-show";
@@ -127,10 +215,10 @@ router.post("/predict", async (req, res) => {
         const { service, date, hour } = req.body;
         const targetDate = date ? new Date(date) : new Date();
         const targetHour =
-          hour !== undefined ? hour : targetDate.getHours();
+          hour !== undefined ? Number(hour) : targetDate.getHours();
 
         features = {
-          service: service || "General",
+          service: isNonEmptyString(service) ? service.trim() : "General",
           dayOfWeek: targetDate.getDay(),
           hourOfDay: targetHour,
           month: targetDate.getMonth() + 1,
@@ -145,10 +233,10 @@ router.post("/predict", async (req, res) => {
         const { service, dayOfWeek } = req.body;
 
         features = {
-          service: service || "General",
+          service: isNonEmptyString(service) ? service.trim() : "General",
           dayOfWeek:
             dayOfWeek !== undefined
-              ? dayOfWeek
+              ? Number(dayOfWeek)
               : new Date().getDay()
         };
 
