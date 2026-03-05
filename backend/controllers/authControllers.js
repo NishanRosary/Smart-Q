@@ -9,14 +9,13 @@ const ACCESS_TOKEN_EXPIRES_IN = "15m";
 /* ================= SANITIZER ================= */
 
 const sanitizeInput = (input) => {
-  if (!input) return input;
+  if (!input) return null;
 
   return sanitizeHtml(String(input).trim(), {
     allowedTags: [],
     allowedAttributes: {}
   });
 };
-
 
 /* ================= TOKEN GENERATION ================= */
 
@@ -28,11 +27,9 @@ const generateAccessToken = (user) => {
   );
 };
 
-
 /* ================= USER FINDER ================= */
 
 const findUserByIdentifier = async (identifierInput) => {
-
   const identifier = sanitizeInput(identifierInput);
 
   if (!identifier) return null;
@@ -42,14 +39,11 @@ const findUserByIdentifier = async (identifierInput) => {
   }
 
   return User.findOne({ phone: identifier });
-
 };
-
 
 /* ================= LOGIN RESPONSE ================= */
 
 const sendLoginResponse = (res, user) => {
-
   const accessToken = generateAccessToken(user);
 
   return res.status(200).json({
@@ -64,16 +58,12 @@ const sendLoginResponse = (res, user) => {
       isActive: user.isActive
     }
   });
-
 };
-
 
 /* ================= REGISTER ================= */
 
 exports.register = async (req, res) => {
-
   try {
-
     let { name, email, phone, password } = req.body;
 
     name = sanitizeInput(name);
@@ -87,23 +77,13 @@ exports.register = async (req, res) => {
       });
     }
 
-    /* ===== EMAIL VALIDATION ===== */
-
     if (email && !validator.isEmail(email)) {
-      return res.status(400).json({
-        message: "Invalid email format"
-      });
+      return res.status(400).json({ message: "Invalid email format" });
     }
-
-    /* ===== PHONE VALIDATION ===== */
 
     if (phone && !validator.isMobilePhone(phone, "any")) {
-      return res.status(400).json({
-        message: "Invalid phone number"
-      });
+      return res.status(400).json({ message: "Invalid phone number" });
     }
-
-    /* ===== PASSWORD STRENGTH ===== */
 
     if (!validator.isStrongPassword(password, {
       minLength: 6,
@@ -114,15 +94,11 @@ exports.register = async (req, res) => {
       });
     }
 
-    /* ===== DUPLICATE CHECK ===== */
-
     const duplicateChecks = [];
-
     if (email) duplicateChecks.push({ email });
     if (phone) duplicateChecks.push({ phone });
 
     if (duplicateChecks.length > 0) {
-
       const existingUser = await User.findOne({ $or: duplicateChecks });
 
       if (existingUser) {
@@ -130,10 +106,7 @@ exports.register = async (req, res) => {
           message: "User already registered"
         });
       }
-
     }
-
-    /* ===== CREATE USER ===== */
 
     const user = await User.create({
       name,
@@ -158,35 +131,25 @@ exports.register = async (req, res) => {
   } catch (error) {
 
     if (error?.code === 11000) {
-
       const duplicateField = Object.keys(error.keyPattern || {})[0];
 
       if (duplicateField === "email") {
-        return res.status(400).json({
-          message: "Email already registered"
-        });
+        return res.status(400).json({ message: "Email already registered" });
       }
 
       if (duplicateField === "phone") {
-        return res.status(400).json({
-          message: "Mobile number already registered"
-        });
+        return res.status(400).json({ message: "Mobile number already registered" });
       }
 
-      return res.status(400).json({
-        message: "User already registered"
-      });
-
+      return res.status(400).json({ message: "User already registered" });
     }
 
     if (error?.name === "ValidationError") {
-
       const firstError = Object.values(error.errors || {})[0];
 
       return res.status(400).json({
         message: firstError?.message || "Invalid registration data"
       });
-
     }
 
     console.error("Registration error:", error);
@@ -194,18 +157,13 @@ exports.register = async (req, res) => {
     return res.status(500).json({
       message: "Server error"
     });
-
   }
-
 };
-
 
 /* ================= LOGIN ================= */
 
 exports.login = async (req, res) => {
-
   try {
-
     let { emailOrPhone, password } = req.body;
 
     emailOrPhone = sanitizeInput(emailOrPhone);
@@ -220,46 +178,32 @@ exports.login = async (req, res) => {
     const user = await findUserByIdentifier(emailOrPhone);
 
     if (!user) {
-      return res.status(404).json({
-        message: "User not found"
-      });
+      return res.status(404).json({ message: "User not found" });
     }
 
     if (!user.isActive) {
-      return res.status(401).json({
-        message: "Account inactive"
-      });
+      return res.status(401).json({ message: "Account inactive" });
     }
 
     const isPasswordValid = await user.comparePassword(password);
 
     if (!isPasswordValid) {
-      return res.status(401).json({
-        message: "Invalid credentials"
-      });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
     return sendLoginResponse(res, user);
 
   } catch (error) {
-
     console.error("Login error:", error);
 
-    return res.status(500).json({
-      message: "Server error"
-    });
-
+    return res.status(500).json({ message: "Server error" });
   }
-
 };
-
 
 /* ================= ADMIN LOGIN ================= */
 
 exports.adminLogin = async (req, res) => {
-
   try {
-
     let emailOrPhone = req.body.emailOrPhone || req.body.email;
     let { password } = req.body;
 
@@ -275,52 +219,44 @@ exports.adminLogin = async (req, res) => {
     const user = await findUserByIdentifier(emailOrPhone);
 
     if (!user) {
-      return res.status(404).json({
-        message: "User not found"
-      });
+      return res.status(404).json({ message: "User not found" });
     }
 
     if (user.role !== "admin") {
-      return res.status(403).json({
-        message: "Admin access required"
-      });
+      return res.status(403).json({ message: "Admin access required" });
     }
 
     if (!user.isActive) {
-      return res.status(401).json({
-        message: "Account inactive"
-      });
+      return res.status(401).json({ message: "Account inactive" });
     }
 
     const isPasswordValid = await user.comparePassword(password);
 
     if (!isPasswordValid) {
-      return res.status(401).json({
-        message: "Invalid credentials"
-      });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
     return sendLoginResponse(res, user);
 
   } catch (error) {
-
     console.error("Admin login error:", error);
 
-    return res.status(500).json({
-      message: "Server error"
-    });
-
+    return res.status(500).json({ message: "Server error" });
   }
-
 };
 
+/* ================= ADMIN REFRESH ================= */
+
+exports.adminRefresh = async (req, res) => {
+  return res.status(501).json({
+    message: "Refresh token flow is not implemented"
+  });
+};
 
 /* ================= CHANGE PASSWORD ================= */
 
 exports.changePassword = async (req, res) => {
-
   try {
-
     let { currentPassword, newPassword } = req.body;
 
     currentPassword = currentPassword ? String(currentPassword).trim() : null;
@@ -344,9 +280,7 @@ exports.changePassword = async (req, res) => {
     const user = await User.findById(req.user._id);
 
     if (!user) {
-      return res.status(404).json({
-        message: "User not found"
-      });
+      return res.status(404).json({ message: "User not found" });
     }
 
     const isCurrentPasswordValid = await user.comparePassword(currentPassword);
@@ -367,13 +301,10 @@ exports.changePassword = async (req, res) => {
     });
 
   } catch (error) {
-
     console.error("Change password error:", error);
 
     return res.status(500).json({
       message: "Server error"
     });
-
   }
-
 };

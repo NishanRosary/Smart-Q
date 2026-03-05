@@ -7,6 +7,7 @@ const cookieParser = require("cookie-parser");
 const rateLimit = require("express-rate-limit");
 const mongoSanitize = require("express-mongo-sanitize");
 const hpp = require("hpp");
+
 require("dotenv").config();
 
 const connectDB = require("./config/db");
@@ -26,68 +27,86 @@ const { purgeExpiredEvents } = require("./services/eventCleanupService");
 const app = express();
 const server = http.createServer(app);
 
+/* ================= DATABASE ================= */
 
-// ================= DATABASE =================
 connectDB();
 
+/* ================= SECURITY CONFIG ================= */
 
-// ================= SECURITY MIDDLEWARE =================
+app.set("trust proxy", 1);
 
-// Secure HTTP headers
+/* ================= SECURITY MIDDLEWARE ================= */
+
 app.use(helmet());
 
-// Prevent MongoDB injection
-app.use(mongoSanitize());
+app.use(mongoSanitize({
+  replaceWith: "_"
+}));
 
-// Prevent HTTP parameter pollution
 app.use(hpp());
 
-// Rate limiting to prevent API abuse
+/* ================= RATE LIMITING ================= */
+
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
-  message: "Too many requests from this IP. Please try again later."
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many requests. Please try again later."
+  }
 });
 
 app.use("/api", apiLimiter);
 
-
-// ================= GLOBAL MIDDLEWARE =================
+/* ================= GLOBAL MIDDLEWARE ================= */
 
 app.use(cors({
   origin: "http://localhost:3000",
   credentials: true
 }));
 
-app.use(express.json());
+app.use(express.json({
+  limit: "10kb"
+}));
+
+app.use(express.urlencoded({
+  extended: true,
+  limit: "10kb"
+}));
+
 app.use(cookieParser());
 
-
-// ================= HTTPS ENFORCEMENT (PRODUCTION) =================
+/* ================= HTTPS ENFORCEMENT ================= */
 
 if (process.env.NODE_ENV === "production") {
   app.use((req, res, next) => {
-    if (req.headers["x-forwarded-proto"] !== "https") {
+
+    const proto = req.headers["x-forwarded-proto"];
+
+    if (proto && proto !== "https") {
       return res.redirect(`https://${req.headers.host}${req.url}`);
     }
+
     next();
+
   });
 }
 
-
-// ================= SOCKET.IO =================
+/* ================= SOCKET.IO ================= */
 
 const io = new Server(server, {
   cors: {
     origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
     credentials: true
   }
 });
 
 app.set("io", io);
 
-
-// ================= ROUTES =================
+/* ================= ROUTES ================= */
 
 app.use("/api/auth", authRoutes);
 app.use("/api/queue", queueRoutes);
@@ -97,30 +116,31 @@ app.use("/api/ml", mlRoutes);
 app.use("/api/predictions", predictionRoutes);
 app.use("/api/otp", otpRoutes);
 
-
-// ================= PROTECTED TEST ROUTE =================
+/* ================= PROTECTED TEST ROUTE ================= */
 
 app.get("/api/test-protected", authMiddleware, (req, res) => {
   res.json({
+    success: true,
     message: "Protected route accessed",
     user: req.user
   });
 });
 
-
-// ================= HEALTH CHECK =================
+/* ================= HEALTH CHECK ================= */
 
 app.get("/api/health", (req, res) => {
   res.json({
+    success: true,
     message: "Frontend and Backend connected"
   });
 });
 
-
-// ================= TEST EMAIL =================
+/* ================= TEST EMAIL ================= */
 
 app.get("/api/test-email", async (req, res, next) => {
+
   try {
+
     const result = await sendQueueRegistrationEmail({
       toEmail: req.query.toEmail || "nishanrosary908@gmail.com",
       userName: req.query.userName || "Nishan",
@@ -130,7 +150,7 @@ app.get("/api/test-email", async (req, res, next) => {
     });
 
     res.json({
-      ok: true,
+      success: true,
       message: "Test email request processed",
       result
     });
@@ -138,20 +158,21 @@ app.get("/api/test-email", async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+
 });
 
-
-// ================= 404 HANDLER =================
+/* ================= 404 HANDLER ================= */
 
 app.use((req, res) => {
+
   res.status(404).json({
     success: false,
     message: "Route not found"
   });
+
 });
 
-
-// ================= GLOBAL ERROR HANDLER =================
+/* ================= GLOBAL ERROR HANDLER ================= */
 
 app.use((err, req, res, next) => {
 
@@ -164,8 +185,7 @@ app.use((err, req, res, next) => {
 
 });
 
-
-// ================= SOCKET EVENTS =================
+/* ================= SOCKET EVENTS ================= */
 
 io.on("connection", (socket) => {
 
@@ -177,8 +197,7 @@ io.on("connection", (socket) => {
 
 });
 
-
-// ================= SERVER START =================
+/* ================= SERVER START ================= */
 
 const PORT = process.env.PORT || 5000;
 
@@ -186,8 +205,7 @@ server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-
-// ================= EVENT CLEANUP JOB =================
+/* ================= EVENT CLEANUP JOB ================= */
 
 const runExpiredEventCleanup = async () => {
 
@@ -196,24 +214,26 @@ const runExpiredEventCleanup = async () => {
     const result = await purgeExpiredEvents();
 
     if (result.deletedEvents > 0) {
+
       console.log(
         `Expired events cleanup: removed ${result.deletedEvents} event(s) and ${result.deletedQueues} queue item(s)`
       );
+
     }
 
   } catch (error) {
+
     console.error("Expired events cleanup failed:", error.message);
+
   }
 
 };
 
 runExpiredEventCleanup();
 
-// run every hour
 setInterval(runExpiredEventCleanup, 60 * 60 * 1000);
 
-
-// ================= PROCESS ERROR HANDLING =================
+/* ================= PROCESS ERROR HANDLING ================= */
 
 process.on("unhandledRejection", (reason) => {
   console.error("Unhandled Promise Rejection:", reason);
