@@ -34,40 +34,17 @@ connectDB().catch((err) => {
   process.exit(1);
 });
 
-/* ================= SECURITY CONFIG ================= */
+/* ================= TRUST PROXY ================= */
 
 app.set("trust proxy", 1);
 
-/* ================= SECURITY MIDDLEWARE ================= */
+/* ================= SECURITY HEADERS ================= */
 
 app.use(
   helmet({
     contentSecurityPolicy: false,
   })
 );
-
-app.use(
-  mongoSanitize({
-    replaceWith: "_",
-  })
-);
-
-app.use(hpp());
-
-/* ================= RATE LIMITING ================= */
-
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: {
-    success: false,
-    message: "Too many requests. Please try again later.",
-  },
-});
-
-app.use("/api", apiLimiter);
 
 /* ================= GLOBAL MIDDLEWARE ================= */
 
@@ -92,6 +69,32 @@ app.use(
 );
 
 app.use(cookieParser());
+
+/* ================= SANITIZATION ================= */
+
+app.use(
+  mongoSanitize({
+    replaceWith: "_",
+    allowDots: true,
+  })
+);
+
+app.use(hpp());
+
+/* ================= RATE LIMIT ================= */
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many requests. Please try again later.",
+  },
+});
+
+app.use("/api", apiLimiter);
 
 /* ================= HTTPS ENFORCEMENT ================= */
 
@@ -208,7 +211,7 @@ server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-/* ================= EVENT CLEANUP JOB ================= */
+/* ================= EVENT CLEANUP ================= */
 
 const runExpiredEventCleanup = async () => {
   try {
@@ -225,7 +228,6 @@ const runExpiredEventCleanup = async () => {
 };
 
 runExpiredEventCleanup();
-
 setInterval(runExpiredEventCleanup, 60 * 60 * 1000);
 
 /* ================= PROCESS ERROR HANDLING ================= */
