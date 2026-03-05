@@ -29,10 +29,7 @@ const server = http.createServer(app);
 
 /* ================= DATABASE ================= */
 
-connectDB().catch((err) => {
-  console.error("Database connection failed:", err);
-  process.exit(1);
-});
+connectDB();
 
 /* ================= TRUST PROXY ================= */
 
@@ -40,46 +37,44 @@ app.set("trust proxy", 1);
 
 /* ================= SECURITY HEADERS ================= */
 
-app.use(
-  helmet({
-    contentSecurityPolicy: false,
-  })
-);
+app.use(helmet());
 
 /* ================= GLOBAL MIDDLEWARE ================= */
 
-app.use(
-  cors({
-    origin: "http://localhost:3000",
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: "http://localhost:3000",
+  credentials: true
+}));
 
-app.use(
-  express.json({
-    limit: "10kb",
-  })
-);
+app.use(express.json({
+  limit: "10kb"
+}));
 
-app.use(
-  express.urlencoded({
-    extended: true,
-    limit: "10kb",
-  })
-);
+app.use(express.urlencoded({
+  extended: true,
+  limit: "10kb"
+}));
 
 app.use(cookieParser());
 
 /* ================= SANITIZATION ================= */
 
-app.use(
-  mongoSanitize({
-    replaceWith: "_",
-    allowDots: true,
-  })
-);
+const expressVersion = require("express/package.json").version;
+const expressMajor = parseInt(expressVersion.split(".")[0]);
 
-app.use(hpp());
+if (expressMajor < 5) {
+
+  app.use(mongoSanitize({
+    replaceWith: "_"
+  }));
+
+  app.use(hpp());
+
+} else {
+
+  console.warn("Express 5 detected — skipping mongoSanitize/hpp middleware");
+
+}
 
 /* ================= RATE LIMIT ================= */
 
@@ -90,8 +85,8 @@ const apiLimiter = rateLimit({
   legacyHeaders: false,
   message: {
     success: false,
-    message: "Too many requests. Please try again later.",
-  },
+    message: "Too many requests. Please try again later."
+  }
 });
 
 app.use("/api", apiLimiter);
@@ -99,7 +94,9 @@ app.use("/api", apiLimiter);
 /* ================= HTTPS ENFORCEMENT ================= */
 
 if (process.env.NODE_ENV === "production") {
+
   app.use((req, res, next) => {
+
     const proto = req.headers["x-forwarded-proto"];
 
     if (proto && proto !== "https") {
@@ -107,7 +104,9 @@ if (process.env.NODE_ENV === "production") {
     }
 
     next();
+
   });
+
 }
 
 /* ================= SOCKET.IO ================= */
@@ -116,8 +115,8 @@ const io = new Server(server, {
   cors: {
     origin: "http://localhost:3000",
     methods: ["GET", "POST"],
-    credentials: true,
-  },
+    credentials: true
+  }
 });
 
 app.set("io", io);
@@ -135,72 +134,86 @@ app.use("/api/otp", otpRoutes);
 /* ================= PROTECTED TEST ROUTE ================= */
 
 app.get("/api/test-protected", authMiddleware, (req, res) => {
+
   res.json({
     success: true,
     message: "Protected route accessed",
-    user: req.user,
+    user: req.user
   });
+
 });
 
 /* ================= HEALTH CHECK ================= */
 
 app.get("/api/health", (req, res) => {
+
   res.json({
     success: true,
-    message: "Frontend and Backend connected",
+    message: "Frontend and Backend connected"
   });
+
 });
 
 /* ================= TEST EMAIL ================= */
 
 app.get("/api/test-email", async (req, res, next) => {
+
   try {
+
     const result = await sendQueueRegistrationEmail({
       toEmail: req.query.toEmail || "nishanrosary908@gmail.com",
       userName: req.query.userName || "Nishan",
       tokenNumber: req.query.tokenNumber || "A123",
       serviceName: req.query.serviceName || "General Service",
-      estimatedWaitTime: Number(req.query.estimatedWaitTime || 15),
+      estimatedWaitTime: Number(req.query.estimatedWaitTime || 15)
     });
 
     res.json({
       success: true,
       message: "Test email request processed",
-      result,
+      result
     });
+
   } catch (error) {
     next(error);
   }
+
 });
 
 /* ================= 404 HANDLER ================= */
 
 app.use((req, res) => {
+
   res.status(404).json({
     success: false,
-    message: "Route not found",
+    message: "Route not found"
   });
+
 });
 
 /* ================= GLOBAL ERROR HANDLER ================= */
 
 app.use((err, req, res, next) => {
+
   console.error("Unhandled Error:", err);
 
   res.status(err.statusCode || 500).json({
     success: false,
-    message: err.message || "Internal Server Error",
+    message: err.message || "Internal Server Error"
   });
+
 });
 
 /* ================= SOCKET EVENTS ================= */
 
 io.on("connection", (socket) => {
+
   console.log("Client connected:", socket.id);
 
   socket.on("disconnect", () => {
     console.log("Client disconnected:", socket.id);
   });
+
 });
 
 /* ================= SERVER START ================= */
@@ -211,23 +224,32 @@ server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-/* ================= EVENT CLEANUP ================= */
+/* ================= EVENT CLEANUP JOB ================= */
 
 const runExpiredEventCleanup = async () => {
+
   try {
+
     const result = await purgeExpiredEvents();
 
     if (result.deletedEvents > 0) {
+
       console.log(
         `Expired events cleanup: removed ${result.deletedEvents} event(s) and ${result.deletedQueues} queue item(s)`
       );
+
     }
+
   } catch (error) {
+
     console.error("Expired events cleanup failed:", error.message);
+
   }
+
 };
 
 runExpiredEventCleanup();
+
 setInterval(runExpiredEventCleanup, 60 * 60 * 1000);
 
 /* ================= PROCESS ERROR HANDLING ================= */
@@ -238,5 +260,4 @@ process.on("unhandledRejection", (reason) => {
 
 process.on("uncaughtException", (error) => {
   console.error("Uncaught Exception:", error);
-  process.exit(1);
 });
