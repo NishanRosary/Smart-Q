@@ -39,11 +39,18 @@ app.set("trust proxy", 1);
 
 app.use(helmet());
 
-app.use(mongoSanitize({
-  replaceWith: "_"
-}));
+const expressMajorVersion = Number(
+  String(require("express/package.json").version || "5").split(".")[0]
+);
 
-app.use(hpp());
+if (expressMajorVersion < 5) {
+  app.use(mongoSanitize({
+    replaceWith: "_"
+  }));
+  app.use(hpp());
+} else {
+  console.warn("Skipping mongoSanitize/hpp middleware on Express 5");
+}
 
 /* ================= RATE LIMITING ================= */
 
