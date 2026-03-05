@@ -1,9 +1,22 @@
 const jwt = require("jsonwebtoken");
 const validator = require("validator");
+const sanitizeHtml = require("sanitize-html");
+
 const User = require("../models/user");
-const RefreshToken = require("../models/refreshTokens");
 
 const ACCESS_TOKEN_EXPIRES_IN = "15m";
+
+/* ================= SANITIZER ================= */
+
+const sanitizeInput = (input) => {
+  if (!input) return input;
+
+  return sanitizeHtml(String(input).trim(), {
+    allowedTags: [],
+    allowedAttributes: {}
+  });
+};
+
 
 /* ================= TOKEN GENERATION ================= */
 
@@ -20,7 +33,9 @@ const generateAccessToken = (user) => {
 
 const findUserByIdentifier = async (identifierInput) => {
 
-  const identifier = String(identifierInput).trim();
+  const identifier = sanitizeInput(identifierInput);
+
+  if (!identifier) return null;
 
   if (validator.isEmail(identifier)) {
     return User.findOne({ email: identifier.toLowerCase() });
@@ -39,7 +54,6 @@ const sendLoginResponse = (res, user) => {
 
   return res.status(200).json({
     success: true,
-    token: accessToken,
     accessToken,
     user: {
       id: user._id,
@@ -60,7 +74,12 @@ exports.register = async (req, res) => {
 
   try {
 
-    const { name, email, phone, password } = req.body;
+    let { name, email, phone, password } = req.body;
+
+    name = sanitizeInput(name);
+    email = email ? sanitizeInput(email).toLowerCase() : null;
+    phone = phone ? sanitizeInput(phone) : null;
+    password = password ? String(password).trim() : null;
 
     if (!name || !password || (!email && !phone)) {
       return res.status(400).json({
@@ -68,20 +87,20 @@ exports.register = async (req, res) => {
       });
     }
 
-    const normalizedName = String(name).trim();
-    const normalizedEmail = email ? String(email).trim().toLowerCase() : null;
-    const normalizedPhone = phone ? String(phone).trim() : null;
-
     /* ===== EMAIL VALIDATION ===== */
 
-    if (normalizedEmail && !validator.isEmail(normalizedEmail)) {
-      return res.status(400).json({ message: "Invalid email format" });
+    if (email && !validator.isEmail(email)) {
+      return res.status(400).json({
+        message: "Invalid email format"
+      });
     }
 
     /* ===== PHONE VALIDATION ===== */
 
-    if (normalizedPhone && !validator.isMobilePhone(normalizedPhone, "any")) {
-      return res.status(400).json({ message: "Invalid phone number" });
+    if (phone && !validator.isMobilePhone(phone, "any")) {
+      return res.status(400).json({
+        message: "Invalid phone number"
+      });
     }
 
     /* ===== PASSWORD STRENGTH ===== */
@@ -99,15 +118,17 @@ exports.register = async (req, res) => {
 
     const duplicateChecks = [];
 
-    if (normalizedEmail) duplicateChecks.push({ email: normalizedEmail });
-    if (normalizedPhone) duplicateChecks.push({ phone: normalizedPhone });
+    if (email) duplicateChecks.push({ email });
+    if (phone) duplicateChecks.push({ phone });
 
     if (duplicateChecks.length > 0) {
 
       const existingUser = await User.findOne({ $or: duplicateChecks });
 
       if (existingUser) {
-        return res.status(400).json({ message: "User already registered" });
+        return res.status(400).json({
+          message: "User already registered"
+        });
       }
 
     }
@@ -115,9 +136,9 @@ exports.register = async (req, res) => {
     /* ===== CREATE USER ===== */
 
     const user = await User.create({
-      name: normalizedName,
-      email: normalizedEmail,
-      phone: normalizedPhone,
+      name,
+      email,
+      phone,
       password,
       role: "customer"
     });
@@ -141,14 +162,20 @@ exports.register = async (req, res) => {
       const duplicateField = Object.keys(error.keyPattern || {})[0];
 
       if (duplicateField === "email") {
-        return res.status(400).json({ message: "Email already registered" });
+        return res.status(400).json({
+          message: "Email already registered"
+        });
       }
 
       if (duplicateField === "phone") {
-        return res.status(400).json({ message: "Mobile number already registered" });
+        return res.status(400).json({
+          message: "Mobile number already registered"
+        });
       }
 
-      return res.status(400).json({ message: "User already registered" });
+      return res.status(400).json({
+        message: "User already registered"
+      });
 
     }
 
@@ -164,7 +191,9 @@ exports.register = async (req, res) => {
 
     console.error("Registration error:", error);
 
-    return res.status(500).json({ message: "Server error" });
+    return res.status(500).json({
+      message: "Server error"
+    });
 
   }
 
@@ -177,7 +206,10 @@ exports.login = async (req, res) => {
 
   try {
 
-    const { emailOrPhone, password } = req.body;
+    let { emailOrPhone, password } = req.body;
+
+    emailOrPhone = sanitizeInput(emailOrPhone);
+    password = password ? String(password).trim() : null;
 
     if (!emailOrPhone || !password) {
       return res.status(400).json({
@@ -188,17 +220,23 @@ exports.login = async (req, res) => {
     const user = await findUserByIdentifier(emailOrPhone);
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({
+        message: "User not found"
+      });
     }
 
     if (!user.isActive) {
-      return res.status(401).json({ message: "Account inactive" });
+      return res.status(401).json({
+        message: "Account inactive"
+      });
     }
 
     const isPasswordValid = await user.comparePassword(password);
 
     if (!isPasswordValid) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res.status(401).json({
+        message: "Invalid credentials"
+      });
     }
 
     return sendLoginResponse(res, user);
@@ -207,7 +245,9 @@ exports.login = async (req, res) => {
 
     console.error("Login error:", error);
 
-    return res.status(500).json({ message: "Server error" });
+    return res.status(500).json({
+      message: "Server error"
+    });
 
   }
 
@@ -220,8 +260,11 @@ exports.adminLogin = async (req, res) => {
 
   try {
 
-    const emailOrPhone = req.body.emailOrPhone || req.body.email;
-    const { password } = req.body;
+    let emailOrPhone = req.body.emailOrPhone || req.body.email;
+    let { password } = req.body;
+
+    emailOrPhone = sanitizeInput(emailOrPhone);
+    password = password ? String(password).trim() : null;
 
     if (!emailOrPhone || !password) {
       return res.status(400).json({
@@ -232,21 +275,29 @@ exports.adminLogin = async (req, res) => {
     const user = await findUserByIdentifier(emailOrPhone);
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({
+        message: "User not found"
+      });
     }
 
     if (user.role !== "admin") {
-      return res.status(403).json({ message: "Admin access required" });
+      return res.status(403).json({
+        message: "Admin access required"
+      });
     }
 
     if (!user.isActive) {
-      return res.status(401).json({ message: "Account inactive" });
+      return res.status(401).json({
+        message: "Account inactive"
+      });
     }
 
     const isPasswordValid = await user.comparePassword(password);
 
     if (!isPasswordValid) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res.status(401).json({
+        message: "Invalid credentials"
+      });
     }
 
     return sendLoginResponse(res, user);
@@ -255,19 +306,12 @@ exports.adminLogin = async (req, res) => {
 
     console.error("Admin login error:", error);
 
-    return res.status(500).json({ message: "Server error" });
+    return res.status(500).json({
+      message: "Server error"
+    });
 
   }
 
-};
-
-
-/* ================= REFRESH TOKEN ================= */
-
-exports.adminRefresh = async (req, res) => {
-  return res.status(501).json({
-    message: "Refresh token flow is not implemented"
-  });
 };
 
 
@@ -277,7 +321,10 @@ exports.changePassword = async (req, res) => {
 
   try {
 
-    const { currentPassword, newPassword } = req.body;
+    let { currentPassword, newPassword } = req.body;
+
+    currentPassword = currentPassword ? String(currentPassword).trim() : null;
+    newPassword = newPassword ? String(newPassword).trim() : null;
 
     if (!currentPassword || !newPassword) {
       return res.status(400).json({
@@ -297,7 +344,9 @@ exports.changePassword = async (req, res) => {
     const user = await User.findById(req.user._id);
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({
+        message: "User not found"
+      });
     }
 
     const isCurrentPasswordValid = await user.comparePassword(currentPassword);
@@ -308,7 +357,7 @@ exports.changePassword = async (req, res) => {
       });
     }
 
-    user.password = String(newPassword);
+    user.password = newPassword;
 
     await user.save();
 
