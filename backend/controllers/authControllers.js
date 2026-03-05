@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const validator = require("validator");
 const User = require("../models/user");
+const RefreshToken = require("../models/refreshTokens");
 
 const ACCESS_TOKEN_EXPIRES_IN = "15m";
 
