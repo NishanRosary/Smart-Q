@@ -1,7 +1,10 @@
 const jwt = require("jsonwebtoken");
+const validator = require("validator");
 const User = require("../models/user");
 
 const ACCESS_TOKEN_EXPIRES_IN = "15m";
+
+/* ================= TOKEN GENERATION ================= */
 
 const generateAccessToken = (user) => {
   return jwt.sign(
@@ -11,17 +14,30 @@ const generateAccessToken = (user) => {
   );
 };
 
+
+/* ================= USER FINDER ================= */
+
 const findUserByIdentifier = async (identifierInput) => {
+
   const identifier = String(identifierInput).trim();
-  return User.findOne({
-    $or: [{ email: identifier.toLowerCase() }, { phone: identifier }]
-  });
+
+  if (validator.isEmail(identifier)) {
+    return User.findOne({ email: identifier.toLowerCase() });
+  }
+
+  return User.findOne({ phone: identifier });
+
 };
 
+
+/* ================= LOGIN RESPONSE ================= */
+
 const sendLoginResponse = (res, user) => {
+
   const accessToken = generateAccessToken(user);
 
   return res.status(200).json({
+    success: true,
     token: accessToken,
     accessToken,
     user: {
@@ -33,10 +49,16 @@ const sendLoginResponse = (res, user) => {
       isActive: user.isActive
     }
   });
+
 };
 
+
+/* ================= REGISTER ================= */
+
 exports.register = async (req, res) => {
+
   try {
+
     const { name, email, phone, password } = req.body;
 
     if (!name || !password || (!email && !phone)) {
@@ -45,20 +67,54 @@ exports.register = async (req, res) => {
       });
     }
 
-    const normalizedEmail = email ? String(email).trim().toLowerCase() : undefined;
-    const normalizedPhone = phone ? String(phone).trim() : undefined;
+    const normalizedName = String(name).trim();
+    const normalizedEmail = email ? String(email).trim().toLowerCase() : null;
+    const normalizedPhone = phone ? String(phone).trim() : null;
+
+    /* ===== EMAIL VALIDATION ===== */
+
+    if (normalizedEmail && !validator.isEmail(normalizedEmail)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
+
+    /* ===== PHONE VALIDATION ===== */
+
+    if (normalizedPhone && !validator.isMobilePhone(normalizedPhone, "any")) {
+      return res.status(400).json({ message: "Invalid phone number" });
+    }
+
+    /* ===== PASSWORD STRENGTH ===== */
+
+    if (!validator.isStrongPassword(password, {
+      minLength: 6,
+      minNumbers: 1
+    })) {
+      return res.status(400).json({
+        message: "Password must contain at least 6 characters and one number"
+      });
+    }
+
+    /* ===== DUPLICATE CHECK ===== */
 
     const duplicateChecks = [];
+
     if (normalizedEmail) duplicateChecks.push({ email: normalizedEmail });
     if (normalizedPhone) duplicateChecks.push({ phone: normalizedPhone });
 
-    const existingUser = await User.findOne({ $or: duplicateChecks });
-    if (existingUser) {
-      return res.status(400).json({ message: "User already registered" });
+    if (duplicateChecks.length > 0) {
+
+      const existingUser = await User.findOne({ $or: duplicateChecks });
+
+      if (existingUser) {
+        return res.status(400).json({ message: "User already registered" });
+      }
+
     }
 
+    /* ===== CREATE USER ===== */
+
     const user = await User.create({
-      name: String(name).trim(),
+      name: normalizedName,
       email: normalizedEmail,
       phone: normalizedPhone,
       password,
@@ -76,36 +132,56 @@ exports.register = async (req, res) => {
         role: user.role
       }
     });
+
   } catch (error) {
+
     if (error?.code === 11000) {
+
       const duplicateField = Object.keys(error.keyPattern || {})[0];
+
       if (duplicateField === "email") {
         return res.status(400).json({ message: "Email already registered" });
       }
+
       if (duplicateField === "phone") {
         return res.status(400).json({ message: "Mobile number already registered" });
       }
+
       return res.status(400).json({ message: "User already registered" });
+
     }
 
     if (error?.name === "ValidationError") {
+
       const firstError = Object.values(error.errors || {})[0];
+
       return res.status(400).json({
         message: firstError?.message || "Invalid registration data"
       });
+
     }
 
     console.error("Registration error:", error);
+
     return res.status(500).json({ message: "Server error" });
+
   }
+
 };
 
+
+/* ================= LOGIN ================= */
+
 exports.login = async (req, res) => {
+
   try {
+
     const { emailOrPhone, password } = req.body;
 
     if (!emailOrPhone || !password) {
-      return res.status(400).json({ message: "emailOrPhone and password are required" });
+      return res.status(400).json({
+        message: "emailOrPhone and password are required"
+      });
     }
 
     const user = await findUserByIdentifier(emailOrPhone);
@@ -119,23 +195,37 @@ exports.login = async (req, res) => {
     }
 
     const isPasswordValid = await user.comparePassword(password);
+
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
     return sendLoginResponse(res, user);
+
   } catch (error) {
+
+    console.error("Login error:", error);
+
     return res.status(500).json({ message: "Server error" });
+
   }
+
 };
 
+
+/* ================= ADMIN LOGIN ================= */
+
 exports.adminLogin = async (req, res) => {
+
   try {
+
     const emailOrPhone = req.body.emailOrPhone || req.body.email;
     const { password } = req.body;
 
     if (!emailOrPhone || !password) {
-      return res.status(400).json({ message: "email and password are required" });
+      return res.status(400).json({
+        message: "email and password are required"
+      });
     }
 
     const user = await findUserByIdentifier(emailOrPhone);
@@ -153,22 +243,39 @@ exports.adminLogin = async (req, res) => {
     }
 
     const isPasswordValid = await user.comparePassword(password);
+
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
     return sendLoginResponse(res, user);
+
   } catch (error) {
+
+    console.error("Admin login error:", error);
+
     return res.status(500).json({ message: "Server error" });
+
   }
+
 };
+
+
+/* ================= REFRESH TOKEN ================= */
 
 exports.adminRefresh = async (req, res) => {
-  return res.status(501).json({ message: "Refresh token flow is not implemented" });
+  return res.status(501).json({
+    message: "Refresh token flow is not implemented"
+  });
 };
 
+
+/* ================= CHANGE PASSWORD ================= */
+
 exports.changePassword = async (req, res) => {
+
   try {
+
     const { currentPassword, newPassword } = req.body;
 
     if (!currentPassword || !newPassword) {
@@ -177,21 +284,46 @@ exports.changePassword = async (req, res) => {
       });
     }
 
+    if (!validator.isStrongPassword(newPassword, {
+      minLength: 6,
+      minNumbers: 1
+    })) {
+      return res.status(400).json({
+        message: "New password must contain at least 6 characters and one number"
+      });
+    }
+
     const user = await User.findById(req.user._id);
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
     const isCurrentPasswordValid = await user.comparePassword(currentPassword);
+
     if (!isCurrentPasswordValid) {
-      return res.status(400).json({ message: "Current password is invalid" });
+      return res.status(400).json({
+        message: "Current password is invalid"
+      });
     }
 
     user.password = String(newPassword);
+
     await user.save();
 
-    return res.json({ message: "Password updated successfully" });
+    return res.json({
+      success: true,
+      message: "Password updated successfully"
+    });
+
   } catch (error) {
-    return res.status(500).json({ message: "Server error" });
+
+    console.error("Change password error:", error);
+
+    return res.status(500).json({
+      message: "Server error"
+    });
+
   }
+
 };

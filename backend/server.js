@@ -2,9 +2,15 @@ const express = require("express");
 const http = require("http");
 const cors = require("cors");
 const { Server } = require("socket.io");
+const helmet = require("helmet");
+const cookieParser = require("cookie-parser");
+const rateLimit = require("express-rate-limit");
+const mongoSanitize = require("express-mongo-sanitize");
+const hpp = require("hpp");
 require("dotenv").config();
 
 const connectDB = require("./config/db");
+
 const queueRoutes = require("./routes/queueRoutes");
 const eventRoutes = require("./routes/eventRoutes");
 const eventHistoryRoutes = require("./routes/eventHistoryRoutes");
@@ -12,6 +18,7 @@ const mlRoutes = require("./routes/mlRoutes");
 const predictionRoutes = require("./routes/predictionRoutes");
 const otpRoutes = require("./routes/otpRoutes");
 const authRoutes = require("./routes/authRoutes");
+
 const { sendQueueRegistrationEmail } = require("./services/emailService");
 const { authMiddleware } = require("./middleware/auth");
 const { purgeExpiredEvents } = require("./services/eventCleanupService");
@@ -19,7 +26,57 @@ const { purgeExpiredEvents } = require("./services/eventCleanupService");
 const app = express();
 const server = http.createServer(app);
 
+
+// ================= DATABASE =================
+connectDB();
+
+
+// ================= SECURITY MIDDLEWARE =================
+
+// Secure HTTP headers
+app.use(helmet());
+
+// Prevent MongoDB injection
+app.use(mongoSanitize());
+
+// Prevent HTTP parameter pollution
+app.use(hpp());
+
+// Rate limiting to prevent API abuse
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: "Too many requests from this IP. Please try again later."
+});
+
+app.use("/api", apiLimiter);
+
+
+// ================= GLOBAL MIDDLEWARE =================
+
+app.use(cors({
+  origin: "http://localhost:3000",
+  credentials: true
+}));
+
+app.use(express.json());
+app.use(cookieParser());
+
+
+// ================= HTTPS ENFORCEMENT (PRODUCTION) =================
+
+if (process.env.NODE_ENV === "production") {
+  app.use((req, res, next) => {
+    if (req.headers["x-forwarded-proto"] !== "https") {
+      return res.redirect(`https://${req.headers.host}${req.url}`);
+    }
+    next();
+  });
+}
+
+
 // ================= SOCKET.IO =================
+
 const io = new Server(server, {
   cors: {
     origin: "http://localhost:3000",
@@ -29,15 +86,9 @@ const io = new Server(server, {
 
 app.set("io", io);
 
-// ================= MIDDLEWARE =================
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
-app.use(express.json());
-app.use(require("cookie-parser")());
-
-// ================= DATABASE =================
-connectDB();
 
 // ================= ROUTES =================
+
 app.use("/api/auth", authRoutes);
 app.use("/api/queue", queueRoutes);
 app.use("/api/events", eventRoutes);
@@ -46,6 +97,9 @@ app.use("/api/ml", mlRoutes);
 app.use("/api/predictions", predictionRoutes);
 app.use("/api/otp", otpRoutes);
 
+
+// ================= PROTECTED TEST ROUTE =================
+
 app.get("/api/test-protected", authMiddleware, (req, res) => {
   res.json({
     message: "Protected route accessed",
@@ -53,11 +107,18 @@ app.get("/api/test-protected", authMiddleware, (req, res) => {
   });
 });
 
+
+// ================= HEALTH CHECK =================
+
 app.get("/api/health", (req, res) => {
-  res.json({ message: "Frontend and Backend connected" });
+  res.json({
+    message: "Frontend and Backend connected"
+  });
 });
 
+
 // ================= TEST EMAIL =================
+
 app.get("/api/test-email", async (req, res, next) => {
   try {
     const result = await sendQueueRegistrationEmail({
@@ -73,12 +134,15 @@ app.get("/api/test-email", async (req, res, next) => {
       message: "Test email request processed",
       result
     });
+
   } catch (error) {
     next(error);
   }
 });
 
+
 // ================= 404 HANDLER =================
+
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -86,46 +150,70 @@ app.use((req, res) => {
   });
 });
 
+
 // ================= GLOBAL ERROR HANDLER =================
+
 app.use((err, req, res, next) => {
+
   console.error("Unhandled Error:", err);
 
   res.status(err.statusCode || 500).json({
     success: false,
     message: err.message || "Internal Server Error"
   });
+
 });
 
+
 // ================= SOCKET EVENTS =================
+
 io.on("connection", (socket) => {
+
   console.log("Client connected:", socket.id);
 
   socket.on("disconnect", () => {
     console.log("Client disconnected:", socket.id);
   });
+
 });
 
+
 // ================= SERVER START =================
+
 const PORT = process.env.PORT || 5000;
+
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
+
+// ================= EVENT CLEANUP JOB =================
+
 const runExpiredEventCleanup = async () => {
+
   try {
+
     const result = await purgeExpiredEvents();
+
     if (result.deletedEvents > 0) {
       console.log(
         `Expired events cleanup: removed ${result.deletedEvents} event(s) and ${result.deletedQueues} queue item(s)`
       );
     }
+
   } catch (error) {
     console.error("Expired events cleanup failed:", error.message);
   }
+
 };
 
 runExpiredEventCleanup();
+
+// run every hour
 setInterval(runExpiredEventCleanup, 60 * 60 * 1000);
+
+
+// ================= PROCESS ERROR HANDLING =================
 
 process.on("unhandledRejection", (reason) => {
   console.error("Unhandled Promise Rejection:", reason);
