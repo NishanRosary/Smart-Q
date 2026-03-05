@@ -6,9 +6,10 @@ const {
   adminLogin,
   adminRefresh,
   changePassword
-} = require("../controllers/authControllers"); // fixed file name
+} = require("../controllers/authControllers"); // ensure file name matches controller
 
 const { authMiddleware, roleMiddleware } = require("../middleware/auth");
+const loginLimiter = require("../middleware/loginLimiter"); // brute-force protection
 
 const router = express.Router();
 
@@ -18,13 +19,13 @@ const router = express.Router();
 router.post("/register", register);
 
 // POST /api/auth/login
-router.post("/login", login);
+router.post("/login", loginLimiter, login);
 
 
 /* ================= ADMIN AUTH ROUTES ================= */
 
 // POST /api/auth/admin/login
-router.post("/admin/login", adminLogin);
+router.post("/admin/login", loginLimiter, adminLogin);
 
 // POST /api/auth/admin/refresh
 router.post("/admin/refresh", adminRefresh);
