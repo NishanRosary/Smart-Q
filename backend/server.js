@@ -6,7 +6,6 @@ const helmet = require("helmet");
 const cookieParser = require("cookie-parser");
 const rateLimit = require("express-rate-limit");
 const mongoSanitize = require("express-mongo-sanitize");
-const hpp = require("hpp");
 require("dotenv").config();
 
 const connectDB = require("./config/db");
@@ -36,11 +35,23 @@ connectDB();
 // Secure HTTP headers
 app.use(helmet());
 
-// Prevent MongoDB injection
-app.use(mongoSanitize());
-
-// Prevent HTTP parameter pollution
-app.use(hpp());
+// hpp mutates req.query and currently breaks with Express 5.
+// Keep API stable by enabling it only for Express < 5.
+const expressMajorVersion = Number(
+  String(require("express/package.json").version || "5").split(".")[0]
+);
+if (expressMajorVersion < 5) {
+  // Prevent MongoDB injection
+  app.use(mongoSanitize());
+} else {
+  console.warn("Skipping express-mongo-sanitize middleware on Express 5");
+}
+if (expressMajorVersion < 5) {
+  const hpp = require("hpp");
+  app.use(hpp());
+} else {
+  console.warn("Skipping hpp middleware on Express 5");
+}
 
 // Rate limiting to prevent API abuse
 const apiLimiter = rateLimit({

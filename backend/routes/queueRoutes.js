@@ -226,7 +226,14 @@ router.post("/join", async (req, res) => {
 // =======================
 router.get("/status/:tokenNumber", async (req, res) => {
   try {
-    const tokenNum = parseInt(req.params.tokenNumber);
+    const rawToken = String(req.params.tokenNumber || "").trim();
+    const numericToken = rawToken.replace(/\D/g, "");
+
+    if (!numericToken) {
+      return res.status(400).json({ message: "Invalid token number format" });
+    }
+
+    const tokenNum = Number.parseInt(numericToken, 10);
     const myEntry = await Queue.findOne({ tokenNumber: tokenNum });
 
     if (!myEntry) {

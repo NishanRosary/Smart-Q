@@ -183,7 +183,7 @@ router.post(
   roleMiddleware("admin"),
   async (req, res) => {
     try {
-      const queueData = await Queue.find({});
+      const queueData = await Queue.find({}).lean();
 
       if (queueData.length === 0) {
         return res
@@ -191,20 +191,38 @@ router.post(
           .json({ message: "No training data available." });
       }
 
+      const totalInQueue = queueData.length;
+      const normalizedTrainingData = queueData.map((item, index) => {
+        const positionInQueue = Math.max(
+          1,
+          Number(item.positionInQueue || item.tokenNumber || index + 1)
+        );
+
+        return {
+          service: item.service || "General",
+          joinedAt: (item.createdAt || new Date()).toISOString(),
+          positionInQueue,
+          waitingTime: Math.max(1, positionInQueue * 4),
+          totalInQueue,
+          noShow: item.status === "cancelled",
+          status: item.status || "waiting"
+        };
+      });
+
       const response = await axios.post(
         `${ML_SERVICE_URL}/train`,
-        { data: queueData }
+        { data: normalizedTrainingData }
       );
 
       res.json({
         message: "Models trained successfully",
-        dataPoints: queueData.length,
+        dataPoints: normalizedTrainingData.length,
         results: response.data
       });
 
     } catch (error) {
       res.status(500).json({
-        message: error.message,
+        message: error.response?.data?.error || error.message,
         note: "Make sure ML service is running on port 5001"
       });
     }
