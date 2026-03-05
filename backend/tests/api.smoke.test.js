@@ -126,8 +126,8 @@ beforeAll(async () => {
   });
 
   expect(loginRes.status).toBe(200);
-  expect(loginRes.json?.token).toBeTruthy();
-  adminToken = loginRes.json.token;
+  adminToken = loginRes.json?.token || loginRes.json?.accessToken || null;
+  expect(adminToken).toBeTruthy();
 });
 
 afterAll(async () => {
@@ -168,5 +168,14 @@ describe("API smoke coverage", () => {
   test("ml train no longer returns 500 (fixed)", async () => {
     const res = await request("POST", "/api/ml/train", {}, adminToken);
     expect([200, 400]).toContain(res.status);
+  });
+
+  test("ml predict invalid input returns 400 (TC17)", async () => {
+    const res = await request("POST", "/api/ml/predict", {
+      type: "queue-length",
+      hour: "invalid-hour"
+    });
+    expect(res.status).toBe(400);
+    expect(String(res.json?.message || "")).toContain("hour");
   });
 });
