@@ -1,7 +1,13 @@
+import sys
+import time
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+
+STARTUP_TS = time.time()
+print("[ML] Booting service. Loading ML dependencies (first run can take up to 60s)...", flush=True)
 from models import QueueMLModels
-import sys
+print(f"[ML] ML dependencies loaded in {time.time() - STARTUP_TS:.1f}s", flush=True)
 
 app = Flask(__name__)
 CORS(app)

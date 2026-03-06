@@ -1,0 +1,111 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+2 0 obj
+<< /Length 4624 >>
+stream
+BT
+/F1 10 Tf
+40 800 Td
+14 TL
+(SMART-Q API TEST REPORT) Tj
+T* (Generated On: March 6, 2026) Tj
+T* (Environment: Local Backend + ML Service) Tj
+T* () Tj
+T* (1. EXECUTIVE SUMMARY) Tj
+T* (- Total endpoints tested: 32) Tj
+T* (- Fully working: 27) Tj
+T* (- Partially working: 4) Tj
+T* (- Not working: 1) Tj
+T* () Tj
+T* (2. STATUS LEGEND) Tj
+T* (- Fully Working: Endpoint works as expected for valid request) Tj
+T* (- Partially Working: Endpoint works but has expected business-rule/negative-path limits) Tj
+T* (- Not Working: Endpoint behavior/functionality missing or failing) Tj
+T* () Tj
+T* (3. DETAILED API STATUS) Tj
+T* (Method  Endpoint                                      HTTP  Status            Remarks) Tj
+T* (------  --------------------------------------------  ----  ----------------  -------------------------------) Tj
+T* (GET     /api/health                                   200   Fully Working     Health check successful) Tj
+T* (GET     /api/test-email                               200   Fully Working     Email test endpoint responding) Tj
+T* (POST    /api/auth/register                            201   Fully Working     Customer registration successful) Tj
+T* (POST    /api/auth/login                               200   Fully Working     Customer login successful) Tj
+T* (POST    /api/auth/admin/login                         200   Fully Working     Admin login successful) Tj
+T* (POST    /api/auth/admin/refresh                       501   Not Working       Refresh flow not implemented) Tj
+T* (PUT     /api/auth/admin/change-password               200   Fully Working     Password change successful) Tj
+T* (GET     /api/auth/me                                  200   Fully Working     Authenticated user details returned) Tj
+T* (GET     /api/test-protected                           200   Fully Working     Protected route access successful) Tj
+T* (POST    /api/otp/send-otp                             200   Fully Working     OTP sending works) Tj
+T* (POST    /api/otp/verify-otp                           400   Partially Working  Invalid OTP path verified) Tj
+T* (POST    /api/queue/join                               400   Partially Working  Missing required fields returns validation error) Tj
+T* (POST    /api/queue/join                               201   Fully Working     Queue join with valid payload works) Tj
+T* (GET     /api/queue/status/ABC                         400   Fully Working     Invalid token format handled correctly) Tj
+T* (GET     /api/queue/status/1                           200   Fully Working     Valid queue status returned) Tj
+T* (GET     /api/queue                                    200   Fully Working     Admin queue list accessible) Tj
+T* (PUT     /api/queue/:id/start                          200   Fully Working     Queue start transition works) Tj
+T* (PUT     /api/queue/:id/complete                       200   Fully Working     Queue complete transition works) Tj
+T* (PUT     /api/queue/:id/revoke                         200   Fully Working     Queue revoke transition works) Tj
+T* (PUT     /api/queue/:id/cancel                         200   Fully Working     Queue cancel transition works) Tj
+T* (GET     /api/events                                   200   Fully Working     Event list returns successfully) Tj
+T* (POST    /api/events                                   201   Fully Working     Admin event creation works) Tj
+T* (POST    /api/events/:id/complete                      400   Partially Working  Business preconditions enforced) Tj
+T* (DELETE  /api/events/:id                               200   Fully Working     Admin event deletion works) Tj
+T* (GET     /api/event-history                            200   Fully Working     Event history list returns) Tj
+T* (GET     /api/event-history/:id                        200   Fully Working     Event history record returns) Tj
+T* (DELETE  /api/event-history/:id                        200   Fully Working     Event history deletion works) Tj
+T* (POST    /api/ml/predict                               200   Fully Working     Valid prediction request works) Tj
+T* (POST    /api/ml/predict \(invalid input\)               400   Fully Working     Invalid input handled correctly \(TC17\)) Tj
+T* (GET     /api/ml/status                                200   Fully Working     ML status endpoint works) Tj
+T* (POST    /api/ml/train                                 200   Fully Working     ML training payload normalized, training call works) Tj
+T* (GET     /api/predictions                              200   Fully Working     Prediction bundle endpoint works) Tj
+T* () Tj
+T* (4. AUTOMATED TEST EXECUTION) Tj
+ET
+endstream
+endobj
+3 0 obj
+<< /Type /Page /Parent 6 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R >> >> /Contents 2 0 R >>
+endobj
+4 0 obj
+<< /Length 359 >>
+stream
+BT
+/F1 10 Tf
+40 800 Td
+14 TL
+(- Command: npm run test:api \(backend\)) Tj
+T* (- Result: PASS \(7/7\)) Tj
+T* (- Includes regression for TC17 invalid ML prediction input) Tj
+T* () Tj
+T* (5. NOTES) Tj
+T* (- /api/auth/admin/refresh requires implementation.) Tj
+T* (- OTP success path is environment-dependent \(email-delivered OTP\), invalid path verified.) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 6 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R >> >> /Contents 4 0 R >>
+endobj
+6 0 obj
+<< /Type /Pages /Count 2 /Kids [ 3 0 R 5 0 R ] >>
+endobj
+7 0 obj
+<< /Type /Catalog /Pages 6 0 R >>
+endobj
+xref
+0 8
+0000000000 65535 f 
+0000000015 00000 n 
+0000000083 00000 n 
+0000004759 00000 n 
+0000004885 00000 n 
+0000005295 00000 n 
+0000005421 00000 n 
+0000005486 00000 n 
+trailer
+<< /Size 8 /Root 7 0 R >>
+startxref
+5535
+%%EOF

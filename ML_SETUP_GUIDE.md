@@ -50,8 +50,10 @@ chmod +x start_ml_service.sh
 **Option C: Manual start**
 ```bash
 cd Smart-Q/backend/ml
-python ml_service.py
+python -s ml_service.py
 ```
+Note: on first startup, importing ML libraries can take 20-60 seconds on Windows. Wait for the
+`ML dependencies loaded` log line before interrupting.
 
 The ML service will run on `http://localhost:5001`
 

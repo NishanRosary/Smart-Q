@@ -1,6 +1,11 @@
 @echo off
 echo Starting ML Service...
+set PYTHONNOUSERSITE=1
 cd ml
-python ml_service.py
+if exist ..\..\ml_env\Scripts\python.exe (
+  ..\..\ml_env\Scripts\python.exe -s ml_service.py
+) else (
+  python -s ml_service.py
+)
 pause
 
