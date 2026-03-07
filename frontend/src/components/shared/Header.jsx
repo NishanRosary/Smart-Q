@@ -80,7 +80,7 @@ const Header = ({ onNavigate, goBack, currentPage, customerData, onLogout }) => 
             onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
           >
             <img
-              src={theme === 'dark' ? "/Smart'Q dark theme.jpg" : "/smartq-logo.jpg"}
+              src={theme === 'dark' ? "/smartq-logo-dark.jpg" : "/smartq-logo.jpg"}
               alt="Smart'Q"
               style={{
                 height: '36px',

@@ -156,7 +156,7 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
             boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)'
           }}>
             <img
-              src={theme === 'dark' ? "/Smart'Q dark theme.jpg" : "/smartq-logo.jpg"}
+              src={theme === 'dark' ? "/smartq-logo-dark.jpg" : "/smartq-logo.jpg"}
               alt="Smart'Q Logo"
               style={{
                 width: '100%',
