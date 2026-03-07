@@ -31,41 +31,13 @@ const server = http.createServer(app);
 
 connectDB();
 
-/* ================= SECURITY CONFIG ================= */
+/* ================= TRUST PROXY ================= */
 
 app.set("trust proxy", 1);
 
-/* ================= SECURITY MIDDLEWARE ================= */
+/* ================= SECURITY HEADERS ================= */
 
 app.use(helmet());
-
-const expressMajorVersion = Number(
-  String(require("express/package.json").version || "5").split(".")[0]
-);
-
-if (expressMajorVersion < 5) {
-  app.use(mongoSanitize({
-    replaceWith: "_"
-  }));
-  app.use(hpp());
-} else {
-  console.warn("Skipping mongoSanitize/hpp middleware on Express 5");
-}
-
-/* ================= RATE LIMITING ================= */
-
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: {
-    success: false,
-    message: "Too many requests. Please try again later."
-  }
-});
-
-app.use("/api", apiLimiter);
 
 /* ================= GLOBAL MIDDLEWARE ================= */
 
@@ -85,9 +57,44 @@ app.use(express.urlencoded({
 
 app.use(cookieParser());
 
+/* ================= SANITIZATION ================= */
+
+const expressVersion = require("express/package.json").version;
+const expressMajor = parseInt(expressVersion.split(".")[0]);
+
+if (expressMajor < 5) {
+
+  app.use(mongoSanitize({
+    replaceWith: "_"
+  }));
+
+  app.use(hpp());
+
+} else {
+
+  console.warn("Express 5 detected — skipping mongoSanitize/hpp middleware");
+
+}
+
+/* ================= RATE LIMIT ================= */
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many requests. Please try again later."
+  }
+});
+
+app.use("/api", apiLimiter);
+
 /* ================= HTTPS ENFORCEMENT ================= */
 
 if (process.env.NODE_ENV === "production") {
+
   app.use((req, res, next) => {
 
     const proto = req.headers["x-forwarded-proto"];
@@ -99,6 +106,7 @@ if (process.env.NODE_ENV === "production") {
     next();
 
   });
+
 }
 
 /* ================= SOCKET.IO ================= */
@@ -126,20 +134,24 @@ app.use("/api/otp", otpRoutes);
 /* ================= PROTECTED TEST ROUTE ================= */
 
 app.get("/api/test-protected", authMiddleware, (req, res) => {
+
   res.json({
     success: true,
     message: "Protected route accessed",
     user: req.user
   });
+
 });
 
 /* ================= HEALTH CHECK ================= */
 
 app.get("/api/health", (req, res) => {
+
   res.json({
     success: true,
     message: "Frontend and Backend connected"
   });
+
 });
 
 /* ================= TEST EMAIL ================= */
