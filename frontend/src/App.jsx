@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+require("dotenv").config();
 import { checkBackendHealth, getEventById, setAuthToken } from "./services/api";
 import "./styles/global.css";
 
