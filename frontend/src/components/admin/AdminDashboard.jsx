@@ -27,29 +27,20 @@ const AdminDashboard = ({ onNavigate, goBack, currentPage }) => {
 
   useEffect(() => {
     const fetchStats = async () => {
+      const getAuthConfig = () => ({
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
       try {
-        const getAuthConfig = () => ({
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
+        const [queueRes, eventsRes] = await Promise.all([
+          axios.get('http://localhost:5000/api/queue', getAuthConfig()),
+          axios.get('http://localhost:5000/api/events', getAuthConfig())
+        ]);
 
-        // Fetch queue data
-        const queueRes = await axios.get('http://localhost:5000/api/queue', getAuthConfig());
         const queues = queueRes.data || [];
-
-        // Fetch events data
-        const eventsRes = await axios.get('http://localhost:5000/api/events', getAuthConfig());
         const events = eventsRes.data || [];
-
-        // Fetch predictions data
-        try {
-          const predsRes = await axios.get('http://localhost:5000/api/predictions', getAuthConfig());
-          setPredictions(predsRes.data || { peakTimes: [] });
-        } catch (err) {
-          console.warn('Could not fetch predictions:', err);
-          setPredictions({ peakTimes: [] });
-        }
 
         // Calculate stats
         let totalWaitTime = 0;
@@ -64,6 +55,16 @@ const AdminDashboard = ({ onNavigate, goBack, currentPage }) => {
           totalCustomers: queues.length,
           averageWaitTime: queues.length > 0 ? Math.round(totalWaitTime / queues.length) : 0
         });
+
+        // Fetch predictions in background so dashboard stats render immediately.
+        axios.get('http://localhost:5000/api/predictions', getAuthConfig())
+          .then((predsRes) => {
+            setPredictions(predsRes.data || { peakTimes: [] });
+          })
+          .catch((err) => {
+            console.warn('Could not fetch predictions:', err);
+            setPredictions({ peakTimes: [] });
+          });
       } catch (error) {
         console.error('Error fetching stats:', error);
       } finally {

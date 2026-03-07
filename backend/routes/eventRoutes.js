@@ -4,7 +4,7 @@ const Event = require("../models/event");
 const Queue = require("../models/queue");
 const EventHistory = require("../models/eventHistory");
 const { authMiddleware, roleMiddleware } = require("../middleware/auth");
-const { purgeExpiredEvents, isEventExpired } = require("../services/eventCleanupService");
+const { isEventExpired } = require("../services/eventCleanupService");
 
 // =======================
 // CREATE EVENT (Admin)
@@ -154,57 +154,68 @@ router.post(
 // =======================
 router.get("/", async (req, res) => {
   try {
-    try {
-      await purgeExpiredEvents();
-    } catch (cleanupError) {
-      console.error("Expired events cleanup error:", cleanupError.message);
+    const events = await Event.find().sort({ createdAt: -1 }).lean();
+    const activeEvents = events.filter((event) => !isEventExpired(event));
+    const eventIds = activeEvents.map((event) => String(event._id));
+
+    let queueStatsByEventId = new Map();
+    if (eventIds.length > 0) {
+      const queueStats = await Queue.aggregate([
+        { $match: { eventId: { $in: eventIds } } },
+        {
+          $group: {
+            _id: "$eventId",
+            joinedTokens: {
+              $sum: {
+                $cond: [{ $ne: ["$status", "cancelled"] }, 1, 0]
+              }
+            },
+            inProgressTokens: {
+              $sum: {
+                $cond: [{ $eq: ["$status", "serving"] }, 1, 0]
+              }
+            },
+            activeQueueCount: {
+              $sum: {
+                $cond: [{ $in: ["$status", ["waiting", "serving"]] }, 1, 0]
+              }
+            }
+          }
+        }
+      ]);
+
+      queueStatsByEventId = new Map(
+        queueStats.map((stat) => [String(stat._id), stat])
+      );
     }
 
-    const events = await Event.find().sort({ createdAt: -1 });
-    const activeEvents = events.filter((event) => !isEventExpired(event));
+    const eventsWithAvailability = activeEvents.map((event) => {
+      const eventId = String(event._id);
+      const stats = queueStatsByEventId.get(eventId) || {};
+      const joinedTokens = Number(stats.joinedTokens) || 0;
+      const inProgressTokens = Number(stats.inProgressTokens) || 0;
+      const activeQueueCount = Number(stats.activeQueueCount) || 0;
+      const totalTokens = Number(event.totalTokens) || 0;
+      const availableTokens = Math.max(totalTokens - joinedTokens, 0);
+      const isFull = availableTokens <= 0;
 
-    const eventsWithAvailability = await Promise.all(
-      activeEvents.map(async (event) => {
-        const eventId = String(event._id);
+      let computedStatus = "Upcoming";
+      if (inProgressTokens > 0) {
+        computedStatus = "Ongoing";
+      } else if (isFull) {
+        computedStatus = "Full";
+      }
 
-        const joinedTokens = await Queue.countDocuments({
-          eventId,
-          status: { $ne: "cancelled" }
-        });
-
-        const inProgressTokens = await Queue.countDocuments({
-          eventId,
-          status: "serving"
-        });
-
-        // Count active (waiting + serving) queue entries
-        const activeQueueCount = await Queue.countDocuments({
-          eventId,
-          status: { $in: ["waiting", "serving"] }
-        });
-
-        const totalTokens = Number(event.totalTokens) || 0;
-        const availableTokens = Math.max(totalTokens - joinedTokens, 0);
-        const isFull = availableTokens <= 0;
-
-        let computedStatus = "Upcoming";
-        if (inProgressTokens > 0) {
-          computedStatus = "Ongoing";
-        } else if (isFull) {
-          computedStatus = "Full";
-        }
-
-        return {
-          ...event.toObject(),
-          id: String(event._id),
-          status: computedStatus,
-          joinedTokens,
-          availableTokens,
-          isFull,
-          activeQueueCount
-        };
-      })
-    );
+      return {
+        ...event,
+        id: eventId,
+        status: computedStatus,
+        joinedTokens,
+        availableTokens,
+        isFull,
+        activeQueueCount
+      };
+    });
 
     res.json(eventsWithAvailability);
 

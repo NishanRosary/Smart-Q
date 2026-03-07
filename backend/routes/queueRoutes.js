@@ -72,8 +72,8 @@ const getPredictions = async (positionInQueue, service) => {
 
 const broadcastQueueUpdate = async (io) => {
   try {
-    const waitingQueue = await Queue.find({ status: "waiting" }).sort({ tokenNumber: 1 });
-    const servingQueue = await Queue.find({ status: "serving" });
+    const waitingQueue = await Queue.find({ status: "waiting" }).sort({ tokenNumber: 1 }).lean();
+    const servingQueue = await Queue.find({ status: "serving" }).lean();
     const totalWaiting = waitingQueue.length;
     const crowdLevel = getCrowdLevel(totalWaiting);
 
@@ -295,7 +295,7 @@ router.get("/status/:tokenNumber", async (req, res) => {
 // =======================
 router.get("/", authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    const queue = await Queue.find().sort({ tokenNumber: 1 });
+    const queue = await Queue.find().sort({ tokenNumber: 1 }).lean();
     res.json(queue);
   } catch (error) {
     res.status(500).json({ message: error.message });

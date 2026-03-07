@@ -1,5 +1,6 @@
 const express = require("express");
 const http = require("http");
+const mongoose = require("mongoose");
 const cors = require("cors");
 const { Server } = require("socket.io");
 const helmet = require("helmet");
@@ -26,10 +27,6 @@ const { purgeExpiredEvents } = require("./services/eventCleanupService");
 
 const app = express();
 const server = http.createServer(app);
-
-/* ================= DATABASE ================= */
-
-connectDB();
 
 /* ================= TRUST PROXY ================= */
 
@@ -216,17 +213,12 @@ io.on("connection", (socket) => {
 
 });
 
-/* ================= SERVER START ================= */
-
-const PORT = process.env.PORT || 5000;
-
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
 /* ================= EVENT CLEANUP JOB ================= */
 
 const runExpiredEventCleanup = async () => {
+  if (mongoose.connection.readyState !== 1) {
+    return;
+  }
 
   try {
 
@@ -247,10 +239,27 @@ const runExpiredEventCleanup = async () => {
   }
 
 };
+/* ================= SERVER START ================= */
 
-runExpiredEventCleanup();
+const PORT = process.env.PORT || 5000;
 
-setInterval(runExpiredEventCleanup, 60 * 60 * 1000);
+const startServer = async () => {
+  try {
+    await connectDB();
+
+    server.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+
+    await runExpiredEventCleanup();
+    setInterval(runExpiredEventCleanup, 60 * 60 * 1000);
+  } catch (error) {
+    console.error("Startup failed:", error.message);
+    process.exit(1);
+  }
+};
+
+startServer();
 
 /* ================= PROCESS ERROR HANDLING ================= */
 

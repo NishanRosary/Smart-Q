@@ -16,14 +16,13 @@ const Analytics = ({ onNavigate, goBack, currentPage }) => {
 
   useEffect(() => {
     const fetchAnalytics = async () => {
-      try {
-        const getAuthConfig = () => ({
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
+      const getAuthConfig = () => ({
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
 
-        // Fetch queue data
+      try {
         const queueRes = await axios.get('http://localhost:5000/api/queue', getAuthConfig());
         const queues = queueRes.data || [];
 
@@ -54,16 +53,17 @@ const Analytics = ({ onNavigate, goBack, currentPage }) => {
           servicePopularity: servicePopularity.length > 0 ? servicePopularity : []
         });
 
-        // Fetch predictions
-        try {
-          const predsRes = await axios.get('http://localhost:5000/api/predictions', getAuthConfig());
-          setPredictions(predsRes.data || { peakTimes: [] });
-          setMlModelAccuracy(predsRes?.data?.mlModelStats?.modelAccuracy ?? null);
-        } catch (err) {
-          console.warn('Could not fetch predictions:', err);
-          setPredictions({ peakTimes: [] });
-          setMlModelAccuracy(null);
-        }
+        // Fetch predictions in background to avoid blocking initial render.
+        axios.get('http://localhost:5000/api/predictions', getAuthConfig())
+          .then((predsRes) => {
+            setPredictions(predsRes.data || { peakTimes: [] });
+            setMlModelAccuracy(predsRes?.data?.mlModelStats?.modelAccuracy ?? null);
+          })
+          .catch((err) => {
+            console.warn('Could not fetch predictions:', err);
+            setPredictions({ peakTimes: [] });
+            setMlModelAccuracy(null);
+          });
       } catch (error) {
         console.error('Error fetching analytics:', error);
       } finally {

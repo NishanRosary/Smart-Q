@@ -3,6 +3,8 @@ const { isPredictionBundle } = require("../../src/utils/mlValidation");
 const logger = require("../../src/utils/mlLogger");
 
 const ML_SERVICE_URL = process.env.ML_SERVICE_URL || "http://localhost:5001";
+const ML_HEALTH_TIMEOUT_MS = Number(process.env.ML_HEALTH_TIMEOUT_MS || 800);
+const ML_HEALTH_CACHE_TTL_MS = Number(process.env.ML_HEALTH_CACHE_TTL_MS || 15000);
 
 const PEAK_HIGH_THRESHOLD = 25;
 const PEAK_MEDIUM_THRESHOLD = 12;
@@ -19,9 +21,29 @@ const mapBestTimeScore = (queueLength, waitingTime) => {
   return Math.max(0, Math.min(100, 100 - penalty));
 };
 
+let cachedHealth = null;
+let cachedHealthAt = 0;
+
 const getHealth = async () => {
-  const health = await getMLHealth({ mlServiceUrl: ML_SERVICE_URL, timeoutMs: 3000 });
-  return health && typeof health === "object" ? health : null;
+  const now = Date.now();
+  if (cachedHealth && now - cachedHealthAt < ML_HEALTH_CACHE_TTL_MS) {
+    return cachedHealth;
+  }
+
+  const health = await getMLHealth({
+    mlServiceUrl: ML_SERVICE_URL,
+    timeoutMs: ML_HEALTH_TIMEOUT_MS
+  });
+
+  cachedHealth = health && typeof health === "object" ? health : null;
+  cachedHealthAt = now;
+
+  return cachedHealth;
+};
+
+const clearHealthCache = () => {
+  cachedHealth = null;
+  cachedHealthAt = 0;
 };
 
 const getPredictionsIfTrained = async ({ service = "General", positionInQueue = 1, totalWaiting = 0 } = {}) => {
@@ -121,6 +143,7 @@ const getPredictionsIfTrained = async ({ service = "General", positionInQueue = 
     return result;
   } catch (error) {
     logger.error("ML prediction build failed", { message: error.message });
+    clearHealthCache();
     return null;
   }
 };
