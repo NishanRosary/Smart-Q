@@ -9,7 +9,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -37,6 +36,7 @@ jobs:
           echo "ACCESS_TOKEN_EXPIRE=15m" >> backend/.env
           echo "REFRESH_TOKEN_EXPIRE=7d" >> backend/.env
           echo "REFRESH_TOKEN_DAYS=7" >> backend/.env
+          echo "ML_HEALTH_URL=http://127.0.0.1:5001/health" >> backend/.env
 
       - name: Install ML dependencies
         run: |
@@ -49,18 +49,15 @@ jobs:
           cd backend/ml
           nohup python ml_service.py 5001 > ml.log 2>&1 &
           sleep 8
-          echo "===== ML SERVICE LOG ====="
           cat ml.log || true
 
       - name: Wait for ML service
         run: |
-          echo "Waiting for ML service..."
           for i in {1..30}; do
             if curl -s http://127.0.0.1:5001/health > /dev/null; then
               echo "ML service ready"
               exit 0
             fi
-            echo "Waiting..."
             sleep 2
           done
           echo "ML service failed"
@@ -70,7 +67,7 @@ jobs:
       - name: Run backend tests
         run: |
           cd backend
-          npm test
+          ML_HEALTH_URL=http://127.0.0.1:5001/health npm test
 
       - name: Install frontend dependencies
         run: |
