@@ -5,12 +5,10 @@ on:
     branches: [ main ]
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -49,14 +47,16 @@ jobs:
         run: |
           cd backend/ml
           nohup python ml_service.py > ml.log 2>&1 &
-          echo "ML service starting..."
+          sleep 5
+          echo "===== ML LOG ====="
+          cat ml.log || true
 
       - name: Wait for ML service
         run: |
-          echo "Waiting for ML service on port 5001..."
+          echo "Waiting for ML service..."
           for i in {1..30}; do
-            if curl -s http://localhost:5001/health > /dev/null; then
-              echo "ML service is ready"
+            if curl -s http://127.0.0.1:5001/health > /dev/null; then
+              echo "ML service ready"
               exit 0
             fi
             echo "Waiting..."
