@@ -48,7 +48,7 @@ jobs:
       - name: Start ML service
         run: |
           cd backend/ml
-          nohup python app.py > ml.log 2>&1 &
+          nohup python ml_service.py > ml.log 2>&1 &
           echo "ML service starting..."
 
       - name: Wait for ML service
