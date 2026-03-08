@@ -49,6 +49,8 @@ jobs:
           cd backend/ml
           nohup python app.py > ml.log 2>&1 &
           sleep 5
+          echo "----- ML SERVICE LOG -----"
+          cat ml.log || true
 
       - name: Verify ML service is running
         run: |
