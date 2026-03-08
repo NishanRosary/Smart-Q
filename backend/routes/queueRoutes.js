@@ -10,6 +10,10 @@ const mlConfig = require("../../src/config/mlConfig");
 const { callMLInference } = require("../../src/services/mlSafeWrapper");
 
 const ML_SERVICE_URL = process.env.ML_SERVICE_URL || "http://localhost:5001";
+const normalizeService = (value) => String(value || "").trim();
+const normalizeSector = (value) => String(value || "").trim();
+const getTokenScope = (item) =>
+  normalizeSector(item?.organizationType) || normalizeService(item?.service);
 
 // =======================
 // ML NOTIFICATION HELPER
@@ -62,9 +66,13 @@ const getCrowdLevel = (waitingCount) => {
 };
 
 const getPredictions = async (positionInQueue, service) => {
-  const totalWaiting = await Queue.countDocuments({ status: "waiting" });
+  const normalizedService = normalizeService(service);
+  const totalWaiting = await Queue.countDocuments({
+    status: "waiting",
+    ...(normalizedService ? { service: normalizedService } : {})
+  });
   return getPredictionsIfTrained({
-    service,
+    service: normalizedService || service,
     positionInQueue: Math.max(1, Number(positionInQueue || 1)),
     totalWaiting
   });
@@ -72,21 +80,29 @@ const getPredictions = async (positionInQueue, service) => {
 
 const broadcastQueueUpdate = async (io) => {
   try {
-    const waitingQueue = await Queue.find({ status: "waiting" }).sort({ tokenNumber: 1 }).lean();
+    const waitingQueue = await Queue.find({ status: "waiting" }).sort({ organizationType: 1, tokenNumber: 1 }).lean();
     const servingQueue = await Queue.find({ status: "serving" }).lean();
-    const totalWaiting = waitingQueue.length;
-    const crowdLevel = getCrowdLevel(totalWaiting);
+    const serviceTotals = waitingQueue.reduce((acc, item) => {
+      const key = getTokenScope(item);
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+    const servicePositions = {};
 
-    const queueStatus = waitingQueue.map((item, index) => {
-      const position = index + 1;
+    const queueStatus = waitingQueue.map((item) => {
+      const service = normalizeService(item.service);
+      const scope = getTokenScope(item);
+      servicePositions[scope] = (servicePositions[scope] || 0) + 1;
+      const position = servicePositions[scope];
+      const totalWaiting = serviceTotals[scope] || 0;
       return {
         _id: item._id,
         tokenNumber: item.tokenNumber,
-        service: item.service,
+        service,
         status: item.status,
         position,
         estimatedWaitTime: calculateWaitTime(position),
-        crowdLevel,
+        crowdLevel: getCrowdLevel(totalWaiting),
         totalWaiting,
         joinedAt: item.createdAt
       };
@@ -95,8 +111,6 @@ const broadcastQueueUpdate = async (io) => {
     io.emit("queue:update", {
       queue: queueStatus,
       serving: servingQueue,
-      totalWaiting,
-      crowdLevel,
       timestamp: new Date()
     });
     return true;
@@ -124,7 +138,9 @@ router.post("/join", async (req, res) => {
       organizationType
     } = req.body;
 
-    if (!service || !eventId) {
+    const normalizedService = normalizeService(service);
+    const normalizedSector = normalizeSector(organizationType);
+    if (!normalizedService || !eventId) {
       return res.status(400).json({ message: "Service and eventId are required" });
     }
 
@@ -149,38 +165,43 @@ router.post("/join", async (req, res) => {
       return res.status(400).json({ message: "This event queue is full" });
     }
 
-    const count = await Queue.countDocuments();
-    const tokenNumber = count + 1;
+    const tokenScope = normalizedSector || normalizeSector(event.organizationType) || normalizedService;
+    const lastToken = await Queue.findOne({ organizationType: tokenScope })
+      .sort({ tokenNumber: -1 })
+      .select("tokenNumber")
+      .lean();
+    const tokenNumber = Number(lastToken?.tokenNumber || 0) + 1;
 
     const newQueue = new Queue({
       tokenNumber,
-      service,
+      service: normalizedService,
       guestName: guestName || null,
       guestMobile: guestMobile || null,
       guestEmail: guestEmail || email || null,
       eventId: String(eventId),
       eventName: eventName || event.title || null,
       organizationName: organizationName || event.organizationName || null,
-      organizationType: organizationType || event.organizationType || null
+      organizationType: tokenScope
     });
 
     await newQueue.save();
 
     const waitingAhead = await Queue.countDocuments({
       status: "waiting",
+      organizationType: tokenScope,
       tokenNumber: { $lt: tokenNumber }
     });
     const position = waitingAhead + 1;
-    const totalWaiting = await Queue.countDocuments({ status: "waiting" });
+    const totalWaiting = await Queue.countDocuments({ status: "waiting", organizationType: tokenScope });
     const estimatedWaitTime = calculateWaitTime(position);
     const crowdLevel = getCrowdLevel(totalWaiting);
 
-    const predictions = await getPredictions(position, service);
+    const predictions = await getPredictions(position, normalizedService);
 
     // ── NOTIFY ML SERVICE AUTOMATICALLY ──
     await notifyMLUserJoined({
       tokenNumber,
-      service,
+      service: normalizedService,
       position,
       totalWaiting,
       estimatedWaitTime
@@ -193,7 +214,7 @@ router.post("/join", async (req, res) => {
         toEmail: recipientEmail,
         userName: guestName || "User",
         tokenNumber,
-        serviceName: service,
+        serviceName: normalizedService,
         estimatedWaitTime
       }).catch((mailError) => {
         console.error("Queue confirmation email failed:", mailError.message);
@@ -207,7 +228,7 @@ router.post("/join", async (req, res) => {
 
     res.status(201).json({
       tokenNumber,
-      service,
+      service: normalizedService,
       position,
       totalWaiting,
       estimatedWaitTime,
@@ -216,8 +237,15 @@ router.post("/join", async (req, res) => {
       queueId: newQueue._id
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to join queue" });
+    console.error("Join queue error:", error);
+    if (error?.code === 11000 && (error?.keyPattern?.tokenNumber || error?.keyPattern?.organizationType)) {
+      return res.status(409).json({
+        message: "Token generation conflict. Please try joining again."
+      });
+    }
+    return res.status(500).json({
+      message: error?.message || "Failed to join queue"
+    });
   }
 });
 
@@ -228,17 +256,34 @@ router.get("/status/:tokenNumber", async (req, res) => {
   try {
     const rawToken = String(req.params.tokenNumber || "").trim();
     const numericToken = rawToken.replace(/\D/g, "");
+    const queryService = normalizeService(req.query.service);
 
     if (!numericToken) {
       return res.status(400).json({ message: "Invalid token number format" });
     }
 
     const tokenNum = Number.parseInt(numericToken, 10);
-    const myEntry = await Queue.findOne({ tokenNumber: tokenNum });
+    const lookupQuery = { tokenNumber: tokenNum };
+    if (queryService) {
+      lookupQuery.service = queryService;
+    }
 
-    if (!myEntry) {
+    const matches = await Queue.find(lookupQuery).sort({ createdAt: -1 }).limit(2).lean();
+
+    if (matches.length === 0) {
       return res.status(404).json({ message: "Token not found" });
     }
+
+    if (!queryService && matches.length > 1) {
+      return res.status(400).json({
+        message: "Token exists in multiple services. Please provide service as query param."
+      });
+    }
+
+    const myEntry = matches[0];
+
+    const scopeForStatus = getTokenScope(myEntry);
+    const waitingFilter = { status: "waiting", organizationType: scopeForStatus };
 
     if (myEntry.status === "completed") {
       return res.json({
@@ -248,7 +293,7 @@ router.get("/status/:tokenNumber", async (req, res) => {
         position: 0,
         estimatedWaitTime: 0,
         crowdLevel: "Low",
-        totalWaiting: await Queue.countDocuments({ status: "waiting" })
+        totalWaiting: await Queue.countDocuments(waitingFilter)
       });
     }
 
@@ -259,17 +304,18 @@ router.get("/status/:tokenNumber", async (req, res) => {
         status: "serving",
         position: 0,
         estimatedWaitTime: 0,
-        crowdLevel: getCrowdLevel(await Queue.countDocuments({ status: "waiting" })),
-        totalWaiting: await Queue.countDocuments({ status: "waiting" })
+        crowdLevel: getCrowdLevel(await Queue.countDocuments(waitingFilter)),
+        totalWaiting: await Queue.countDocuments(waitingFilter)
       });
     }
 
     const waitingAhead = await Queue.countDocuments({
       status: "waiting",
+      organizationType: scopeForStatus,
       tokenNumber: { $lt: tokenNum }
     });
     const position = waitingAhead + 1;
-    const totalWaiting = await Queue.countDocuments({ status: "waiting" });
+    const totalWaiting = await Queue.countDocuments(waitingFilter);
     const estimatedWaitTime = calculateWaitTime(position);
     const crowdLevel = getCrowdLevel(totalWaiting);
     const predictions = await getPredictions(position, myEntry.service);
@@ -295,7 +341,7 @@ router.get("/status/:tokenNumber", async (req, res) => {
 // =======================
 router.get("/", authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    const queue = await Queue.find().sort({ tokenNumber: 1 }).lean();
+    const queue = await Queue.find().sort({ organizationType: 1, tokenNumber: 1 }).lean();
     res.json(queue);
   } catch (error) {
     res.status(500).json({ message: error.message });

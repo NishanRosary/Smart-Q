@@ -155,7 +155,11 @@ router.post("/predict", async (req, res) => {
 
         let queueItem = null;
         if (normalizedToken !== null) {
-          queueItem = await Queue.findOne({ tokenNumber: normalizedToken });
+          queueItem = await Queue.findOne(
+            normalizedService
+              ? { tokenNumber: normalizedToken, service: normalizedService }
+              : { tokenNumber: normalizedToken }
+          );
         }
 
         if (!queueItem && !normalizedService) {
@@ -199,7 +203,11 @@ router.post("/predict", async (req, res) => {
 
         let queueItem = null;
         if (normalizedToken !== null) {
-          queueItem = await Queue.findOne({ tokenNumber: normalizedToken });
+          queueItem = await Queue.findOne(
+            normalizedService
+              ? { tokenNumber: normalizedToken, service: normalizedService }
+              : { tokenNumber: normalizedToken }
+          );
         }
 
         features = prepareFeatures(

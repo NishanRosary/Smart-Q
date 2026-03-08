@@ -72,7 +72,7 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
 
     setIsRefreshing(true);
     try {
-      const data = await getQueueStatus(normalizedToken);
+      const data = await getQueueStatus(normalizedToken, activeService);
       setQueueStatus({
         position: data.position,
         estimatedWaitTime: data.estimatedWaitTime,
@@ -89,7 +89,7 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
     } finally {
       setIsRefreshing(false);
     }
-  }, [activeToken]);
+  }, [activeToken, activeService]);
 
   // Monitor localStorage for token changes
   useEffect(() => {
@@ -130,7 +130,9 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
       // Find my entry in the updated queue
       const tokenNum = normalizeTokenNumber(activeToken);
       if (!tokenNum) return;
-      const myEntry = data.queue.find(q => q.tokenNumber === tokenNum);
+      const myEntry = data.queue.find(
+        (q) => q.tokenNumber === tokenNum && (!activeService || q.service === activeService)
+      );
 
       if (myEntry) {
         setQueueStatus({
@@ -144,7 +146,9 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
         });
       } else {
         // Token might be completed or serving
-        const servingEntry = data.serving?.find(q => q.tokenNumber === tokenNum);
+        const servingEntry = data.serving?.find(
+          (q) => q.tokenNumber === tokenNum && (!activeService || q.service === activeService)
+        );
         if (servingEntry) {
           setQueueStatus(prev => ({
             ...prev,
@@ -171,7 +175,7 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
       disconnectSocket();
       setIsLive(false);
     };
-  }, [activeToken, fetchQueueStatus]);
+  }, [activeToken, activeService, fetchQueueStatus]);
 
   const getCrowdLevelColor = (level) => {
     switch (level) {

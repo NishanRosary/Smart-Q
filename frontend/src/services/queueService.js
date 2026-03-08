@@ -58,10 +58,10 @@ export const joinQueue = async (service, guestName, guestMobile, eventId, eventN
 };
 
 // API: Get my queue status
-export const getQueueStatus = async (tokenNumber) => {
+export const getQueueStatus = async (tokenNumber, service) => {
     const safeToken = encodeURIComponent(tokenNumber);
     const response = await axios.get(`${API_BASE_URL}/api/queue/status/${safeToken}`, {
-        params: { _ts: Date.now() },
+        params: { _ts: Date.now(), ...(service ? { service } : {}) },
         headers: {
             'Cache-Control': 'no-cache',
             Pragma: 'no-cache'
