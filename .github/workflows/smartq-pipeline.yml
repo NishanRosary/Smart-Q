@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -27,7 +28,7 @@ jobs:
           cd backend
           npm install
 
-      - name: Create .env for CI
+      - name: Create CI environment variables
         run: |
           echo "MONGO_URI=${{ secrets.MONGO_URI }}" >> backend/.env
           echo "PORT=5000" >> backend/.env
@@ -36,7 +37,6 @@ jobs:
           echo "ACCESS_TOKEN_EXPIRE=15m" >> backend/.env
           echo "REFRESH_TOKEN_EXPIRE=7d" >> backend/.env
           echo "REFRESH_TOKEN_DAYS=7" >> backend/.env
-          echo "ML_HEALTH_URL=http://127.0.0.1:5001/health" >> backend/.env
 
       - name: Install ML dependencies
         run: |
@@ -48,19 +48,22 @@ jobs:
         run: |
           cd backend/ml
           nohup python ml_service.py 5001 > ml.log 2>&1 &
-          sleep 8
+          sleep 10
+          echo "===== ML SERVICE LOG ====="
           cat ml.log || true
 
-      - name: Wait for ML service
+      - name: Wait for ML API
         run: |
+          echo "Waiting for ML API..."
           for i in {1..30}; do
             if curl -s http://127.0.0.1:5001/health > /dev/null; then
-              echo "ML service ready"
+              echo "ML API is ready"
               exit 0
             fi
+            echo "Waiting..."
             sleep 2
           done
-          echo "ML service failed"
+          echo "ML service failed to start"
           cat backend/ml/ml.log
           exit 1
 
