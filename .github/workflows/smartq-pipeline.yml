@@ -39,7 +39,7 @@ jobs:
           echo "REFRESH_TOKEN_EXPIRE=7d" >> backend/.env
           echo "REFRESH_TOKEN_DAYS=7" >> backend/.env
 
-      - name: Install ML service dependencies
+      - name: Install ML dependencies
         run: |
           cd backend/ml
           pip install -r requirements.txt
@@ -47,10 +47,12 @@ jobs:
       - name: Start ML service
         run: |
           cd backend/ml
-          python app.py &
-          
-      - name: Wait for ML service to start
-        run: sleep 10
+          nohup python app.py > ml.log 2>&1 &
+          sleep 5
+
+      - name: Verify ML service is running
+        run: |
+          curl --retry 10 --retry-delay 3 http://localhost:5001/health
 
       - name: Run backend tests
         run: |
