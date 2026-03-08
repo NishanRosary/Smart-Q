@@ -5,10 +5,12 @@ on:
     branches: [ main ]
 
 jobs:
+
   build:
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -46,8 +48,8 @@ jobs:
       - name: Start ML service
         run: |
           cd backend/ml
-          nohup python ml_service.py > ml.log 2>&1 &
-          sleep 5
+          nohup python ml_service.py --host 0.0.0.0 --port 5001 > ml.log 2>&1 &
+          sleep 6
           echo "===== ML LOG ====="
           cat ml.log || true
 
@@ -62,7 +64,7 @@ jobs:
             echo "Waiting..."
             sleep 2
           done
-          echo "ML service failed to start"
+          echo "ML service failed"
           cat backend/ml/ml.log
           exit 1
 
