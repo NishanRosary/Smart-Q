@@ -42,6 +42,7 @@ jobs:
       - name: Install ML dependencies
         run: |
           cd backend/ml
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Start ML service
@@ -49,12 +50,17 @@ jobs:
           cd backend/ml
           nohup python app.py > ml.log 2>&1 &
           sleep 5
-          echo "----- ML SERVICE LOG -----"
+          echo "===== ML SERVER LOG ====="
           cat ml.log || true
 
-      - name: Verify ML service is running
+      - name: Check if port 5001 opened
         run: |
-          curl --retry 10 --retry-delay 3 http://localhost:5001/health
+          echo "Checking open ports"
+          sudo ss -tulpn || true
+
+      - name: Verify ML health endpoint
+        run: |
+          curl --retry 10 --retry-delay 3 http://localhost:5001/health || true
 
       - name: Run backend tests
         run: |
