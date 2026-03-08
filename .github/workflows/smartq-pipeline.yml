@@ -13,53 +13,46 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Node setup
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      # Python setup
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      # Backend dependencies
       - name: Install backend dependencies
         run: |
-          cd Smart-Q/backend
+          cd backend
           npm install
 
-      # Environment file for tests
       - name: Create .env for CI
         run: |
-          echo "MONGO_URI=${{ secrets.MONGO_URI }}" >> Smart-Q/backend/.env
-          echo "PORT=5000" >> Smart-Q/backend/.env
-          echo "JWT_ACCESS_SECRET=testsecret" >> Smart-Q/backend/.env
-          echo "JWT_REFRESH_SECRET=testsecret" >> Smart-Q/backend/.env
-          echo "ACCESS_TOKEN_EXPIRE=15m" >> Smart-Q/backend/.env
-          echo "REFRESH_TOKEN_EXPIRE=7d" >> Smart-Q/backend/.env
-          echo "REFRESH_TOKEN_DAYS=7" >> Smart-Q/backend/.env
+          echo "MONGO_URI=${{ secrets.MONGO_URI }}" >> backend/.env
+          echo "PORT=5000" >> backend/.env
+          echo "JWT_ACCESS_SECRET=testsecret" >> backend/.env
+          echo "JWT_REFRESH_SECRET=testsecret" >> backend/.env
+          echo "ACCESS_TOKEN_EXPIRE=15m" >> backend/.env
+          echo "REFRESH_TOKEN_EXPIRE=7d" >> backend/.env
+          echo "REFRESH_TOKEN_DAYS=7" >> backend/.env
 
-      # Install ML dependencies
       - name: Install ML dependencies
         run: |
-          cd Smart-Q/backend/ml
+          cd backend/ml
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Start ML service
       - name: Start ML service
         run: |
-          cd Smart-Q/backend/ml
+          cd backend/ml
           nohup python ml_service.py 5001 > ml.log 2>&1 &
           sleep 8
-          echo "===== ML LOG ====="
+          echo "===== ML SERVICE LOG ====="
           cat ml.log || true
 
-      # Wait for ML service
-      - name: Wait for ML API
+      - name: Wait for ML service
         run: |
           echo "Waiting for ML service..."
           for i in {1..30}; do
@@ -71,23 +64,20 @@ jobs:
             sleep 2
           done
           echo "ML service failed"
-          cat Smart-Q/backend/ml/ml.log
+          cat backend/ml/ml.log
           exit 1
 
-      # Run backend tests
       - name: Run backend tests
         run: |
-          cd Smart-Q/backend
+          cd backend
           npm test
 
-      # Install frontend dependencies
       - name: Install frontend dependencies
         run: |
-          cd Smart-Q/frontend
+          cd frontend
           npm install
 
-      # Build frontend
       - name: Build frontend
         run: |
-          cd Smart-Q/frontend
+          cd frontend
           npm run build
