@@ -37,7 +37,6 @@ jobs:
           echo "ACCESS_TOKEN_EXPIRE=15m" >> backend/.env
           echo "REFRESH_TOKEN_EXPIRE=7d" >> backend/.env
           echo "REFRESH_TOKEN_DAYS=7" >> backend/.env
-          echo "ML_HEALTH_URL=http://127.0.0.1:5001/health" >> backend/.env
 
       - name: Install ML dependencies
         run: |
@@ -49,27 +48,26 @@ jobs:
         run: |
           cd backend/ml
           nohup python ml_service.py 5001 > ml.log 2>&1 &
-          sleep 8
-          cat ml.log || true
+          echo "ML service starting..."
 
-      - name: Wait for ML API
+      - name: Wait for ML service
         run: |
-          echo "Waiting for ML API..."
-          for i in {1..30}; do
-            if curl -s http://127.0.0.1:5001/health > /dev/null; then
-              echo "ML service ready"
+          echo "Waiting for ML service..."
+          for i in {1..60}; do
+            if curl -s http://localhost:5001/health > /dev/null; then
+              echo "ML service is ready"
               exit 0
             fi
             sleep 2
           done
-          echo "ML service failed"
+          echo "ML service failed to start"
           cat backend/ml/ml.log
           exit 1
 
       - name: Run backend tests
         run: |
           cd backend
-          ML_HEALTH_URL=http://127.0.0.1:5001/health npm test
+          npm test
 
       - name: Install frontend dependencies
         run: |
