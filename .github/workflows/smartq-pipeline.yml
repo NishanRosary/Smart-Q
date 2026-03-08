@@ -49,18 +49,22 @@ jobs:
         run: |
           cd backend/ml
           nohup python app.py > ml.log 2>&1 &
-          sleep 5
-          echo "===== ML SERVER LOG ====="
-          cat ml.log || true
+          echo "ML service starting..."
 
-      - name: Check if port 5001 opened
+      - name: Wait for ML service
         run: |
-          echo "Checking open ports"
-          sudo ss -tulpn || true
-
-      - name: Verify ML health endpoint
-        run: |
-          curl --retry 10 --retry-delay 3 http://localhost:5001/health || true
+          echo "Waiting for ML service on port 5001..."
+          for i in {1..30}; do
+            if curl -s http://localhost:5001/health > /dev/null; then
+              echo "ML service is ready"
+              exit 0
+            fi
+            echo "Waiting..."
+            sleep 2
+          done
+          echo "ML service failed to start"
+          cat backend/ml/ml.log
+          exit 1
 
       - name: Run backend tests
         run: |
