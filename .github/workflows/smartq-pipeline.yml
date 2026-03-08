@@ -19,6 +19,11 @@ jobs:
         with:
           node-version: 18
 
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10
+
       - name: Install backend dependencies
         run: |
           cd backend
@@ -33,6 +38,19 @@ jobs:
           echo "ACCESS_TOKEN_EXPIRE=15m" >> backend/.env
           echo "REFRESH_TOKEN_EXPIRE=7d" >> backend/.env
           echo "REFRESH_TOKEN_DAYS=7" >> backend/.env
+
+      - name: Install ML service dependencies
+        run: |
+          cd backend/ml
+          pip install -r requirements.txt
+
+      - name: Start ML service
+        run: |
+          cd backend/ml
+          python app.py &
+          
+      - name: Wait for ML service to start
+        run: sleep 10
 
       - name: Run backend tests
         run: |
