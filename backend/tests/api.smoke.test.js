@@ -10,8 +10,8 @@ dotenv.config({ path: path.join(__dirname, "..", ".env") });
 
 const BACKEND_DIR = path.join(__dirname, "..");
 const ML_DIR = path.join(BACKEND_DIR, "ml");
-const BASE_URL = "http://localhost:5050";
-const ML_HEALTH_URL = "http://localhost:5001/health";
+const BASE_URL = "http://127.0.0.1:5050";
+const ML_HEALTH_URL = "http://127.0.0.1:5001/health";
 
 let backendProc = null;
 let mlProc = null;
