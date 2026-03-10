@@ -18,6 +18,7 @@
     "babel-loader": "^9.1.0",
     "css-loader": "^6.8.0",
     "html-webpack-plugin": "^5.5.0",
+    "playwright": "^1.58.2",
     "style-loader": "^3.3.0",
     "webpack": "^5.105.4",
     "webpack-cli": "^5.1.0",
@@ -26,6 +27,7 @@
   "scripts": {
     "start": "webpack serve --mode development",
     "build": "webpack --mode production",
-    "test": "node ./tests/run-sanity.mjs"
+    "test": "node ./tests/run-sanity.mjs",
+    "test:ui": "npm.cmd run build && node ./tests/run-browser-ui.mjs"
   }
 }
