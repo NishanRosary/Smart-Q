@@ -488,95 +488,102 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
             <span className="badge badge-green">{events.length} Events</span>
           </div>
 
-          <table className="events-table">
-            <thead>
-              <tr>
-                <th>Organization</th>
-                <th>Name</th>
-                <th>Event Title</th>
-                <th>Start Date</th>
-                <th>End Date</th>
-                <th>Start Time</th>
-                <th>End Time</th>
-                <th>Location</th>
-                <th>Total Tokens</th>
-                <th>Available</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {events.map(event => (
-                <tr key={event.id}>
-                  {(() => {
-                    const startDate = event.startDate || event.date;
-                    const endDate = event.endDate || event.startDate || event.date;
-                    const [legacyStartTime, legacyEndTime] = String(event.time || '').includes('-')
-                      ? String(event.time).split('-').map((t) => t.trim())
-                      : [event.time, event.time];
-                    const startTime = event.startTime || legacyStartTime;
-                    const endTime = event.endTime || legacyEndTime;
-                    const canComplete = event.isFull && (event.activeQueueCount === 0);
-                    const completeTooltip = !event.isFull
-                      ? 'Tokens are still available. All tokens must be used first.'
-                      : event.activeQueueCount > 0
-                        ? 'Queue has active entries (waiting/serving). All must be completed or cancelled.'
-                        : 'Mark this event as completed';
-                    return (
-                      <>
-                        <td>{event.organizationType}</td>
-                        <td>{event.organizationName || '-'}</td>
-                        <td style={{ fontWeight: 600 }}>{event.title}</td>
-                        <td>{startDate ? new Date(startDate).toLocaleDateString() : '-'}</td>
-                        <td>{endDate ? new Date(endDate).toLocaleDateString() : '-'}</td>
-                        <td>{formatTime(startTime)}</td>
-                        <td>{formatTime(endTime)}</td>
-                        <td>{event.location}</td>
-                        <td>{event.totalTokens ?? '-'}</td>
-                        <td>{event.availableTokens ?? '-'}</td>
-                        <td>
-                          <span className={`badge ${event.status === 'Upcoming' ? 'badge-yellow' :
-                            event.status === 'Ongoing' ? 'badge-green' : 'badge-red'
-                            }`}>
-                            {event.status}
-                          </span>
-                        </td>
-                        <td>
-                          <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <button
-                              type="button"
-                              className="btn-secondary"
-                              onClick={() => handleCompleteEvent(event.id)}
-                              disabled={!canComplete || completingEventId === event.id || deletingEventId === event.id}
-                              title={completeTooltip}
-                              style={{
-                                color: canComplete ? '#059669' : '#9CA3AF',
-                                borderColor: canComplete ? '#A7F3D0' : '#E5E7EB',
-                                fontSize: '0.85rem',
-                                cursor: canComplete ? 'pointer' : 'not-allowed',
-                                opacity: canComplete ? 1 : 0.6
-                              }}
-                            >
-                              {completingEventId === event.id ? 'Completing...' : 'Complete'}
-                            </button>
-                            <button
-                              type="button"
-                              className="btn-secondary"
-                              onClick={() => handleDeleteEvent(event.id)}
-                              disabled={deletingEventId === event.id || completingEventId === event.id}
-                              style={{ color: '#DC2626', borderColor: '#FCA5A5', fontSize: '0.85rem' }}
-                            >
-                              {deletingEventId === event.id ? 'Deleting...' : 'Delete'}
-                            </button>
-                          </div>
-                        </td>
-                      </>
-                    );
-                  })()}
+          <div className="events-table-wrapper">
+            <table className="events-table">
+              <thead>
+                <tr>
+                  <th>Organization</th>
+                  <th>Event</th>
+                  <th>Schedule</th>
+                  <th>Location</th>
+                  <th>Tokens</th>
+                  <th>Status</th>
+                  <th>Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {events.map(event => (
+                  <tr key={event.id}>
+                    {(() => {
+                      const startDate = event.startDate || event.date;
+                      const endDate = event.endDate || event.startDate || event.date;
+                      const [legacyStartTime, legacyEndTime] = String(event.time || '').includes('-')
+                        ? String(event.time).split('-').map((t) => t.trim())
+                        : [event.time, event.time];
+                      const startTime = event.startTime || legacyStartTime;
+                      const endTime = event.endTime || legacyEndTime;
+                      const canComplete = event.isFull && (event.activeQueueCount === 0);
+                      const completeTooltip = !event.isFull
+                        ? 'Tokens are still available. All tokens must be used first.'
+                        : event.activeQueueCount > 0
+                          ? 'Queue has active entries (waiting/serving). All must be completed or cancelled.'
+                          : 'Mark this event as completed';
+                      return (
+                        <>
+                          <td>
+                            <div className="events-table-primary-cell">{event.organizationType}</div>
+                            <div className="events-table-secondary-cell">{event.organizationName || '-'}</div>
+                          </td>
+                          <td>
+                            <div className="events-table-primary-cell">{event.title}</div>
+                          </td>
+                          <td>
+                            <div className="events-table-primary-cell">
+                              {startDate ? new Date(startDate).toLocaleDateString() : '-'} to {endDate ? new Date(endDate).toLocaleDateString() : '-'}
+                            </div>
+                            <div className="events-table-secondary-cell">
+                              {formatTime(startTime)} to {formatTime(endTime)}
+                            </div>
+                          </td>
+                          <td>{event.location}</td>
+                          <td>
+                            <div className="events-table-primary-cell">{event.totalTokens ?? '-'}</div>
+                            <div className="events-table-secondary-cell">Available: {event.availableTokens ?? '-'}</div>
+                          </td>
+                          <td>
+                            <span className={`badge ${event.status === 'Upcoming' ? 'badge-yellow' :
+                              event.status === 'Ongoing' ? 'badge-green' : 'badge-red'
+                              }`}>
+                              {event.status}
+                            </span>
+                          </td>
+                          <td>
+                            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                              <button
+                                type="button"
+                                className="btn-secondary"
+                                onClick={() => handleCompleteEvent(event.id)}
+                                disabled={!canComplete || completingEventId === event.id || deletingEventId === event.id}
+                                title={completeTooltip}
+                                style={{
+                                  color: canComplete ? '#059669' : '#9CA3AF',
+                                  borderColor: canComplete ? '#A7F3D0' : '#E5E7EB',
+                                  fontSize: '0.85rem',
+                                  cursor: canComplete ? 'pointer' : 'not-allowed',
+                                  opacity: canComplete ? 1 : 0.6
+                                }}
+                              >
+                                {completingEventId === event.id ? 'Completing...' : 'Complete'}
+                              </button>
+                              <button
+                                type="button"
+                                className="btn-secondary"
+                                onClick={() => handleDeleteEvent(event.id)}
+                                disabled={deletingEventId === event.id || completingEventId === event.id}
+                                style={{ color: '#DC2626', borderColor: '#FCA5A5', fontSize: '0.85rem' }}
+                              >
+                                {deletingEventId === event.id ? 'Deleting...' : 'Delete'}
+                              </button>
+                            </div>
+                          </td>
+                        </>
+                      );
+                    })()}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </main>
     </div>
