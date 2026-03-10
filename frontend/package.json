@@ -25,6 +25,7 @@
   },
   "scripts": {
     "start": "webpack serve --mode development",
-    "build": "webpack --mode production"
+    "build": "webpack --mode production",
+    "test": "node ./tests/run-sanity.mjs"
   }
 }

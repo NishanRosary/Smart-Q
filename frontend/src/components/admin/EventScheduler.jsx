@@ -5,6 +5,7 @@ import QRCodeDisplay from '../shared/QRCodeDisplay';
 import socket from '../../socket';
 import '../../styles/admin.css';
 import '../../styles/global.css';
+import { formatEventSchedule } from '../../utils/uiHelpers.mjs';
 
 const ORGANIZATION_TYPES = [
   'Hospital',
@@ -141,19 +142,6 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
       alert(error.response?.data?.message || 'Failed to create event. Please check the console for details.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const formatTime = (timeStr) => {
-    if (!timeStr) return '-';
-    try {
-      const [hours, minutes] = timeStr.split(':');
-      const h = parseInt(hours, 10);
-      const ampm = h >= 12 ? 'PM' : 'AM';
-      const h12 = h % 12 || 12;
-      return `${h12}:${minutes} ${ampm}`;
-    } catch {
-      return timeStr;
     }
   };
 
@@ -518,6 +506,13 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
                         : event.activeQueueCount > 0
                           ? 'Queue has active entries (waiting/serving). All must be completed or cancelled.'
                           : 'Mark this event as completed';
+                      const schedule = formatEventSchedule({
+                        startDate,
+                        endDate,
+                        startTime,
+                        endTime,
+                        formatDate: (value) => new Date(value).toLocaleDateString()
+                      });
                       return (
                         <>
                           <td>
@@ -528,11 +523,9 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
                             <div className="events-table-primary-cell">{event.title}</div>
                           </td>
                           <td>
-                            <div className="events-table-primary-cell">
-                              {startDate ? new Date(startDate).toLocaleDateString() : '-'} to {endDate ? new Date(endDate).toLocaleDateString() : '-'}
-                            </div>
+                            <div className="events-table-primary-cell">{schedule.dateLabel}</div>
                             <div className="events-table-secondary-cell">
-                              {formatTime(startTime)} to {formatTime(endTime)}
+                              {schedule.timeLabel}
                             </div>
                           </td>
                           <td>{event.location}</td>

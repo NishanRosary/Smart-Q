@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Moon, Sun, Mail, Phone, LogOut } from 'lucide-react';
 import '../../styles/customer.css';
+import { getUserInitials } from '../../utils/uiHelpers.mjs';
 
 const Header = ({ onNavigate, goBack, currentPage, customerData, onLogout }) => {
   const showBackButton = currentPage && currentPage !== 'landing';
@@ -38,11 +39,6 @@ const Header = ({ onNavigate, goBack, currentPage, customerData, onLogout }) => 
     setShowProfile(false);
     if (onLogout) onLogout();
     if (onNavigate) onNavigate('login');
-  };
-
-  const getInitials = (name) => {
-    if (!name) return 'U';
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
   return (
@@ -141,7 +137,7 @@ const Header = ({ onNavigate, goBack, currentPage, customerData, onLogout }) => 
                 }}
                 title="Profile"
               >
-                {getInitials(customerData.name)}
+                {getUserInitials(customerData.name)}
               </button>
 
               {showProfile && (
@@ -179,7 +175,7 @@ const Header = ({ onNavigate, goBack, currentPage, customerData, onLogout }) => 
                       flexShrink: 0,
                       border: '2px solid rgba(255,255,255,0.3)'
                     }}>
-                      {getInitials(customerData.name)}
+                      {getUserInitials(customerData.name)}
                     </div>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontWeight: 700, fontSize: '1rem', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
