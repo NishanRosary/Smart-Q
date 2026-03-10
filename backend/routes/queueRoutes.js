@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Queue = require("../models/queue");
+const QueueCounter = require("../models/queueCounter");
 const Event = require("../models/event");
 const { authMiddleware, adminMiddleware } = require("../middleware/auth");
 const { sendQueueRegistrationEmail } = require("../services/emailService");
@@ -14,6 +15,20 @@ const normalizeService = (value) => String(value || "").trim();
 const normalizeSector = (value) => String(value || "").trim();
 const getTokenScope = (item) =>
   normalizeSector(item?.organizationType) || normalizeService(item?.service);
+
+const getNextTokenNumber = async (scope) => {
+  const counter = await QueueCounter.findOneAndUpdate(
+    { scope },
+    { $inc: { seq: 1 } },
+    {
+      new: true,
+      upsert: true,
+      setDefaultsOnInsert: true
+    }
+  ).lean();
+
+  return Number(counter?.seq || 1);
+};
 
 // =======================
 // ML NOTIFICATION HELPER
@@ -166,25 +181,34 @@ router.post("/join", async (req, res) => {
     }
 
     const tokenScope = normalizedSector || normalizeSector(event.organizationType) || normalizedService;
-    const lastToken = await Queue.findOne({ organizationType: tokenScope })
-      .sort({ tokenNumber: -1 })
-      .select("tokenNumber")
-      .lean();
-    const tokenNumber = Number(lastToken?.tokenNumber || 0) + 1;
 
-    const newQueue = new Queue({
-      tokenNumber,
-      service: normalizedService,
-      guestName: guestName || null,
-      guestMobile: guestMobile || null,
-      guestEmail: guestEmail || email || null,
-      eventId: String(eventId),
-      eventName: eventName || event.title || null,
-      organizationName: organizationName || event.organizationName || null,
-      organizationType: tokenScope
-    });
+    let tokenNumber = null;
+    let newQueue = null;
 
-    await newQueue.save();
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      tokenNumber = await getNextTokenNumber(tokenScope);
+      newQueue = new Queue({
+        tokenNumber,
+        service: normalizedService,
+        guestName: guestName || null,
+        guestMobile: guestMobile || null,
+        guestEmail: guestEmail || email || null,
+        eventId: String(eventId),
+        eventName: eventName || event.title || null,
+        organizationName: organizationName || event.organizationName || null,
+        organizationType: tokenScope
+      });
+
+      try {
+        await newQueue.save();
+        break;
+      } catch (saveError) {
+        if (saveError?.code === 11000 && attempt < 2) {
+          continue;
+        }
+        throw saveError;
+      }
+    }
 
     const waitingAhead = await Queue.countDocuments({
       status: "waiting",

@@ -53,6 +53,6 @@ const QueueSchema = new mongoose.Schema({
  */
 QueueSchema.index({ status: 1 });
 QueueSchema.index({ createdAt: 1 });
-QueueSchema.index({ organizationType: 1, tokenNumber: 1 });
+QueueSchema.index({ organizationType: 1, tokenNumber: 1 }, { unique: true });
 
 module.exports = mongoose.model("Queue", QueueSchema);
