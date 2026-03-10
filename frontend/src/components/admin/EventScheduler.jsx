@@ -6,6 +6,12 @@ import socket from '../../socket';
 import '../../styles/admin.css';
 import '../../styles/global.css';
 import { formatEventSchedule } from '../../utils/uiHelpers.mjs';
+import {
+  addSchedulerService,
+  removeSchedulerService,
+  updateSchedulerFormData,
+  validateSchedulerForm
+} from '../../utils/interactionHelpers.mjs';
 
 const ORGANIZATION_TYPES = [
   'Hospital',
@@ -66,49 +72,14 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => {
-      if (name === 'organizationType') {
-        return {
-          ...prev,
-          organizationType: value,
-          doctorName: '',
-          profession: '',
-          hrOrPocName: ''
-        };
-      }
-
-      return {
-        ...prev,
-        [name]: value
-      };
-    });
+    setFormData(prev => updateSchedulerFormData(prev, name, value));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.startDate && formData.endDate && formData.endDate < formData.startDate) {
-      alert('End date must be the same as or later than start date.');
-      return;
-    }
-    if (
-      formData.startDate &&
-      formData.endDate &&
-      formData.startDate === formData.endDate &&
-      formData.startTime &&
-      formData.endTime &&
-      formData.endTime <= formData.startTime
-    ) {
-      alert('End time must be later than start time for single-day events.');
-      return;
-    }
-    if (formData.organizationType === 'Hospital') {
-      if (!formData.doctorName.trim() || !formData.profession.trim()) {
-        alert('Doctor Name and Profession are required for Hospital events.');
-        return;
-      }
-    }
-    if (formData.organizationType === 'Interview' && !formData.hrOrPocName.trim()) {
-      alert('HR Name / POC Name is required for Interview events.');
+    const validationMessage = validateSchedulerForm(formData);
+    if (validationMessage) {
+      alert(validationMessage);
       return;
     }
     setLoading(true);
@@ -147,10 +118,11 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
 
   const handleAddService = (e) => {
     e.preventDefault();
-    if (currentService.trim()) {
+    const nextServices = addSchedulerService(formData.serviceTypes, currentService);
+    if (nextServices !== formData.serviceTypes) {
       setFormData(prev => ({
         ...prev,
-        serviceTypes: [...prev.serviceTypes, currentService.trim()]
+        serviceTypes: nextServices
       }));
       setCurrentService('');
     }
@@ -159,7 +131,7 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
   const handleRemoveService = (index) => {
     setFormData(prev => ({
       ...prev,
-      serviceTypes: prev.serviceTypes.filter((_, i) => i !== index)
+      serviceTypes: removeSchedulerService(prev.serviceTypes, index)
     }));
   };
 

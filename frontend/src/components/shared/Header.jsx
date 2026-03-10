@@ -2,6 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Moon, Sun, Mail, Phone, LogOut } from 'lucide-react';
 import '../../styles/customer.css';
 import { getUserInitials } from '../../utils/uiHelpers.mjs';
+import {
+  applyThemePreference,
+  getNextTheme,
+  runHeaderLogout
+} from '../../utils/interactionHelpers.mjs';
 
 const Header = ({ onNavigate, goBack, currentPage, customerData, onLogout }) => {
   const showBackButton = currentPage && currentPage !== 'landing';
@@ -29,16 +34,14 @@ const Header = ({ onNavigate, goBack, currentPage, customerData, onLogout }) => 
   }, []);
 
   const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
+    const newTheme = getNextTheme(theme);
     setTheme(newTheme);
-    localStorage.setItem('smartq-theme', newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
+    applyThemePreference(newTheme);
   };
 
   const handleLogout = () => {
     setShowProfile(false);
-    if (onLogout) onLogout();
-    if (onNavigate) onNavigate('login');
+    runHeaderLogout({ onLogout, onNavigate });
   };
 
   return (

@@ -5,6 +5,16 @@ import {
   formatTimeLabel,
   getUserInitials
 } from "../src/utils/uiHelpers.mjs";
+import {
+  addSchedulerService,
+  applyAdminLoginSuccess,
+  getAdminLoginErrorMessage,
+  getNextTheme,
+  removeSchedulerService,
+  runHeaderLogout,
+  updateSchedulerFormData,
+  validateSchedulerForm
+} from "../src/utils/interactionHelpers.mjs";
 
 const checks = [
   {
@@ -47,6 +57,127 @@ const checks = [
         dateLabel: "2030-05-01 to 2030-05-02",
         timeLabel: "9:00 AM to 5:30 PM"
       });
+    }
+  },
+  {
+    name: "admin login success stores token and navigates to dashboard",
+    run() {
+      const storage = {
+        values: {},
+        setItem(key, value) {
+          this.values[key] = value;
+        }
+      };
+      const calls = [];
+
+      const token = applyAdminLoginSuccess({
+        data: { accessToken: "test-token" },
+        storage,
+        setAuthToken: (value) => calls.push(["auth", value]),
+        onNavigate: (value) => calls.push(["nav", value])
+      });
+
+      assert.equal(token, "test-token");
+      assert.equal(storage.values.token, "test-token");
+      assert.deepEqual(calls, [
+        ["auth", "test-token"],
+        ["nav", "admin-dashboard"]
+      ]);
+    }
+  },
+  {
+    name: "admin login error fallback is stable",
+    run() {
+      assert.equal(
+        getAdminLoginErrorMessage({ response: { data: { message: "Invalid credentials" } } }),
+        "Invalid credentials"
+      );
+      assert.equal(
+        getAdminLoginErrorMessage(new Error("boom")),
+        "Login failed. Ensure Server is running"
+      );
+    }
+  },
+  {
+    name: "header theme toggle and logout interactions are stable",
+    run() {
+      assert.equal(getNextTheme("light"), "dark");
+      assert.equal(getNextTheme("dark"), "light");
+
+      const calls = [];
+      runHeaderLogout({
+        onLogout: () => calls.push("logout"),
+        onNavigate: (value) => calls.push(value)
+      });
+
+      assert.deepEqual(calls, ["logout", "login"]);
+    }
+  },
+  {
+    name: "scheduler interaction helpers handle form transitions",
+    run() {
+      const baseForm = {
+        organizationType: "Hospital",
+        doctorName: "Dr. A",
+        profession: "Cardio",
+        hrOrPocName: "HR",
+        serviceTypes: ["General"]
+      };
+
+      const updatedForm = updateSchedulerFormData(baseForm, "organizationType", "Interview");
+      assert.equal(updatedForm.organizationType, "Interview");
+      assert.equal(updatedForm.doctorName, "");
+      assert.equal(updatedForm.profession, "");
+      assert.equal(updatedForm.hrOrPocName, "");
+
+      assert.deepEqual(addSchedulerService(["One"], " Two "), ["One", "Two"]);
+      assert.deepEqual(removeSchedulerService(["One", "Two"], 0), ["Two"]);
+    }
+  },
+  {
+    name: "scheduler validation catches invalid combinations",
+    run() {
+      assert.equal(
+        validateSchedulerForm({
+          organizationType: "Hospital",
+          doctorName: "",
+          profession: "",
+          hrOrPocName: "",
+          startDate: "2030-05-02",
+          endDate: "2030-05-01",
+          startTime: "09:00",
+          endTime: "10:00"
+        }),
+        "End date must be the same as or later than start date."
+      );
+
+      assert.equal(
+        validateSchedulerForm({
+          organizationType: "Interview",
+          doctorName: "",
+          profession: "",
+          hrOrPocName: "",
+          startDate: "2030-05-01",
+          endDate: "2030-05-01",
+          startTime: "11:00",
+          endTime: "10:00"
+        }),
+        "End time must be later than start time for single-day events."
+      );
+
+      assert.equal(
+        validateSchedulerForm({
+          organizationType: "Hospital",
+          doctorName: "",
+          profession: "",
+          hrOrPocName: "",
+          startDate: "2030-05-01",
+          endDate: "2030-05-02",
+          startTime: "09:00",
+          endTime: "10:00"
+        }),
+        "Doctor Name and Profession are required for Hospital events."
+      );
     }
   }
 ];

@@ -3,6 +3,10 @@ import { ArrowLeft } from "lucide-react";
 import "../../styles/admin.css";
 import "../../styles/global.css";
 import { loginAdmin, setAuthToken } from "../../services/api";
+import {
+  applyAdminLoginSuccess,
+  getAdminLoginErrorMessage
+} from "../../utils/interactionHelpers.mjs";
 
 const AdminLogin = ({ onNavigate }) => {
   const [formData, setFormData] = useState({
@@ -28,27 +32,11 @@ const AdminLogin = ({ onNavigate }) => {
     setErrorMessage("");
 
     try {
-      const data = await loginAdmin(
-        formData.email,
-        formData.password
-      );
-
-      // 🔥 STORE TOKEN IN LOCALSTORAGE
-      if (!data?.accessToken) {
-        throw new Error("Authentication token missing in login response");
-      }
-      localStorage.setItem("token", data.accessToken);
-
-      // 🔥 SET AXIOS DEFAULT HEADER
-      setAuthToken(data.accessToken);
-
-      // Navigate to dashboard
-      onNavigate("admin-dashboard");
-
+      const data = await loginAdmin(formData.email, formData.password);
+      applyAdminLoginSuccess({ data, setAuthToken, onNavigate });
     } catch (error) {
       console.error("Login failed:", error);
-      const msg = error.response?.data?.message || "Login failed. Ensure Server is running";
-      setErrorMessage(msg);
+      setErrorMessage(getAdminLoginErrorMessage(error));
     } finally {
       setLoading(false);
     }
