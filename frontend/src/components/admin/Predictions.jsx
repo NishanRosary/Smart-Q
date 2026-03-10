@@ -18,6 +18,25 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
   });
   const [loading, setLoading] = useState(true);
 
+  const formatLastUpdated = (value) => {
+    if (!value || value === 'N/A') {
+      return 'N/A';
+    }
+
+    const parsedDate = new Date(value);
+    if (Number.isNaN(parsedDate.getTime())) {
+      return value;
+    }
+
+    return parsedDate.toLocaleString([], {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+  };
+
   useEffect(() => {
     const fetchPredictions = async () => {
       try {
@@ -119,8 +138,14 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
           </div>
           <div className="card">
             <div style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)', marginBottom: '0.5rem' }}>Last Updated</div>
-            <div style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--color-gray-900)' }}>
-              {predictions.mlModelStats.lastUpdated}
+            <div style={{
+              fontSize: '2rem',
+              fontWeight: 700,
+              color: 'var(--color-primary)',
+              lineHeight: 1.2,
+              overflowWrap: 'anywhere'
+            }}>
+              {formatLastUpdated(predictions.mlModelStats.lastUpdated)}
             </div>
           </div>
         </div>
