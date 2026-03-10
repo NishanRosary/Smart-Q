@@ -19,6 +19,8 @@ import CounterManagement from "./components/admin/CounterManagement";
 import Analytics from "./components/admin/Analytics";
 import Predictions from "./components/admin/Predictions";
 import AdminSettings from "./components/admin/AdminSettings";
+import { AdminLanguageProvider } from "./context/AdminLanguageContext";
+import AdminLocalizationBoundary from "./components/shared/AdminLocalizationBoundary";
 
 function App() {
 
@@ -102,6 +104,10 @@ function App() {
   }, []);
 
   const renderPage = () => {
+    const withAdminLanguage = (node) => (
+      <AdminLocalizationBoundary>{node}</AdminLocalizationBoundary>
+    );
+
     switch (currentPage) {
 
       case "landing":
@@ -120,38 +126,42 @@ function App() {
         return <WelcomePage onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
 
       case "admin-login":
-        return <AdminLogin onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
+        return withAdminLanguage(<AdminLogin onNavigate={navigate} goBack={goBack} currentPage={currentPage} />);
 
       case "admin-dashboard":
-        return <AdminDashboard onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
+        return withAdminLanguage(<AdminDashboard onNavigate={navigate} goBack={goBack} currentPage={currentPage} />);
 
       case "event-scheduler":
-        return <EventScheduler onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
+        return withAdminLanguage(<EventScheduler onNavigate={navigate} goBack={goBack} currentPage={currentPage} />);
 
       case "event-history":
-        return <EventHistory onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
+        return withAdminLanguage(<EventHistory onNavigate={navigate} goBack={goBack} currentPage={currentPage} />);
 
       case "queue-management":
-        return <QueueManagement onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
+        return withAdminLanguage(<QueueManagement onNavigate={navigate} goBack={goBack} currentPage={currentPage} />);
 
       case "counter-management":
-        return <CounterManagement onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
+        return withAdminLanguage(<CounterManagement onNavigate={navigate} goBack={goBack} currentPage={currentPage} />);
 
       case "analytics":
-        return <Analytics onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
+        return withAdminLanguage(<Analytics onNavigate={navigate} goBack={goBack} currentPage={currentPage} />);
 
       case "predictions":
-        return <Predictions onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
+        return withAdminLanguage(<Predictions onNavigate={navigate} goBack={goBack} currentPage={currentPage} />);
 
       case "settings":
-        return <AdminSettings onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
+        return withAdminLanguage(<AdminSettings onNavigate={navigate} goBack={goBack} currentPage={currentPage} />);
 
       default:
         return <LandingPage onNavigate={navigate} goBack={goBack} currentPage={currentPage} />;
     }
   };
 
-  return <div className="App">{renderPage()}</div>;
+  return (
+    <AdminLanguageProvider>
+      <div className="App">{renderPage()}</div>
+    </AdminLanguageProvider>
+  );
 }
 
 export default App;

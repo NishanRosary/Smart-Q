@@ -25,8 +25,10 @@ import Sidebar from '../shared/Sidebar';
 import '../../styles/admin.css';
 import '../../styles/global.css';
 import { changeAdminPassword } from '../../services/api';
+import { useAdminLanguage } from '../../context/AdminLanguageContext';
 
 const AdminSettings = ({ onNavigate, goBack, currentPage }) => {
+    const { language, setLanguage } = useAdminLanguage();
     const [activeTab, setActiveTab] = useState('profile');
     const [saved, setSaved] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -54,7 +56,7 @@ const AdminSettings = ({ onNavigate, goBack, currentPage }) => {
     // Preferences State
     const [preferences, setPreferences] = useState({
         theme: localStorage.getItem('smartq-theme') || 'light',
-        language: 'en',
+        language,
         timezone: 'Asia/Kolkata',
         autoRefresh: true,
         refreshInterval: '30',
@@ -70,6 +72,10 @@ const AdminSettings = ({ onNavigate, goBack, currentPage }) => {
     const [passwordSaving, setPasswordSaving] = useState(false);
     const [passwordMessage, setPasswordMessage] = useState('');
     const [passwordError, setPasswordError] = useState('');
+
+    React.useEffect(() => {
+        setPreferences(prev => ({ ...prev, language }));
+    }, [language]);
 
     const handleSave = () => {
         setSaved(true);
@@ -326,14 +332,15 @@ const AdminSettings = ({ onNavigate, goBack, currentPage }) => {
                                 </label>
                                 <select
                                     value={preferences.language}
-                                    onChange={(e) => setPreferences(prev => ({ ...prev, language: e.target.value }))}
+                                    onChange={(e) => {
+                                        const nextLanguage = e.target.value;
+                                        setPreferences(prev => ({ ...prev, language: nextLanguage }));
+                                        setLanguage(nextLanguage);
+                                    }}
                                     style={{ padding: '0.75rem', borderRadius: '8px', border: '2px solid var(--color-gray-300)', width: '100%', background: 'var(--color-white)', color: 'var(--color-gray-900)' }}
                                 >
                                     <option value="en">English</option>
-                                    <option value="hi">Hindi</option>
-                                    <option value="kn">Kannada</option>
                                     <option value="ta">Tamil</option>
-                                    <option value="te">Telugu</option>
                                 </select>
                             </div>
 
