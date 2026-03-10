@@ -26,7 +26,6 @@ const Analytics = ({ onNavigate, goBack, currentPage }) => {
         const queueRes = await axios.get('http://localhost:5000/api/queue', getAuthConfig());
         const queues = queueRes.data || [];
 
-        // Calculate trends (hourly)
         const trends = {};
         queues.forEach(q => {
           const hour = new Date(q.createdAt || Date.now()).getHours();
@@ -36,7 +35,6 @@ const Analytics = ({ onNavigate, goBack, currentPage }) => {
 
         const queueTrends = Object.entries(trends).map(([hour, value]) => ({ hour, value })).slice(-8);
 
-        // Calculate service popularity
         const serviceCount = {};
         queues.forEach(q => {
           serviceCount[q.service] = (serviceCount[q.service] || 0) + 1;
@@ -53,7 +51,6 @@ const Analytics = ({ onNavigate, goBack, currentPage }) => {
           servicePopularity: servicePopularity.length > 0 ? servicePopularity : []
         });
 
-        // Fetch predictions in background to avoid blocking initial render.
         axios.get('http://localhost:5000/api/predictions', getAuthConfig())
           .then((predsRes) => {
             setPredictions(predsRes.data || { peakTimes: [] });
@@ -90,7 +87,6 @@ const Analytics = ({ onNavigate, goBack, currentPage }) => {
           </p>
         </div>
 
-        {/* ML Insights Banner */}
         <div className="card" style={{
           background: 'linear-gradient(135deg, var(--color-primary) 0%, #2563EB 100%)',
           color: 'var(--color-white)',
@@ -99,7 +95,7 @@ const Analytics = ({ onNavigate, goBack, currentPage }) => {
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
-              <h3 style={{ margin: 0, marginBottom: '0.5rem' }}>🤖 ML Model Performance</h3>
+              <h3 style={{ margin: 0, marginBottom: '0.5rem' }}>ML Model Performance</h3>
               <p style={{ margin: 0, opacity: 0.9, fontSize: '0.875rem' }}>
                 {Number.isFinite(mlModelAccuracy)
                   ? `Real-time predictions with ${mlModelAccuracy}% accuracy`
@@ -115,7 +111,7 @@ const Analytics = ({ onNavigate, goBack, currentPage }) => {
                 border: 'none'
               }}
             >
-              View All Predictions →
+              View All Predictions
             </button>
           </div>
         </div>
@@ -196,9 +192,8 @@ const Analytics = ({ onNavigate, goBack, currentPage }) => {
             </div>
           </div>
 
-          {/* ML Predictions Summary */}
           <div className="analytics-card">
-            <h3 className="analytics-title">🔮 ML Predictions Summary</h3>
+            <h3 className="analytics-title">ML Predictions Summary</h3>
             <div style={{ marginBottom: '1rem', fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>
               Next 6 hours peak time predictions
             </div>
@@ -233,23 +228,23 @@ const Analytics = ({ onNavigate, goBack, currentPage }) => {
                           )}
                         </div>
                       </div>
-                    <div style={{
-                      width: '100%',
-                      height: '6px',
-                      backgroundColor: 'var(--color-gray-200)',
-                      borderRadius: '3px',
-                      overflow: 'hidden'
-                    }}>
                       <div style={{
-                        width: `${width}%`,
-                        height: '100%',
-                        backgroundColor: color,
-                        borderRadius: '3px'
-                      }}></div>
+                        width: '100%',
+                        height: '6px',
+                        backgroundColor: 'var(--color-gray-200)',
+                        borderRadius: '3px',
+                        overflow: 'hidden'
+                      }}>
+                        <div style={{
+                          width: `${width}%`,
+                          height: '100%',
+                          backgroundColor: color,
+                          borderRadius: '3px'
+                        }}></div>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
               </div>
             ) : (
               <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--color-gray-500)' }}>
@@ -264,4 +259,3 @@ const Analytics = ({ onNavigate, goBack, currentPage }) => {
 };
 
 export default Analytics;
-

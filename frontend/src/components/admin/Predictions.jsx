@@ -78,6 +78,7 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
 
     fetchPredictions();
   }, []);
+
   const getPredictionColor = (level) => {
     switch (level) {
       case 'High':
@@ -111,7 +112,6 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
           </p>
         </div>
 
-        {/* ML Model Stats */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -156,10 +156,9 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
           gap: '1.5rem',
           marginBottom: '2rem'
         }}>
-          {/* Peak Time Predictions */}
           <div className="analytics-card">
             <h3 className="analytics-title">
-              🔮 Peak Time Predictions (ML)
+              Peak Time Predictions (ML)
             </h3>
             <div style={{ marginBottom: '1rem', fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>
               Predicted using historical data and ML algorithms
@@ -208,10 +207,9 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
             </div>
           </div>
 
-          {/* Wait Time Predictions */}
           <div className="analytics-card">
             <h3 className="analytics-title">
-              ⏱️ Wait Time Predictions (ML)
+              Wait Time Predictions (ML)
             </h3>
             <div style={{ marginBottom: '1rem', fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>
               AI-predicted wait times with accuracy metrics
@@ -252,10 +250,9 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
           </div>
         </div>
 
-        {/* Crowd Forecast */}
         <div className="analytics-card" style={{ marginBottom: '2rem' }}>
           <h3 className="analytics-title">
-            📊 Crowd Level Forecast (ML)
+            Crowd Level Forecast (ML)
           </h3>
           <div style={{ marginBottom: '1rem', fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>
             7-day forecast using machine learning models
@@ -292,13 +289,12 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
           </div>
         </div>
 
-        {/* ML Model Info */}
         <div className="card" style={{
           backgroundColor: 'var(--color-primary-bg)',
           border: '1px solid var(--color-primary)',
           padding: '1.5rem'
         }}>
-          <h3 style={{ marginBottom: '1rem', color: 'var(--color-gray-900)' }}>🤖 Machine Learning Model Information</h3>
+          <h3 style={{ marginBottom: '1rem', color: 'var(--color-gray-900)' }}>Machine Learning Model Information</h3>
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
@@ -326,4 +322,3 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
 };
 
 export default Predictions;
-

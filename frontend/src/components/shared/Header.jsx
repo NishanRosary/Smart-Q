@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Moon, Sun, User, Mail, Phone, LogOut } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, Mail, Phone, LogOut } from 'lucide-react';
 import '../../styles/customer.css';
 
 const Header = ({ onNavigate, goBack, currentPage, customerData, onLogout }) => {
@@ -17,7 +17,6 @@ const Header = ({ onNavigate, goBack, currentPage, customerData, onLogout }) => 
     document.documentElement.setAttribute('data-theme', initialTheme);
   }, []);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (profileRef.current && !profileRef.current.contains(e.target)) {
@@ -40,7 +39,7 @@ const Header = ({ onNavigate, goBack, currentPage, customerData, onLogout }) => 
     if (onLogout) onLogout();
     if (onNavigate) onNavigate('login');
   };
-  // Get initials for avatar
+
   const getInitials = (name) => {
     if (!name) return 'U';
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
@@ -118,7 +117,6 @@ const Header = ({ onNavigate, goBack, currentPage, customerData, onLogout }) => 
           </button>
 
           {isLoggedIn ? (
-            /* Profile Avatar & Dropdown */
             <div ref={profileRef} style={{ position: 'relative' }}>
               <button
                 onClick={() => setShowProfile(!showProfile)}
@@ -146,7 +144,6 @@ const Header = ({ onNavigate, goBack, currentPage, customerData, onLogout }) => 
                 {getInitials(customerData.name)}
               </button>
 
-              {/* Dropdown */}
               {showProfile && (
                 <div style={{
                   position: 'absolute',
@@ -161,7 +158,6 @@ const Header = ({ onNavigate, goBack, currentPage, customerData, onLogout }) => 
                   overflow: 'hidden',
                   animation: 'fadeInDown 0.2s ease'
                 }}>
-                  {/* Header Section */}
                   <div style={{
                     padding: '1.25rem 1.25rem 1rem',
                     background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%)',
@@ -195,7 +191,6 @@ const Header = ({ onNavigate, goBack, currentPage, customerData, onLogout }) => 
                     </div>
                   </div>
 
-                  {/* Info Items */}
                   <div style={{ padding: '0.75rem 1.25rem' }}>
                     {customerData.email && (
                       <div style={{
@@ -226,7 +221,6 @@ const Header = ({ onNavigate, goBack, currentPage, customerData, onLogout }) => 
                     )}
                   </div>
 
-                  {/* Logout */}
                   <div style={{ padding: '0.5rem 0.75rem 0.75rem' }}>
                     <button
                       onClick={handleLogout}
@@ -262,7 +256,6 @@ const Header = ({ onNavigate, goBack, currentPage, customerData, onLogout }) => 
               )}
             </div>
           ) : (
-            /* Not logged in — show Login & Admin */
             <>
               <button className="nav-button" onClick={() => onNavigate('login')}>
                 Login

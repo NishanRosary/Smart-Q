@@ -72,10 +72,7 @@ const Sidebar = ({ currentPage, onNavigate, goBack }) => {
         </div>
       </div>
 
-
-
       {showBackButton && goBack && (
-
         <div style={{ paddingBottom: '1rem', marginBottom: '1rem', borderBottom: '1px solid #E5E7EB' }}>
           <button
             onClick={goBack}
@@ -134,4 +131,3 @@ const Sidebar = ({ currentPage, onNavigate, goBack }) => {
 };
 
 export default Sidebar;
-
