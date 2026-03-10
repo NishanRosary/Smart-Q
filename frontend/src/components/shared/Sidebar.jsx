@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   LayoutDashboard,
   ClipboardList,
@@ -13,6 +13,30 @@ import {
 import '../../styles/admin.css';
 
 const Sidebar = ({ currentPage, onNavigate, goBack }) => {
+  const [theme, setTheme] = useState('light');
+
+  useEffect(() => {
+    const syncTheme = () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+      setTheme(currentTheme);
+    };
+
+    syncTheme();
+
+    const observer = new MutationObserver(syncTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme']
+    });
+
+    window.addEventListener('storage', syncTheme);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('storage', syncTheme);
+    };
+  }, []);
+
   const navItems = [
     { id: 'admin-dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
     { id: 'queue-management', label: 'Queue Management', icon: <ClipboardList size={20} /> },
@@ -31,15 +55,16 @@ const Sidebar = ({ currentPage, onNavigate, goBack }) => {
       <div className="admin-sidebar-header">
         <div className="admin-sidebar-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <img
-            src="/favicon.jpg"
-            alt="Smart'Q"
+            src={theme === 'dark' ? '/smartq-logo-dark.jpg' : '/smartq-logo.jpg'}
+            alt="Smart'Q Logo"
             style={{
               height: '28px',
               width: '28px',
               borderRadius: '8px',
-              objectFit: 'cover',
+              objectFit: 'contain',
               boxShadow: '0 1px 4px rgba(0, 0, 0, 0.1)',
               border: '1px solid rgba(37, 99, 235, 0.15)',
+              backgroundColor: 'var(--bg-primary)',
             }}
           />
           <span style={{ fontSize: '1.125rem', fontWeight: 800, color: 'var(--color-primary-dark)', letterSpacing: '-0.02em' }}>Smart'Q</span>
