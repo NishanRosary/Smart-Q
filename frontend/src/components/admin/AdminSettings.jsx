@@ -27,6 +27,8 @@ import '../../styles/global.css';
 import { changeAdminPassword } from '../../services/api';
 import { useAdminLanguage } from '../../context/AdminLanguageContext';
 
+const ADMIN_PREFERENCES_STORAGE_KEY = 'smartq-admin-preferences';
+
 const AdminSettings = ({ onNavigate, goBack, currentPage }) => {
     const { language, setLanguage } = useAdminLanguage();
     const [activeTab, setActiveTab] = useState('profile');
@@ -54,13 +56,23 @@ const AdminSettings = ({ onNavigate, goBack, currentPage }) => {
     });
 
     // Preferences State
-    const [preferences, setPreferences] = useState({
-        theme: localStorage.getItem('smartq-theme') || 'light',
-        language,
-        timezone: 'Asia/Kolkata',
-        autoRefresh: true,
-        refreshInterval: '30',
-        soundNotifications: false
+    const [preferences, setPreferences] = useState(() => {
+        let savedPreferences = {};
+
+        try {
+            savedPreferences = JSON.parse(localStorage.getItem(ADMIN_PREFERENCES_STORAGE_KEY) || '{}');
+        } catch (error) {
+            savedPreferences = {};
+        }
+
+        return {
+            theme: savedPreferences.theme || localStorage.getItem('smartq-theme') || 'light',
+            language: savedPreferences.language || language,
+            timezone: savedPreferences.timezone || 'Asia/Kolkata',
+            autoRefresh: savedPreferences.autoRefresh ?? true,
+            refreshInterval: savedPreferences.refreshInterval || '30',
+            soundNotifications: savedPreferences.soundNotifications ?? false
+        };
     });
 
     // Password State
@@ -78,6 +90,13 @@ const AdminSettings = ({ onNavigate, goBack, currentPage }) => {
     }, [language]);
 
     const handleSave = () => {
+        if (activeTab === 'preferences') {
+            localStorage.setItem(ADMIN_PREFERENCES_STORAGE_KEY, JSON.stringify(preferences));
+            localStorage.setItem('smartq-theme', preferences.theme);
+            document.documentElement.setAttribute('data-theme', preferences.theme);
+            setLanguage(preferences.language);
+        }
+
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
     };
@@ -335,7 +354,6 @@ const AdminSettings = ({ onNavigate, goBack, currentPage }) => {
                                     onChange={(e) => {
                                         const nextLanguage = e.target.value;
                                         setPreferences(prev => ({ ...prev, language: nextLanguage }));
-                                        setLanguage(nextLanguage);
                                     }}
                                     style={{ padding: '0.75rem', borderRadius: '8px', border: '2px solid var(--color-gray-300)', width: '100%', background: 'var(--color-white)', color: 'var(--color-gray-900)' }}
                                 >
