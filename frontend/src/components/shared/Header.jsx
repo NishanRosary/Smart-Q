@@ -81,7 +81,7 @@ const Header = ({ onNavigate, goBack, currentPage, customerData, onLogout }) => 
           >
             <img
               src={theme === 'dark' ? "/smartq-logo-dark.jpg" : "/smartq-logo.jpg"}
-              alt="Smart'Q"
+              alt="Smart'Q Logo"
               style={{
                 height: '36px',
                 width: '36px',
