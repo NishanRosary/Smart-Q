@@ -347,6 +347,8 @@ const AdminSettings = ({ onNavigate, goBack, currentPage }) => {
                                     style={{ padding: '0.75rem', borderRadius: '8px', border: '2px solid var(--color-gray-300)', width: '100%', background: 'var(--color-white)', color: 'var(--color-gray-900)' }}
                                 >
                                     <option value="Asia/Kolkata">IST (Asia/Kolkata)</option>
+                                    <option value="Asia/Bangalore">IST (Asia/Bangalore)</option>
+                                    <option value="Asia/Chennai">IST (Asia/Chennai)</option>
                                     <option value="UTC">UTC</option>
                                     <option value="America/New_York">EST (America/New_York)</option>
                                     <option value="Europe/London">GMT (Europe/London)</option>
