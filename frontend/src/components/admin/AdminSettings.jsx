@@ -25,12 +25,10 @@ import Sidebar from '../shared/Sidebar';
 import '../../styles/admin.css';
 import '../../styles/global.css';
 import { changeAdminPassword } from '../../services/api';
-import { useAdminLanguage } from '../../context/AdminLanguageContext';
 
 const ADMIN_PREFERENCES_STORAGE_KEY = 'smartq-admin-preferences';
 
 const AdminSettings = ({ onNavigate, goBack, currentPage }) => {
-    const { language, setLanguage } = useAdminLanguage();
     const [activeTab, setActiveTab] = useState('profile');
     const [saved, setSaved] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -67,7 +65,7 @@ const AdminSettings = ({ onNavigate, goBack, currentPage }) => {
 
         return {
             theme: savedPreferences.theme || localStorage.getItem('smartq-theme') || 'light',
-            language: savedPreferences.language || language,
+            language: 'en',
             timezone: savedPreferences.timezone || 'Asia/Kolkata',
             autoRefresh: savedPreferences.autoRefresh ?? true,
             refreshInterval: savedPreferences.refreshInterval || '30',
@@ -85,16 +83,17 @@ const AdminSettings = ({ onNavigate, goBack, currentPage }) => {
     const [passwordMessage, setPasswordMessage] = useState('');
     const [passwordError, setPasswordError] = useState('');
 
-    React.useEffect(() => {
-        setPreferences(prev => ({ ...prev, language }));
-    }, [language]);
-
     const handleSave = () => {
         if (activeTab === 'preferences') {
-            localStorage.setItem(ADMIN_PREFERENCES_STORAGE_KEY, JSON.stringify(preferences));
+            const nextPreferences = {
+                ...preferences,
+                language: 'en'
+            };
+
+            localStorage.setItem(ADMIN_PREFERENCES_STORAGE_KEY, JSON.stringify(nextPreferences));
             localStorage.setItem('smartq-theme', preferences.theme);
             document.documentElement.setAttribute('data-theme', preferences.theme);
-            setLanguage(preferences.language);
+            setPreferences(nextPreferences);
         }
 
         setSaved(true);
@@ -351,14 +350,12 @@ const AdminSettings = ({ onNavigate, goBack, currentPage }) => {
                                 </label>
                                 <select
                                     value={preferences.language}
-                                    onChange={(e) => {
-                                        const nextLanguage = e.target.value;
-                                        setPreferences(prev => ({ ...prev, language: nextLanguage }));
+                                    onChange={() => {
+                                        setPreferences(prev => ({ ...prev, language: 'en' }));
                                     }}
                                     style={{ padding: '0.75rem', borderRadius: '8px', border: '2px solid var(--color-gray-300)', width: '100%', background: 'var(--color-white)', color: 'var(--color-gray-900)' }}
                                 >
                                     <option value="en">English</option>
-                                    <option value="ta">Tamil</option>
                                 </select>
                             </div>
 
