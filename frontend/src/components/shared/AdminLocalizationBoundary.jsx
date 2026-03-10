@@ -315,26 +315,65 @@ const AdminLocalizationBoundary = ({ children }) => {
   const { language } = useAdminLanguage();
   const rootRef = useRef(null);
   const textOriginals = useMemo(() => new WeakMap(), []);
+  const observerRef = useRef(null);
+
+  const startObserving = () => {
+    if (!rootRef.current || !observerRef.current) return;
+    observerRef.current.observe(rootRef.current, {
+      childList: true,
+      subtree: true,
+    });
+  };
+
+  const stopObserving = () => {
+    if (!observerRef.current) return;
+    observerRef.current.disconnect();
+  };
 
   useEffect(() => {
     if (!rootRef.current) return;
 
+    stopObserving();
     applyTranslations(rootRef.current, language, textOriginals);
+    startObserving();
 
-    const observer = new MutationObserver(() => {
-      applyTranslations(rootRef.current, language, textOriginals);
-    });
+    if (!observerRef.current) {
+      observerRef.current = new MutationObserver(() => {
+        stopObserving();
+        applyTranslations(rootRef.current, language, textOriginals);
+        startObserving();
+      });
+    }
 
-    observer.observe(rootRef.current, {
-      childList: true,
-      subtree: true,
-      characterData: true,
-      attributes: true,
-      attributeFilter: translatableAttributes,
-    });
+    startObserving();
 
-    return () => observer.disconnect();
+    return () => {
+      stopObserving();
+    };
   }, [language, textOriginals]);
+
+  useEffect(() => {
+    if (!rootRef.current) return;
+
+    if (!observerRef.current) {
+      observerRef.current = new MutationObserver(() => {
+        stopObserving();
+        if (rootRef.current) {
+          applyTranslations(rootRef.current, language, textOriginals);
+        }
+        startObserving();
+      });
+    }
+
+    stopObserving();
+    applyTranslations(rootRef.current, language, textOriginals);
+    startObserving();
+
+    return () => {
+      applyTranslations(rootRef.current, language, textOriginals);
+      stopObserving();
+    };
+  }, []);
 
   return <div ref={rootRef}>{children}</div>;
 };
