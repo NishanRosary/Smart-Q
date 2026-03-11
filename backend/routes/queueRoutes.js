@@ -4,6 +4,7 @@ const Queue = require("../models/queue");
 const QueueCounter = require("../models/queueCounter");
 const Event = require("../models/event");
 const { authMiddleware, adminMiddleware } = require("../middleware/auth");
+const { queueJoinLimiter } = require("../middleware/rateLimiters");
 const { sendQueueRegistrationEmail } = require("../services/emailService");
 const { getPredictionsIfTrained } = require("../services/mlPredictionService");
 const { purgeExpiredEvents, isEventExpired } = require("../services/eventCleanupService");
@@ -138,7 +139,7 @@ const broadcastQueueUpdate = async (io) => {
 // =======================
 // JOIN QUEUE
 // =======================
-router.post("/join", async (req, res) => {
+router.post("/join", queueJoinLimiter, async (req, res) => {
   try {
     const {
       service,

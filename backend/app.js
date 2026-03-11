@@ -24,6 +24,7 @@ const Queue = require("./models/queue");
 
 const { sendQueueRegistrationEmail } = require("./services/emailService");
 const { authMiddleware } = require("./middleware/auth");
+const { testEmailLimiter } = require("./middleware/rateLimiters");
 const { purgeExpiredEvents } = require("./services/eventCleanupService");
 
 const app = express();
@@ -119,7 +120,7 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-app.get("/api/test-email", async (req, res, next) => {
+app.get("/api/test-email", testEmailLimiter, async (req, res, next) => {
   try {
     const result = await sendQueueRegistrationEmail({
       toEmail: req.query.toEmail || "nishanrosary908@gmail.com",

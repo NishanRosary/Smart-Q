@@ -4,13 +4,17 @@ const Otp = require("../models/otp");
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 const { sendLoginOtpEmail } = require("../services/emailService");
+const {
+  otpSendLimiter,
+  otpVerifyLimiter
+} = require("../middleware/rateLimiters");
 
 const generateOtp = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
 // ================= SEND OTP =================
-router.post("/send-otp", async (req, res) => {
+router.post("/send-otp", otpSendLimiter, async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -58,7 +62,7 @@ router.post("/send-otp", async (req, res) => {
 });
 
 // ================= VERIFY OTP =================
-router.post("/verify-otp", async (req, res) => {
+router.post("/verify-otp", otpVerifyLimiter, async (req, res) => {
   try {
     const { email, otp } = req.body;
     const normalizedEmail = String(email || "").trim().toLowerCase();

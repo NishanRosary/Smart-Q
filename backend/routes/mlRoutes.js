@@ -3,6 +3,7 @@ const router = express.Router();
 const Queue = require("../models/queue");
 const axios = require("axios");
 const { authMiddleware, roleMiddleware } = require("../middleware/auth");
+const { mlPredictLimiter } = require("../middleware/rateLimiters");
 const mlConfig = require("../../src/config/mlConfig");
 const { callMLInference, getMLHealth } = require("../../src/services/mlSafeWrapper");
 
@@ -126,7 +127,7 @@ const ensureModelTrained = async () => {
    UNIFIED PREDICT ROUTE
 ======================= */
 
-router.post("/predict", async (req, res) => {
+router.post("/predict", mlPredictLimiter, async (req, res) => {
   try {
     const payloadError = validatePredictPayload(req.body);
     if (payloadError) {
