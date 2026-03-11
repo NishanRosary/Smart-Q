@@ -1,0 +1,42 @@
+name: SmartQ CD Pipeline
+
+on:
+  workflow_run:
+    workflows: ["SmartQ CI Pipeline"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_KEY }}
+          script: |
+            cd Smart-Q/Smart-Q
+
+            echo "Pulling latest code"
+            git pull origin main
+
+            echo "Installing backend dependencies"
+            cd backend
+            npm install
+
+            echo "Installing ML dependencies"
+            cd ml
+            pip3 install -r requirements.txt
+
+            echo "Building frontend"
+            cd ../../frontend
+            npm install
+            npm run build
+
+            echo "Restarting services"
+            pm2 restart smartq-backend
+            pm2 restart smartq-ml
