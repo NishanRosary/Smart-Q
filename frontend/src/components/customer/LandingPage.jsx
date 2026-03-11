@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Header from '../shared/Header';
-import '../../styles/customer.css';
+import '../../../styles/customer.css';
 
 import {
   Building2,
