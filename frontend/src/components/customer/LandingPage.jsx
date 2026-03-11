@@ -181,13 +181,14 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
           >
 
             <img
-              src={theme === 'dark' ? logoDark : logoLight}
-              alt="SmartQ Logo"
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover'
-              }}
+            src={theme === 'dark' ? "/smartq-logo-dark.jpg" : "/smartq-logo.jpg"}
+            alt="Smart'Q Logo"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              borderRadius: '16px'
+            }}
             />
 
           </div>
