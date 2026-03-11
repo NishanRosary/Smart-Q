@@ -33,37 +33,66 @@ const server = http.createServer(app);
 app.set("trust proxy", 1);
 app.use(helmet());
 
-app.use(cors({
-  origin: [
-    "http://localhost:3000",
-    "https://smart-q.vercel.app"
-  ],
-  credentials: true
-}));
+/* ================= CORS CONFIG ================= */
 
-app.use(express.json({
-  limit: "10kb"
-}));
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://smart-q.vercel.app"
+];
 
-app.use(express.urlencoded({
-  extended: true,
-  limit: "10kb"
-}));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.endsWith(".vercel.app")
+      ) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true
+  })
+);
+
+/* ================= BODY PARSER ================= */
+
+app.use(
+  express.json({
+    limit: "10kb"
+  })
+);
+
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: "10kb"
+  })
+);
 
 app.use(cookieParser());
+
+/* ================= SECURITY ================= */
 
 const expressVersion = require("express/package.json").version;
 const expressMajor = parseInt(expressVersion.split(".")[0], 10);
 
 if (expressMajor < 5) {
-  app.use(mongoSanitize({
-    replaceWith: "_"
-  }));
+  app.use(
+    mongoSanitize({
+      replaceWith: "_"
+    })
+  );
 
   app.use(hpp());
 } else {
-  console.warn("Express 5 detected â€” skipping mongoSanitize/hpp middleware");
+  console.warn("Express 5 detected — skipping mongoSanitize/hpp middleware");
 }
+
+/* ================= RATE LIMIT ================= */
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -78,6 +107,8 @@ const apiLimiter = rateLimit({
 
 app.use("/api", apiLimiter);
 
+/* ================= HTTPS REDIRECT ================= */
+
 if (process.env.NODE_ENV === "production") {
   app.use((req, res, next) => {
     const proto = req.headers["x-forwarded-proto"];
@@ -90,18 +121,30 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
+/* ================= SOCKET.IO ================= */
+
 const io = new Server(server, {
   cors: {
-    origin: [
-      "http://localhost:3000",
-      "https://smart-q.vercel.app"
-    ],
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.endsWith(".vercel.app")
+      ) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
     methods: ["GET", "POST"],
     credentials: true
   }
 });
 
 app.set("io", io);
+
+/* ================= ROUTES ================= */
 
 app.use("/api/auth", authRoutes);
 app.use("/api/queue", queueRoutes);
@@ -146,6 +189,8 @@ app.get("/api/test-email", testEmailLimiter, async (req, res, next) => {
   }
 });
 
+/* ================= ERROR HANDLING ================= */
+
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -162,6 +207,8 @@ app.use((err, req, res, next) => {
   });
 });
 
+/* ================= SOCKET CONNECTION ================= */
+
 io.on("connection", (socket) => {
   console.log("Client connected:", socket.id);
 
@@ -169,6 +216,8 @@ io.on("connection", (socket) => {
     console.log("Client disconnected:", socket.id);
   });
 });
+
+/* ================= CLEANUP SERVICE ================= */
 
 const runExpiredEventCleanup = async () => {
   if (mongoose.connection.readyState !== 1) {
@@ -188,12 +237,15 @@ const runExpiredEventCleanup = async () => {
   }
 };
 
+/* ================= START SERVER ================= */
+
 const startServer = async (port = process.env.PORT || 5000) => {
   await connectDB();
   await Queue.syncIndexes();
 
   return new Promise((resolve, reject) => {
     server.once("error", reject);
+
     server.listen(port, async () => {
       server.removeListener("error", reject);
 
