@@ -1,1 +1,1 @@
-export const API_BASE_URL = "https://smartq-backend-b4jn.onrender.com/api";
+export const API_BASE_URL = "https://smartq-backend-b4jn.onrender.com";
