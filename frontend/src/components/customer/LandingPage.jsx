@@ -2,9 +2,6 @@ import React, { useState, useEffect } from 'react';
 import Header from '../shared/Header';
 import '../../styles/customer.css';
 
-import logoLight from '../../public/smartq-logo.jpg';
-import logoDark from '../../public/smartq-logo-dark.jpg';
-
 import {
   Building2,
   Landmark,
