@@ -33,9 +33,6 @@ const server = http.createServer(app);
 app.set("trust proxy", 1);
 app.use(helmet());
 
-<<<<<<< HEAD
-/* ================= CORS CONFIG ================= */
-=======
 app.use(cors({
   origin: [
     "http://localhost:3000",
@@ -43,7 +40,6 @@ app.use(cors({
   ],
   credentials: true
 }));
->>>>>>> 281b27b97124cc0436d7f5e3342a53facf197d0e
 
 const allowedOrigins = [
   "http://localhost:3000",
@@ -135,25 +131,10 @@ if (process.env.NODE_ENV === "production") {
 
 const io = new Server(server, {
   cors: {
-<<<<<<< HEAD
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-
-      if (
-        allowedOrigins.includes(origin) ||
-        origin.endsWith(".vercel.app")
-      ) {
-        return callback(null, true);
-      }
-
-      return callback(new Error("Not allowed by CORS"));
-    },
-=======
     origin: [
       "http://localhost:3000",
       "https://smartq-system.vercel.app"
     ],
->>>>>>> 281b27b97124cc0436d7f5e3342a53facf197d0e
     methods: ["GET", "POST"],
     credentials: true
   }

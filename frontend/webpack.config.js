@@ -69,23 +69,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './public/index.html',
     }),
-<<<<<<< HEAD
-
-    // copy all files from public → dist
-    new CopyWebpackPlugin({
-      patterns: [
-        {
-          from: path.resolve(__dirname, 'public'),
-          to: path.resolve(__dirname, 'dist'),
-          globOptions: {
-            ignore: ['**/index.html'], // already handled by HtmlWebpackPlugin
-          },
-        },
-      ],
-    }),
-=======
     new CopyPublicAssetsPlugin(),
->>>>>>> 281b27b97124cc0436d7f5e3342a53facf197d0e
   ],
 
   devServer: {
