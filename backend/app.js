@@ -33,7 +33,10 @@ app.set("trust proxy", 1);
 app.use(helmet());
 
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: [
+    "http://localhost:3000",
+    "https://smartq-system.vercel.app"
+  ],
   credentials: true
 }));
 
@@ -88,7 +91,10 @@ if (process.env.NODE_ENV === "production") {
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: [
+      "http://localhost:3000",
+      "https://smartq-system.vercel.app"
+    ],
     methods: ["GET", "POST"],
     credentials: true
   }
