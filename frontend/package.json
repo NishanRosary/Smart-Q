@@ -16,6 +16,7 @@
     "@babel/core": "^7.23.0",
     "@babel/preset-react": "^7.22.0",
     "babel-loader": "^9.1.0",
+    "copy-webpack-plugin": "^12.0.2",
     "css-loader": "^6.8.0",
     "html-webpack-plugin": "^5.5.0",
     "playwright": "^1.58.2",
@@ -28,6 +29,6 @@
     "start": "webpack serve --mode development",
     "build": "webpack --mode production",
     "test": "node ./tests/run-sanity.mjs",
-    "test:ui": "npm.cmd run build && node ./tests/run-browser-ui.mjs"
+    "test:ui": "npm run build && node ./tests/run-browser-ui.mjs"
   }
 }
