@@ -159,6 +159,10 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
             crowdLevel: data.crowdLevel,
             totalWaiting: data.totalWaiting
           }));
+        } else {
+          // Not present in waiting/serving lists anymore (could be completed/cancelled).
+          // Pull latest status directly so dashboard reflects terminal states promptly.
+          fetchQueueStatus();
         }
       }
       setLastUpdated(new Date());
@@ -287,6 +291,23 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
               </div>
             )}
 
+            {displayStatus.status === 'cancelled' && (
+              <div style={{
+                padding: '1.25rem',
+                background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                borderRadius: '12px',
+                color: '#fff',
+                textAlign: 'center',
+                marginBottom: '1.5rem',
+                animation: 'fadeInDown 0.5s ease',
+                boxShadow: '0 4px 20px rgba(239, 68, 68, 0.35)'
+              }}>
+                <AlertTriangle size={28} style={{ marginBottom: '0.5rem' }} />
+                <div style={{ fontSize: '1.25rem', fontWeight: 800 }}>Token Cancelled</div>
+                <div style={{ opacity: 0.9, fontSize: '0.875rem' }}>This token is no longer active in queue</div>
+              </div>
+            )}
+
             {/* Main Queue Position Card */}
             <div className="queue-status-card">
               <div className="queue-position" style={{
@@ -294,11 +315,13 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
                 transition: 'all 0.5s ease'
               }}>
                 {displayStatus.status === 'serving' ? '🎉' :
+                  displayStatus.status === 'cancelled' ? '❌' :
                   displayStatus.status === 'completed' ? '✅' :
                     displayStatus.position}
               </div>
               <div className="queue-label">
                 {displayStatus.status === 'serving' ? 'Now Serving You!' :
+                  displayStatus.status === 'cancelled' ? 'Token Cancelled' :
                   displayStatus.status === 'completed' ? 'Service Completed' :
                     'Your Position in Queue'}
               </div>

@@ -334,6 +334,18 @@ router.get("/status/:tokenNumber", async (req, res) => {
       });
     }
 
+    if (myEntry.status === "cancelled") {
+      return res.json({
+        tokenNumber: myEntry.tokenNumber,
+        service: myEntry.service,
+        status: "cancelled",
+        position: 0,
+        estimatedWaitTime: 0,
+        crowdLevel: getCrowdLevel(await Queue.countDocuments(waitingFilter)),
+        totalWaiting: await Queue.countDocuments(waitingFilter)
+      });
+    }
+
     const waitingAhead = await Queue.countDocuments({
       status: "waiting",
       organizationType: scopeForStatus,
