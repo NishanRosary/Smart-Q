@@ -46,10 +46,76 @@ const clearHealthCache = () => {
   cachedHealthAt = 0;
 };
 
+const buildFallbackPredictionBundle = ({
+  service = "General",
+  positionInQueue = 1,
+  totalWaiting = 0,
+  reason = "ml-unavailable"
+} = {}) => {
+  const safePosition = Math.max(1, Number(positionInQueue || 1));
+  const safeWaiting = Math.max(0, Number(totalWaiting || 0));
+  const now = new Date();
+
+  const peakTimes = Array.from({ length: 6 }).map((_, offset) => {
+    const d = new Date(now.getTime() + offset * 60 * 60 * 1000);
+    const load = Math.max(0, safeWaiting + (offset % 3) - 1);
+    return {
+      hour: `${String(d.getHours()).padStart(2, "0")}:00`,
+      prediction: toPeakLevel(load),
+      customers: load
+    };
+  });
+
+  const waitTimePredictions = Array.from({ length: 4 }).map((_, offset) => {
+    const predictedWait = Math.max(0, Math.round((safePosition + Math.max(0, safeWaiting - offset)) * 2));
+    return {
+      time: offset === 0 ? "Now" : `+${offset} hour${offset > 1 ? "s" : ""}`,
+      predictedWait
+    };
+  });
+
+  const optimalVisitTimes = [1, 2, 3].map((offset) => {
+    const hour = (now.getHours() + offset + 1) % 24;
+    const nextHour = (hour + 1) % 24;
+    const queueLength = Math.max(0, safeWaiting - offset);
+    const waitTime = Math.max(1, queueLength * 2);
+    return {
+      time: `${String(hour).padStart(2, "0")}:00-${String(nextHour).padStart(2, "0")}:00`,
+      score: mapBestTimeScore(queueLength, waitTime),
+      waitTime,
+      crowdLevel: toPeakLevel(queueLength)
+    };
+  });
+
+  return {
+    peakTimes,
+    waitTimePredictions,
+    optimalVisitTimes,
+    totalWaiting: safeWaiting,
+    serviceWaiting: null,
+    crowdLevel: toPeakLevel(safeWaiting),
+    mlModelStats: {
+      isSimulated: true,
+      trained: false,
+      modelAccuracy: null,
+      predictionsToday: null,
+      avgAccuracy: null,
+      lastUpdated: now.toISOString(),
+      reason,
+      service
+    }
+  };
+};
+
 const getPredictionsIfTrained = async ({ service = "General", positionInQueue = 1, totalWaiting = 0 } = {}) => {
   const health = await getHealth();
   if (!health || !health.trained) {
-    return null;
+    return buildFallbackPredictionBundle({
+      service,
+      positionInQueue,
+      totalWaiting,
+      reason: "ml-not-trained"
+    });
   }
 
   const now = new Date();
@@ -136,15 +202,25 @@ const getPredictionsIfTrained = async ({ service = "General", positionInQueue = 
     };
 
     if (!isPredictionBundle(result)) {
-      logger.warn("Prediction bundle shape invalid; returning null fallback");
-      return null;
+      logger.warn("Prediction bundle shape invalid; returning simulated fallback");
+      return buildFallbackPredictionBundle({
+        service,
+        positionInQueue,
+        totalWaiting,
+        reason: "invalid-ml-shape"
+      });
     }
 
     return result;
   } catch (error) {
     logger.error("ML prediction build failed", { message: error.message });
     clearHealthCache();
-    return null;
+    return buildFallbackPredictionBundle({
+      service,
+      positionInQueue,
+      totalWaiting,
+      reason: "ml-call-failed"
+    });
   }
 };
 

@@ -27,8 +27,10 @@ router.get("/", authMiddleware, adminMiddleware, async (req, res) => {
         trained: false,
         peakTimes: [],
         waitTimePredictions: [],
+        optimalVisitTimes: [],
         crowdForecast: [],
         mlModelStats: {
+          isSimulated: true,
           trained: false,
           modelAccuracy: null,
           predictionsToday: null,
@@ -39,7 +41,7 @@ router.get("/", authMiddleware, adminMiddleware, async (req, res) => {
     }
 
     return res.json({
-      trained: true,
+      trained: Boolean(predictions?.mlModelStats?.trained),
       ...predictions,
       crowdForecast: []
     });
