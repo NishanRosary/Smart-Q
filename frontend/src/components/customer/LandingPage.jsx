@@ -286,7 +286,7 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
         </div>
 
         <p style={{textAlign:"center",marginTop:"20px"}}>
-          © 2025 Smart'Q
+          {"\u00A9"} 2025 Smart'Q
         </p>
 
       </footer>
