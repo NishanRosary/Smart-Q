@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Moon, Sun, Mail, Phone, LogOut } from 'lucide-react';
-import '../../../styles/customer.css';
+import '../../styles/customer.css';
 import { getUserInitials } from '../../utils/uiHelpers.mjs';
 import {
   applyThemePreference,
