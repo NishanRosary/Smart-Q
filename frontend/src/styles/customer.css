@@ -57,7 +57,7 @@
 
 .nav-button {
   padding: 10px 20px;
-  font-size: 16px;
+  font-size: 1rem;
   border-radius: 12px;
   font-weight: 600;
   border: 2px solid var(--color-primary-dark);
@@ -230,94 +230,6 @@
   .hero-image-wrapper {
     max-width: 100%;
   }
-}
-
-.features-section,
-.companies-section,
-.faq-section {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 4rem 2rem;
-}
-
-.features-section h2,
-.companies-section h2,
-.faq-section h2 {
-  text-align: center;
-  color: var(--color-gray-900);
-  margin-bottom: 2rem;
-}
-
-.features-grid,
-.companies-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-}
-
-.feature-card,
-.company-card {
-  background: var(--color-white);
-  border-radius: 14px;
-  border: 1px solid var(--color-gray-200);
-  box-shadow: var(--shadow-md);
-  padding: 1.5rem;
-  text-align: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.feature-card:hover,
-.company-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-lg);
-}
-
-.feature-card svg,
-.company-card svg {
-  color: var(--color-primary);
-  margin-bottom: 0.75rem;
-}
-
-.feature-card h3,
-.company-card h4 {
-  margin-bottom: 0.5rem;
-  color: var(--color-gray-900);
-}
-
-.feature-card p,
-.company-card p {
-  margin: 0;
-  color: var(--color-gray-600);
-}
-
-.faq-section {
-  max-width: 900px;
-}
-
-.faq-item {
-  border: 1px solid var(--color-gray-200);
-  border-radius: 12px;
-  background: var(--color-white);
-  box-shadow: var(--shadow-sm);
-  padding: 1rem 1.25rem;
-  margin-bottom: 1rem;
-  cursor: pointer;
-}
-
-.faq-question {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  color: var(--color-gray-900);
-  font-weight: 600;
-}
-
-.faq-answer {
-  margin: 0.75rem 0 0;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--color-gray-200);
-  color: var(--color-gray-600);
 }
 
 .trust-section {
@@ -630,27 +542,6 @@
   transition: all 0.3s ease;
   background-color: var(--color-primary-dark);
   /* Dynamically matches Hero Section Blue */
-}
-
-.footer-grid {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 2rem;
-}
-
-.landing-footer p {
-  margin-bottom: 0.5rem;
-}
-
-.landing-footer p[onClick] {
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-}
-
-.landing-footer p[onClick]:hover {
-  opacity: 0.85;
 }
 
 /* LIGHT MODE: White Text */
