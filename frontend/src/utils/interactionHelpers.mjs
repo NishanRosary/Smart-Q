@@ -21,6 +21,24 @@ export const getServiceUnavailableMessage = (error) => {
     return "Authentication service is unavailable. Check the backend URL and server status.";
   }
 
+  const status = Number(error.response?.status || 0);
+  const data = error.response?.data;
+
+  if (typeof data === "string") {
+    const normalized = data.trim().toLowerCase();
+    if (normalized.startsWith("<!doctype html") || normalized.startsWith("<html")) {
+      return `Authentication endpoint returned HTML (HTTP ${status || "unknown"}). Check frontend API base URL configuration.`;
+    }
+  }
+
+  if (status === 404) {
+    return "Authentication endpoint not found (HTTP 404). Verify frontend API URL points to backend.";
+  }
+
+  if (status >= 500 && !(data && typeof data === "object" && data.message)) {
+    return "Authentication server error. Please try again in a moment.";
+  }
+
   return null;
 };
 

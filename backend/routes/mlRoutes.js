@@ -7,7 +7,7 @@ const { mlPredictLimiter } = require("../middleware/rateLimiters");
 const mlConfig = require("../../src/config/mlConfig");
 const { callMLInference, getMLHealth } = require("../../src/services/mlSafeWrapper");
 
-const ML_SERVICE_URL = process.env.ML_SERVICE_URL || "http://localhost:5001";
+const ML_SERVICE_URL = process.env.ML_SERVICE_URL || "https://smartq-ml.onrender.com";
 
 const isNonEmptyString = (value) =>
   typeof value === "string" && value.trim().length > 0;

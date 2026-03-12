@@ -111,6 +111,7 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
       const msg =
         getServiceUnavailableMessage(error) ||
         error?.response?.data?.message ||
+        error?.message ||
         'Authentication failed. Please try again.';
       setErrorMessage(msg);
     } finally {

@@ -3,6 +3,9 @@ const normalizeBaseUrl = (value) => String(value || "").replace(/\/+$/, "");
 const isLocalHost = (hostname) =>
   hostname === "localhost" || hostname === "127.0.0.1";
 
+const PROD_API_BASE_URL = "https://smartq-backend-b4jn.onrender.com";
+const PROD_ML_BASE_URL = "https://smartq-ml.onrender.com";
+
 const getConfiguredApiBaseUrl = () => {
   const runtimeUrl =
     typeof window !== "undefined"
@@ -24,7 +27,7 @@ const getApiBaseUrl = () => {
   }
 
   if (typeof window === "undefined") {
-    return "http://localhost:5000";
+    return PROD_API_BASE_URL;
   }
 
   const { protocol, hostname, origin } = window.location;
@@ -33,7 +36,7 @@ const getApiBaseUrl = () => {
     return "http://localhost:5000";
   }
 
-  return protocol === "https:" ? normalizeBaseUrl(origin) : "http://localhost:5000";
+  return protocol === "https:" ? PROD_API_BASE_URL : normalizeBaseUrl(origin);
 };
 
 const getMlBaseUrl = () => {
@@ -47,7 +50,7 @@ const getMlBaseUrl = () => {
     return normalizeBaseUrl(configuredMlUrl);
   }
 
-  return "http://localhost:8000";
+  return PROD_ML_BASE_URL;
 };
 
 export const API_BASE_URL = getApiBaseUrl();

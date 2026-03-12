@@ -11,7 +11,7 @@ const { purgeExpiredEvents, isEventExpired } = require("../services/eventCleanup
 const mlConfig = require("../../src/config/mlConfig");
 const { callMLInference } = require("../../src/services/mlSafeWrapper");
 
-const ML_SERVICE_URL = process.env.ML_SERVICE_URL || "http://localhost:5001";
+const ML_SERVICE_URL = process.env.ML_SERVICE_URL || "https://smartq-ml.onrender.com";
 const normalizeService = (value) => String(value || "").trim();
 const normalizeSector = (value) => String(value || "").trim();
 const getTokenScope = (item) =>

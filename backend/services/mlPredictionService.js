@@ -2,7 +2,7 @@ const { callMLInference, getMLHealth } = require("../../src/services/mlSafeWrapp
 const { isPredictionBundle } = require("../../src/utils/mlValidation");
 const logger = require("../../src/utils/mlLogger");
 
-const ML_SERVICE_URL = process.env.ML_SERVICE_URL || "http://localhost:5001";
+const ML_SERVICE_URL = process.env.ML_SERVICE_URL || "https://smartq-ml.onrender.com";
 const ML_HEALTH_TIMEOUT_MS = Number(process.env.ML_HEALTH_TIMEOUT_MS || 800);
 const ML_HEALTH_CACHE_TTL_MS = Number(process.env.ML_HEALTH_CACHE_TTL_MS || 15000);
 
