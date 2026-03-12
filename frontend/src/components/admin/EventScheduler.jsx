@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../../config/api';
 import Sidebar from '../shared/Sidebar';
 import QRCodeDisplay from '../shared/QRCodeDisplay';
 import socket from '../../socket';
@@ -48,7 +49,7 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
 
   const fetchEvents = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/events', {
+      const response = await axios.get(`${API_BASE_URL}/api/events`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -84,7 +85,7 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
     }
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:5000/api/events', formData, {
+      const response = await axios.post(`${API_BASE_URL}/api/events`, formData, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -141,7 +142,7 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
 
     setCompletingEventId(eventId);
     try {
-      await axios.post(`http://localhost:5000/api/events/${eventId}/complete`, {}, {
+      await axios.post(`${API_BASE_URL}/api/events/${eventId}/complete`, {}, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -161,7 +162,7 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
 
     setDeletingEventId(eventId);
     try {
-      await axios.delete(`http://localhost:5000/api/events/${eventId}`, {
+      await axios.delete(`${API_BASE_URL}/api/events/${eventId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -556,3 +557,4 @@ const EventScheduler = ({ onNavigate, goBack, currentPage }) => {
 };
 
 export default EventScheduler;
+

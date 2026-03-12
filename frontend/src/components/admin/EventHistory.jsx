@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../../config/api';
 import {
     Archive,
     Calendar,
@@ -32,7 +33,7 @@ const EventHistory = ({ onNavigate, goBack, currentPage }) => {
     const fetchHistory = async () => {
         setLoading(true);
         try {
-            const response = await axios.get('http://localhost:5000/api/event-history', {
+            const response = await axios.get(`${API_BASE_URL}/api/event-history`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
@@ -58,7 +59,7 @@ const EventHistory = ({ onNavigate, goBack, currentPage }) => {
 
         setDeletingId(id);
         try {
-            await axios.delete(`http://localhost:5000/api/event-history/${id}`, {
+            await axios.delete(`${API_BASE_URL}/api/event-history/${id}`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
@@ -683,3 +684,4 @@ const EventHistory = ({ onNavigate, goBack, currentPage }) => {
 };
 
 export default EventHistory;
+

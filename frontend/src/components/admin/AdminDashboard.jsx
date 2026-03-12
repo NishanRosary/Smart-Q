@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../../config/api';
 import {
   ClipboardList,
   Building2,
@@ -35,8 +36,8 @@ const AdminDashboard = ({ onNavigate, goBack, currentPage }) => {
 
       try {
         const [queueRes, eventsRes] = await Promise.all([
-          axios.get('http://localhost:5000/api/queue', getAuthConfig()),
-          axios.get('http://localhost:5000/api/events', getAuthConfig())
+          axios.get(`${API_BASE_URL}/api/queue`, getAuthConfig()),
+          axios.get(`${API_BASE_URL}/api/events`, getAuthConfig())
         ]);
 
         const queues = queueRes.data || [];
@@ -57,7 +58,7 @@ const AdminDashboard = ({ onNavigate, goBack, currentPage }) => {
         });
 
         // Fetch predictions in background so dashboard stats render immediately.
-        axios.get('http://localhost:5000/api/predictions', getAuthConfig())
+        axios.get(`${API_BASE_URL}/api/predictions`, getAuthConfig())
           .then((predsRes) => {
             setPredictions(predsRes.data || { peakTimes: [] });
           })
@@ -233,4 +234,5 @@ const AdminDashboard = ({ onNavigate, goBack, currentPage }) => {
 };
 
 export default AdminDashboard;
+
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Sidebar from '../shared/Sidebar';
 import axios from 'axios';
+import { API_BASE_URL } from '../../config/api';
 import socket from '../../socket';
 import '../../styles/admin.css';
 import '../../styles/global.css';
@@ -18,7 +19,7 @@ const CounterManagement = ({ onNavigate, goBack, currentPage }) => {
 
   const fetchQueueData = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/queue', getAuthConfig());
+      const res = await axios.get(`${API_BASE_URL}/api/queue`, getAuthConfig());
       setQueueData(res.data || []);
     } catch (err) {
       console.error('Error fetching queue:', err);
@@ -27,7 +28,7 @@ const CounterManagement = ({ onNavigate, goBack, currentPage }) => {
 
   const fetchEvents = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/events', getAuthConfig());
+      const res = await axios.get(`${API_BASE_URL}/api/events`, getAuthConfig());
       setEvents(res.data || []);
     } catch (err) {
       console.error('Error fetching events:', err);
@@ -232,7 +233,7 @@ const CounterManagement = ({ onNavigate, goBack, currentPage }) => {
 
     try {
       await axios.put(
-        `http://localhost:5000/api/queue/${nextToken._id}/start`,
+        `${API_BASE_URL}/api/queue/${nextToken._id}/start`,
         {},
         getAuthConfig()
       );
@@ -352,3 +353,4 @@ const CounterManagement = ({ onNavigate, goBack, currentPage }) => {
 };
 
 export default CounterManagement;
+

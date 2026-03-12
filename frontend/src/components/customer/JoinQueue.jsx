@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "../../config/api";
 import Header from "../shared/Header";
 import "../../styles/customer.css";
 import {
@@ -48,7 +49,7 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData })
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/events');
+        const response = await axios.get(`${API_BASE_URL}/api/events`);
         setEvents(response.data || []);
       } catch (error) {
         console.error('Error fetching events:', error);
@@ -117,7 +118,7 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData })
     setLoading(true);
     setJoinError('');
     try {
-      const res = await axios.post("http://localhost:5000/api/queue/join", {
+      const res = await axios.post(`${API_BASE_URL}/api/queue/join`, {
         service: selectedService,
         guestName: guestDetails.name || customerData?.name || "Customer",
         guestMobile: customerData?.phone || "",
@@ -582,3 +583,4 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData })
 };
 
 export default JoinQueue;
+

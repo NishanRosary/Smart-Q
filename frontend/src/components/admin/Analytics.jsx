@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../../config/api';
 import Sidebar from '../shared/Sidebar';
 import '../../styles/admin.css';
 import '../../styles/global.css';
@@ -23,7 +24,7 @@ const Analytics = ({ onNavigate, goBack, currentPage }) => {
       });
 
       try {
-        const queueRes = await axios.get('http://localhost:5000/api/queue', getAuthConfig());
+        const queueRes = await axios.get(`${API_BASE_URL}/api/queue`, getAuthConfig());
         const queues = queueRes.data || [];
 
         const trends = {};
@@ -51,7 +52,7 @@ const Analytics = ({ onNavigate, goBack, currentPage }) => {
           servicePopularity: servicePopularity.length > 0 ? servicePopularity : []
         });
 
-        axios.get('http://localhost:5000/api/predictions', getAuthConfig())
+        axios.get(`${API_BASE_URL}/api/predictions`, getAuthConfig())
           .then((predsRes) => {
             setPredictions(predsRes.data || { peakTimes: [] });
             setMlModelAccuracy(predsRes?.data?.mlModelStats?.modelAccuracy ?? null);
@@ -259,3 +260,4 @@ const Analytics = ({ onNavigate, goBack, currentPage }) => {
 };
 
 export default Analytics;
+

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Sidebar from "../shared/Sidebar";
 import axios from "axios";
+import { API_BASE_URL } from "../../config/api";
 import socket from "../../socket";
 import "../../styles/admin.css";
 import "../../styles/global.css";
@@ -16,7 +17,7 @@ const QueueManagement = ({ onNavigate, goBack, currentPage }) => {
 
   const fetchQueueData = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/queue", getAuthConfig());
+      const res = await axios.get(`${API_BASE_URL}/api/queue`, getAuthConfig());
       setQueueData(res.data || []);
     } catch (err) {
       console.error("Error fetching queue:", err);
@@ -51,7 +52,7 @@ const QueueManagement = ({ onNavigate, goBack, currentPage }) => {
     );
 
     try {
-      await axios.put(`http://localhost:5000/api/queue/${id}/${endpoint}`, {}, getAuthConfig());
+      await axios.put(`${API_BASE_URL}/api/queue/${id}/${endpoint}`, {}, getAuthConfig());
     } catch (error) {
       console.error(errorLabel, error);
       setQueueData(previous);
@@ -234,3 +235,4 @@ const QueueManagement = ({ onNavigate, goBack, currentPage }) => {
 };
 
 export default QueueManagement;
+

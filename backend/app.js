@@ -33,36 +33,36 @@ const server = http.createServer(app);
 app.set("trust proxy", 1);
 app.use(helmet());
 
-app.use(cors({
-  origin: [
-    "http://localhost:3000",
-    "https://smartq-system.vercel.app"
-  ],
-  credentials: true
-}));
-
-const allowedOrigins = [
+const defaultFrontendOrigins = [
   "http://localhost:3000",
-  "https://smart-q.vercel.app"
+  "https://smart-q.vercel.app",
+  "https://smartq-system.vercel.app"
 ];
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
+const configuredFrontendOrigins = String(process.env.FRONTEND_ORIGINS || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
-      if (
-        allowedOrigins.includes(origin) ||
-        origin.endsWith(".vercel.app")
-      ) {
-        return callback(null, true);
-      }
+const allowedOrigins = configuredFrontendOrigins.length > 0
+  ? configuredFrontendOrigins
+  : defaultFrontendOrigins;
 
-      return callback(new Error("Not allowed by CORS"));
-    },
-    credentials: true
-  })
-);
+const isOriginAllowed = (origin) => {
+  if (!origin) return true;
+  if (allowedOrigins.includes(origin)) return true;
+  return origin.endsWith(".vercel.app");
+};
+
+app.use(cors({
+  origin(origin, callback) {
+    if (isOriginAllowed(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true
+}));
 
 /* ================= BODY PARSER ================= */
 
@@ -131,10 +131,12 @@ if (process.env.NODE_ENV === "production") {
 
 const io = new Server(server, {
   cors: {
-    origin: [
-      "http://localhost:3000",
-      "https://smartq-system.vercel.app"
-    ],
+    origin: (origin, callback) => {
+      if (isOriginAllowed(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
     methods: ["GET", "POST"],
     credentials: true
   }

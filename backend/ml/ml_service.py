@@ -1,5 +1,6 @@
 import sys
 import time
+import os
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -10,10 +11,17 @@ from models import QueueMLModels
 print(f"[ML] ML dependencies loaded in {time.time() - STARTUP_TS:.1f}s", flush=True)
 
 app = Flask(__name__)
-CORS(app, origins=[
+default_origins = [
     "http://localhost:3000",
+    "https://smart-q.vercel.app",
     "https://smartq-system.vercel.app"
-])
+]
+configured_origins = [
+    origin.strip()
+    for origin in str(os.environ.get("FRONTEND_ORIGINS", "")).split(",")
+    if origin.strip()
+]
+CORS(app, origins=configured_origins or default_origins)
 
 ml_models = QueueMLModels()
 
@@ -113,8 +121,6 @@ def health():
         'buffer_size': len(ml_models.buffer),
         'trains_at': ml_models.RETRAIN_EVERY if hasattr(ml_models, 'RETRAIN_EVERY') else 5
     })
-
-import os
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5001))

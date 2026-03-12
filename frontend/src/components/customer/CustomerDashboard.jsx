@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../../config/api';
 import Header from '../shared/Header';
 import QRCodeDisplay from '../shared/QRCodeDisplay';
 import { onQueueUpdate, getQueueStatus, connectSocket, disconnectSocket } from '../../services/queueService';
@@ -52,7 +53,7 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/events');
+        const response = await axios.get(`${API_BASE_URL}/api/events`);
         setEvents(response.data || []);
       } catch (error) {
         console.error('Error fetching events:', error);
@@ -631,3 +632,4 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
 };
 
 export default CustomerDashboard;
+

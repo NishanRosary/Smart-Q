@@ -346,3 +346,44 @@
 # Smart’Q presents a modern, scalable approach to queue management by combining digital queue joining, real-time updates, and administrative control.  
 
 # The system moves beyond basic token generation and provides a strong foundation for intelligent, data-driven service management in real-world environments.
+# 
+
+# ---
+
+# 
+
+# \##  Production Configuration
+
+# 
+
+# Use environment-based URLs so localhost/production switching does not require code edits.
+
+# 
+
+# \### Frontend (`frontend/.env`)
+
+# \- `REACT_APP_API_URL=https://your-backend-domain.com`
+
+# 
+
+# \### Backend (`backend/.env`)
+
+# \- `FRONTEND_ORIGINS=https://your-frontend-domain.com,http://localhost:3000`
+
+# \- `ML_SERVICE_URL=https://your-ml-service-domain.com` (or internal URL)
+
+# 
+
+# \### ML Service Environment
+
+# \- `FRONTEND_ORIGINS=https://your-frontend-domain.com,http://localhost:3000`
+
+# 
+
+# Notes:
+
+# \- API and Socket.IO use `FRONTEND_ORIGINS` for origin checks.
+
+# \- Frontend API calls use `REACT_APP_API_URL` (or runtime override) instead of hardcoded localhost.
+
+# \- After each push, redeploy frontend + backend + ML service so changes reflect in production.

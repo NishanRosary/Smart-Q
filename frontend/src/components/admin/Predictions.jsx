@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../../config/api';
 import Sidebar from '../shared/Sidebar';
 import '../../styles/admin.css';
 import '../../styles/global.css';
@@ -46,7 +47,7 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
           },
         });
 
-        const response = await axios.get('http://localhost:5000/api/predictions', getAuthConfig());
+        const response = await axios.get(`${API_BASE_URL}/api/predictions`, getAuthConfig());
         setPredictions(response.data || {
           peakTimes: [],
           waitTimePredictions: [],
@@ -322,3 +323,4 @@ const Predictions = ({ onNavigate, goBack, currentPage }) => {
 };
 
 export default Predictions;
+
