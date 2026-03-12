@@ -6,7 +6,7 @@ const QRCodeDisplay = ({ eventData, size = 200 }) => {
   const origin =
     typeof window !== 'undefined' && window.location?.origin
       ? window.location.origin
-      : 'http://localhost:3000';
+      : 'https://smartq-system.vercel.app';
 
   // Deep link into app so camera scanners open the selected event flow directly.
   const qrData = `${origin}/?eventId=${encodeURIComponent(String(eventId || ''))}`;

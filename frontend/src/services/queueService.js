@@ -2,7 +2,7 @@ import { io } from "socket.io-client";
 import axios from "axios";
 import { API_BASE_URL } from "../config/api";
 
-const SOCKET_URL = API_BASE_URL || "http://localhost:5000";
+const SOCKET_URL = API_BASE_URL;
 
 let socket = null;
 
