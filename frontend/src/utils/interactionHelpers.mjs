@@ -44,8 +44,11 @@ export const getServiceUnavailableMessage = (error) => {
 
 export const getAdminLoginErrorMessage = (error) =>
   getServiceUnavailableMessage(error) ||
+  error?.response?.data?.error ||
   error?.response?.data?.message ||
-  "Login failed. Ensure Server is running";
+  (typeof error?.response?.data === "string" ? error.response.data : null) ||
+  error?.message ||
+  "Login failed. Please verify backend deployment and admin credentials.";
 
 export const applyAdminLoginSuccess = ({
   data,
