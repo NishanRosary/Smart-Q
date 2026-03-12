@@ -9,6 +9,7 @@ import {
   setAuthToken,
   verifyCustomerLoginOtp
 } from '../../services/api';
+import { getServiceUnavailableMessage } from '../../utils/interactionHelpers.mjs';
 
 const OTP_COOLDOWN_SECONDS = 60;
 
@@ -107,7 +108,10 @@ const CustomerLogin = ({ onNavigate, goBack, currentPage }) => {
         phone: data.user?.phone || ''
       });
     } catch (error) {
-      const msg = error?.response?.data?.message || 'Authentication failed. Please try again.';
+      const msg =
+        getServiceUnavailableMessage(error) ||
+        error?.response?.data?.message ||
+        'Authentication failed. Please try again.';
       setErrorMessage(msg);
     } finally {
       setLoading(false);

@@ -16,8 +16,18 @@ export const runHeaderLogout = ({ onLogout, onNavigate }) => {
   }
 };
 
+export const getServiceUnavailableMessage = (error) => {
+  if (!error?.response) {
+    return "Authentication service is unavailable. Check the backend URL and server status.";
+  }
+
+  return null;
+};
+
 export const getAdminLoginErrorMessage = (error) =>
-  error?.response?.data?.message || "Login failed. Ensure Server is running";
+  getServiceUnavailableMessage(error) ||
+  error?.response?.data?.message ||
+  "Login failed. Ensure Server is running";
 
 export const applyAdminLoginSuccess = ({
   data,

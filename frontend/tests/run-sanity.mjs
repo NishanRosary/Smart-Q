@@ -94,7 +94,7 @@ const checks = [
       );
       assert.equal(
         getAdminLoginErrorMessage(new Error("boom")),
-        "Login failed. Ensure Server is running"
+        "Authentication service is unavailable. Check the backend URL and server status."
       );
     }
   },
