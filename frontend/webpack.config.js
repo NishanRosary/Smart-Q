@@ -1,6 +1,32 @@
 const path = require('path');
+const fs = require('fs');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+
+class CopyPublicAssetsPlugin {
+  apply(compiler) {
+    compiler.hooks.afterEmit.tap('CopyPublicAssetsPlugin', () => {
+      const publicDir = path.resolve(__dirname, 'public');
+      const distDir = path.resolve(__dirname, 'dist');
+
+      if (!fs.existsSync(publicDir)) {
+        return;
+      }
+
+      for (const entry of fs.readdirSync(publicDir, { withFileTypes: true })) {
+        if (entry.name === 'index.html') {
+          continue;
+        }
+
+        fs.cpSync(
+          path.join(publicDir, entry.name),
+          path.join(distDir, entry.name),
+          { recursive: true }
+        );
+      }
+    });
+  }
+}
 
 module.exports = {
   entry: './src/index.js',
@@ -8,6 +34,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js',
+    publicPath: 'auto',
     clean: true,
     publicPath: '/',
   },
@@ -42,6 +69,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './public/index.html',
     }),
+<<<<<<< HEAD
 
     // copy all files from public → dist
     new CopyWebpackPlugin({
@@ -55,6 +83,9 @@ module.exports = {
         },
       ],
     }),
+=======
+    new CopyPublicAssetsPlugin(),
+>>>>>>> 281b27b97124cc0436d7f5e3342a53facf197d0e
   ],
 
   devServer: {
