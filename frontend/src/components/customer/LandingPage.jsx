@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import Header from '../shared/Header';
-import '../../../styles/customer.css';
+import React, { useState, useEffect } from "react";
+import Header from "../shared/Header";
+import "../../../styles/customer.css";
 
 import {
   Building2,
@@ -31,43 +31,41 @@ import {
   Instagram,
   Linkedin,
   Github
-} from 'lucide-react';
+} from "lucide-react";
 
 const LandingPage = ({ onNavigate, goBack, currentPage }) => {
 
   const [openFaq, setOpenFaq] = useState(null);
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState("light");
 
   useEffect(() => {
-
-    const initialTheme = localStorage.getItem('smartq-theme') || 'light';
+    const initialTheme = localStorage.getItem("smartq-theme") || "light";
     setTheme(initialTheme);
 
     const handleThemeChange = () => {
       const currentTheme =
-        document.documentElement.getAttribute('data-theme') || 'light';
+        document.documentElement.getAttribute("data-theme") || "light";
       setTheme(currentTheme);
     };
 
     const handleStorageChange = () => {
-      const savedTheme = localStorage.getItem('smartq-theme') || 'light';
+      const savedTheme = localStorage.getItem("smartq-theme") || "light";
       setTheme(savedTheme);
-      document.documentElement.setAttribute('data-theme', savedTheme);
+      document.documentElement.setAttribute("data-theme", savedTheme);
     };
 
-    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener("storage", handleStorageChange);
 
     const observer = new MutationObserver(handleThemeChange);
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['data-theme']
+      attributeFilter: ["data-theme"]
     });
 
     return () => {
       observer.disconnect();
-      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener("storage", handleStorageChange);
     };
-
   }, []);
 
   const toggleFaq = (index) => {
@@ -75,49 +73,44 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
   };
 
   const companies = [
-    { name: 'City General Hospital', logo: <Stethoscope size={48} color="#2563EB" />, industry: 'Healthcare' },
-    { name: 'National Bank', logo: <Landmark size={48} color="#2563EB" />, industry: 'Banking' },
-    { name: 'Tech Corp', logo: <Cpu size={48} color="#2563EB" />, industry: 'Technology' },
-    { name: 'Regional Passport Office', logo: <Building2 size={48} color="#2563EB" />, industry: 'Government' },
-    { name: 'Metro University', logo: <GraduationCap size={48} color="#2563EB" />, industry: 'Education' },
-    { name: 'Prime Retail', logo: <ShoppingBag size={48} color="#2563EB" />, industry: 'Retail' }
+    { name: "City General Hospital", logo: <Stethoscope size={48} />, industry: "Healthcare" },
+    { name: "National Bank", logo: <Landmark size={48} />, industry: "Banking" },
+    { name: "Tech Corp", logo: <Cpu size={48} />, industry: "Technology" },
+    { name: "Regional Passport Office", logo: <Building2 size={48} />, industry: "Government" },
+    { name: "Metro University", logo: <GraduationCap size={48} />, industry: "Education" },
+    { name: "Prime Retail", logo: <ShoppingBag size={48} />, industry: "Retail" }
   ];
 
   const faqs = [
     {
       question: "What is Smart'Q?",
       answer:
-        "Smart'Q is an innovative queue management system that helps organizations manage customer queues efficiently while providing real-time updates and crowd predictions to customers."
+        "Smart'Q is an innovative queue management system that helps organizations manage queues efficiently with real-time updates and crowd prediction."
     },
     {
-      question: 'How does the queue tracking work?',
+      question: "How does queue tracking work?",
       answer:
-        'Once you join a queue, you receive a token number. Our system tracks your position in real-time and provides estimated waiting times based on current queue flow and crowd levels.'
+        "Once you join a queue you receive a token number and can track your position live."
     },
     {
-      question: 'Can I book slots for events in advance?',
+      question: "Can I book slots in advance?",
       answer:
-        'Yes! You can view scheduled events and book slots using QR codes. Simply scan the QR code for any event to quickly join the queue.'
+        "Yes. Events and services allow advance booking using QR codes."
     },
     {
-      question: 'What do the crowd level indicators mean?',
+      question: "What do crowd indicators mean?",
       answer:
-        'Green means minimal wait time, Yellow moderate waiting, and Red suggests longer wait times.'
+        "Green means low wait, yellow moderate wait, red high wait."
     },
     {
-      question: "Is Smart'Q free to use?",
+      question: "Is Smart'Q free?",
       answer:
-        "Smart'Q is free for customers. Organizations can contact us for enterprise pricing."
-    },
-    {
-      question: 'How do I get started?',
-      answer:
-        'Click "Join Queue", select your service, and you will receive a token number.'
+        "Customers use Smart'Q for free. Organizations can contact us for enterprise plans."
     }
   ];
 
   return (
-    <div style={{ backgroundColor: 'var(--bg-secondary)', minHeight: '100vh' }}>
+    <div style={{ backgroundColor: "var(--bg-secondary)", minHeight: "100vh" }}>
 
       <Header onNavigate={onNavigate} goBack={goBack} currentPage={currentPage} />
 
@@ -140,17 +133,17 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
 
             <button
               className="hero-button hero-button-primary"
-              onClick={() => onNavigate('join-queue')}
+              onClick={() => onNavigate("join-queue")}
             >
               Join as Guest
             </button>
 
             <button
               className="hero-button hero-button-secondary"
-              onClick={() => onNavigate('login')}
+              onClick={() => onNavigate("login")}
               style={{
-                borderColor: 'var(--color-white)',
-                color: 'var(--color-white)'
+                borderColor: "var(--color-white)",
+                color: "var(--color-white)"
               }}
             >
               Login
@@ -162,131 +155,140 @@ const LandingPage = ({ onNavigate, goBack, currentPage }) => {
 
         <div className="hero-image-wrapper">
 
-          <div
+          <img
+            src={theme === "dark" ? "/smartq-logo-dark.jpg" : "/smartq-logo.jpg"}
+            alt="SmartQ"
             style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              width: '100%',
-              maxWidth: '600px',
-              height: '400px',
-              margin: '0 auto',
-              borderRadius: '16px',
-              overflow: 'hidden',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.2)'
+              maxWidth: "420px",
+              width: "100%",
+              borderRadius: "16px",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.2)"
             }}
-          >
+          />
 
-            <img
-            src={theme === 'dark' ? "/smartq-logo-dark.jpg" : "/smartq-logo.jpg"}
-            alt="Smart'Q Logo"
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              borderRadius: '16px'
-            }}
-            />
+        </div>
 
+      </section>
+
+      {/* FEATURES */}
+
+      <section className="features-section">
+
+        <h2>Key Features</h2>
+
+        <div className="features-grid">
+
+          <div className="feature-card">
+            <Clock size={36} />
+            <h3>Real-time Tracking</h3>
+            <p>Track your queue position live.</p>
+          </div>
+
+          <div className="feature-card">
+            <Users size={36} />
+            <h3>Crowd Prediction</h3>
+            <p>Know peak hours before visiting.</p>
+          </div>
+
+          <div className="feature-card">
+            <Calendar size={36} />
+            <h3>Event Scheduling</h3>
+            <p>Book slots in advance easily.</p>
           </div>
 
         </div>
 
       </section>
 
-      {/* Remaining sections unchanged */}
+      {/* COMPANIES */}
 
-      {/* Footer */}
+      <section className="companies-section">
 
-      <footer className="landing-footer">
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <h2>Trusted by Organizations</h2>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-              gap: '2rem'
-            }}
-          >
+        <div className="companies-grid">
 
-            <div>
-              <h3 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Smart'Q</h3>
-              <p>
-                Smarter queue management powered by intelligent technology—
-                delivering seamless and efficient service experiences.
-              </p>
+          {companies.map((company, i) => (
+            <div key={i} className="company-card">
+              {company.logo}
+              <h4>{company.name}</h4>
+              <p>{company.industry}</p>
+            </div>
+          ))}
+
+        </div>
+
+      </section>
+
+      {/* FAQ */}
+
+      <section className="faq-section">
+
+        <h2>Frequently Asked Questions</h2>
+
+        {faqs.map((faq, index) => (
+
+          <div key={index} className="faq-item" onClick={() => toggleFaq(index)}>
+
+            <div className="faq-question">
+              {faq.question}
+              {openFaq === index ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
             </div>
 
-            <div>
-              <h3>Quick Links</h3>
-
-              <ul style={{ listStyle: 'none', padding: 0 }}>
-
-                <li>
-                  <a
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      onNavigate('landing');
-                    }}
-                  >
-                    Home
-                  </a>
-                </li>
-
-                <li>
-                  <a
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      onNavigate('login');
-                    }}
-                  >
-                    Login
-                  </a>
-                </li>
-
-                <li>
-                  <a
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      onNavigate('join-queue');
-                    }}
-                  >
-                    Join Queue
-                  </a>
-                </li>
-
-              </ul>
-
-            </div>
-
-            <div>
-              <h3>Contact Us</h3>
-              <p><Mail size={16}/> info@smartq.app</p>
-              <p><Phone size={16}/> +91 1234567890</p>
-              <p><MapPin size={16}/> Bangalore, India</p>
-            </div>
-
-            <div>
-              <h3>Follow Us</h3>
-
-              <div style={{ display: 'flex', gap: '1rem' }}>
-                <Instagram size={24}/>
-                <Linkedin size={24}/>
-                <Github size={24}/>
-              </div>
-
-            </div>
+            {openFaq === index && (
+              <p className="faq-answer">{faq.answer}</p>
+            )}
 
           </div>
 
-          <div style={{ marginTop: '2rem', textAlign: 'center' }}>
-            <p>© 2025 Smart'Q. All rights reserved.</p>
+        ))}
+
+      </section>
+
+      {/* FOOTER */}
+
+      <footer className="landing-footer">
+
+        <div className="footer-grid">
+
+          <div>
+            <h3>Smart'Q</h3>
+            <p>
+              Smarter queue management powered by intelligent technology.
+            </p>
+          </div>
+
+          <div>
+            <h3>Quick Links</h3>
+
+            <p onClick={() => onNavigate("landing")}>Home</p>
+            <p onClick={() => onNavigate("login")}>Login</p>
+            <p onClick={() => onNavigate("join-queue")}>Join Queue</p>
+
+          </div>
+
+          <div>
+            <h3>Contact</h3>
+            <p><Mail size={16}/> info@smartq.app</p>
+            <p><Phone size={16}/> +91 1234567890</p>
+            <p><MapPin size={16}/> Bangalore</p>
+          </div>
+
+          <div>
+            <h3>Follow Us</h3>
+            <div style={{display:"flex",gap:"10px"}}>
+              <Instagram/>
+              <Linkedin/>
+              <Github/>
+            </div>
           </div>
 
         </div>
+
+        <p style={{textAlign:"center",marginTop:"20px"}}>
+          © 2025 Smart'Q
+        </p>
+
       </footer>
 
     </div>
