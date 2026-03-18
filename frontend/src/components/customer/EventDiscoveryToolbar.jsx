@@ -1,5 +1,5 @@
 import React from "react";
-import { Search, Building2, CalendarRange, FilterX, Sparkles, Type } from "lucide-react";
+import { Search, Building2, CalendarRange, FilterX, Sparkles, Type, LocateFixed, Route } from "lucide-react";
 
 const EventDiscoveryToolbar = ({
   filters,
@@ -7,15 +7,31 @@ const EventDiscoveryToolbar = ({
   onClear,
   organizationTypes,
   eventTitles,
+  distanceOptions,
   filteredCount,
-  totalCount
+  totalCount,
+  onRequestLocation,
+  locationStatus,
+  hasUserLocation
 }) => {
   const handleChange = (key) => (event) => {
-    onFiltersChange(key, event.target.value);
+    const nextValue = event.target.value;
+
+    if (key === "distanceRangeKm" && nextValue && !hasUserLocation) {
+      onRequestLocation?.();
+      return;
+    }
+
+    onFiltersChange(key, nextValue);
   };
 
   const hasActiveFilters = Boolean(
-    filters.searchTerm || filters.organizationType || filters.eventTitle || filters.fromDate || filters.toDate
+    filters.searchTerm ||
+      filters.organizationType ||
+      filters.eventTitle ||
+      filters.fromDate ||
+      filters.toDate ||
+      filters.distanceRangeKm
   );
 
   return (
@@ -28,7 +44,7 @@ const EventDiscoveryToolbar = ({
           </div>
           <h3 className="event-discovery-title">Find the right event faster</h3>
           <p className="event-discovery-subtitle">
-            Search by service, organization, or doctor / HR name
+            Search by service, organization, or doctor / HR name, then narrow by date and nearby distance.
           </p>
         </div>
         <div className="event-discovery-summary">
@@ -96,21 +112,52 @@ const EventDiscoveryToolbar = ({
           </span>
           <input type="date" value={filters.toDate} onChange={handleChange("toDate")} />
         </label>
+
+        <label className="event-filter-field">
+          <span className="event-filter-label">
+            <Route size={15} />
+            Distance
+          </span>
+          <select value={filters.distanceRangeKm} onChange={handleChange("distanceRangeKm")}>
+            {distanceOptions.map((option) => (
+              <option key={option.value || "any-distance"} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
 
       <div className="event-discovery-actions">
         <div className="event-discovery-note">
-          Matches search against service type, organization name, and doctor / HR name.
+          {hasUserLocation
+            ? "Location enabled. Nearby distances are now shown on each event card."
+            : "Turn on location to use nearby event filtering and distance badges."}
         </div>
-        <button
-          type="button"
-          className="btn-secondary event-clear-filters"
-          onClick={onClear}
-          disabled={!hasActiveFilters}
-        >
-          <FilterX size={16} />
-          Clear filters
-        </button>
+        <div className="event-discovery-action-group">
+          <button
+            type="button"
+            className="btn-secondary event-location-button"
+            onClick={onRequestLocation}
+            disabled={locationStatus === "requesting"}
+          >
+            <LocateFixed size={16} />
+            {locationStatus === "requesting"
+              ? "Detecting..."
+              : hasUserLocation
+                ? "Location active"
+                : "Use my location"}
+          </button>
+          <button
+            type="button"
+            className="btn-secondary event-clear-filters"
+            onClick={onClear}
+            disabled={!hasActiveFilters}
+          >
+            <FilterX size={16} />
+            Clear filters
+          </button>
+        </div>
       </div>
     </div>
   );

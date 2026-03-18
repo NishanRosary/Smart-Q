@@ -14,6 +14,13 @@ import {
   getOrganizationTypeOptions
 } from '../../utils/eventDiscovery';
 import {
+  calculateDistanceKm,
+  formatDistanceKm,
+  geocodeLocation,
+  getCurrentLocation,
+  getDistanceFilterOptions
+} from '../../utils/eventLocation';
+import {
   Brain,
   Clock,
   AlertTriangle,
@@ -30,7 +37,10 @@ import {
   Zap,
   RefreshCw,
   Stethoscope,
-  BriefcaseBusiness
+  BriefcaseBusiness,
+  Navigation,
+  LocateFixed,
+  X
 } from 'lucide-react';
 
 const normalizeTokenNumber = (tokenValue) => {
@@ -63,8 +73,13 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
     organizationType: '',
     eventTitle: '',
     fromDate: '',
-    toDate: ''
+    toDate: '',
+    distanceRangeKm: ''
   });
+  const [userLocation, setUserLocation] = useState(null);
+  const [locationStatus, setLocationStatus] = useState('idle');
+  const [locationToast, setLocationToast] = useState('');
+  const [eventDistanceMap, setEventDistanceMap] = useState({});
 
   // Fetch events from API
   useEffect(() => {
@@ -81,6 +96,16 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
     };
     fetchEvents();
   }, []);
+
+  useEffect(() => {
+    if (!locationToast) return undefined;
+
+    const timeout = window.setTimeout(() => {
+      setLocationToast('');
+    }, 2600);
+
+    return () => window.clearTimeout(timeout);
+  }, [locationToast]);
 
   // Fetch queue status from backend
   const fetchQueueStatus = useCallback(async () => {
@@ -244,13 +269,73 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
       organizationType: '',
       eventTitle: '',
       fromDate: '',
-      toDate: ''
+      toDate: '',
+      distanceRangeKm: ''
     });
   };
 
-  const filteredEvents = filterEvents(events, eventFilters);
+  const requestUserLocation = useCallback(async () => {
+    setLocationStatus('requesting');
+
+    try {
+      const detectedLocation = await getCurrentLocation();
+      setUserLocation(detectedLocation);
+      setLocationStatus('ready');
+      setLocationToast('');
+    } catch (error) {
+      setLocationStatus('error');
+      setLocationToast(error.message || 'Turn on location to use the nearby filter.');
+      setEventFilters((current) => ({
+        ...current,
+        distanceRangeKm: ''
+      }));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!userLocation || events.length === 0) {
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    const hydrateDistances = async () => {
+      const nextDistanceMap = {};
+
+      for (const event of events) {
+        try {
+          const coordinates = await geocodeLocation(event.location);
+          const distanceKm = calculateDistanceKm(userLocation, coordinates);
+
+          if (Number.isFinite(distanceKm)) {
+            nextDistanceMap[event.id] = distanceKm;
+          }
+        } catch (error) {
+          console.error('Unable to calculate event distance:', error);
+        }
+      }
+
+      if (!cancelled) {
+        setEventDistanceMap(nextDistanceMap);
+      }
+    };
+
+    hydrateDistances();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [events, userLocation]);
+
+  const eventsWithDistance = events.map((event) => ({
+    ...event,
+    distanceKm: eventDistanceMap[event.id]
+  }));
+
+  const filteredEvents = filterEvents(eventsWithDistance, eventFilters);
   const organizationTypeOptions = getOrganizationTypeOptions(events);
   const eventTitleOptions = getEventTitleOptions(events);
+  const distanceOptions = getDistanceFilterOptions();
 
   // Use real data or fallback
   const displayStatus = queueStatus || {
@@ -601,8 +686,12 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
             onClear={clearEventFilters}
             organizationTypes={organizationTypeOptions}
             eventTitles={eventTitleOptions}
+            distanceOptions={distanceOptions}
             filteredCount={filteredEvents.length}
             totalCount={events.length}
+            onRequestLocation={requestUserLocation}
+            locationStatus={locationStatus}
+            hasUserLocation={Boolean(userLocation)}
           />
           {eventsLoading ? (
             <div className="event-empty-state">
@@ -631,6 +720,17 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
                   </span>
                   {getCrowdLevelBadge(event.crowdLevel)}
                 </div>
+                {Boolean(userLocation) && (
+                  <div className="event-distance-banner">
+                    <span className="event-distance-pill">
+                      <Navigation size={14} />
+                      {formatDistanceKm(event.distanceKm) || 'Distance unavailable'}
+                    </span>
+                    {Number.isFinite(event.distanceKm) && (
+                      <span className="event-distance-meta">From your current location</span>
+                    )}
+                  </div>
+                )}
                 <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
                   <span className="badge badge-blue">Total: {tokenStats.total}</span>
                   <span className={`badge ${event.isFull ? 'badge-red' : 'badge-green'}`}>Available: {tokenStats.available}</span>
@@ -722,6 +822,22 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
               {(selectedEvent.startDate || selectedEvent.date)} to {(selectedEvent.endDate || selectedEvent.startDate || selectedEvent.date)} at {selectedEvent.time}
             </p>
           </div>
+        </div>
+      )}
+      {locationToast && (
+        <div className="location-toast" role="status" aria-live="polite">
+          <div className="location-toast-content">
+            <LocateFixed size={18} />
+            <span>{locationToast}</span>
+          </div>
+          <button
+            type="button"
+            className="location-toast-close"
+            onClick={() => setLocationToast('')}
+            aria-label="Dismiss location message"
+          >
+            <X size={16} />
+          </button>
         </div>
       )}
     </div>

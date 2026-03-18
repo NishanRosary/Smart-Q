@@ -104,13 +104,24 @@ const matchesDateRange = (event, fromDate, toDate) => {
   return start <= rangeEnd;
 };
 
+const matchesDistanceRange = (event, distanceRangeKm) => {
+  const maxDistance = Number(distanceRangeKm);
+
+  if (!Number.isFinite(maxDistance) || maxDistance <= 0) {
+    return true;
+  }
+
+  return Number.isFinite(event?.distanceKm) && event.distanceKm <= maxDistance;
+};
+
 export const filterEvents = (events, filters) =>
   (events || []).filter((event) => {
     return (
       matchesSearch(event, filters?.searchTerm) &&
       matchesOrganizationType(event, filters?.organizationType) &&
       matchesEventTitle(event, filters?.eventTitle) &&
-      matchesDateRange(event, filters?.fromDate, filters?.toDate)
+      matchesDateRange(event, filters?.fromDate, filters?.toDate) &&
+      matchesDistanceRange(event, filters?.distanceRangeKm)
     );
   });
 
