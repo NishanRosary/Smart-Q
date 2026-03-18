@@ -2,7 +2,15 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../../config/api";
 import Header from "../shared/Header";
+import EventDiscoveryToolbar from "./EventDiscoveryToolbar";
 import "../../styles/customer.css";
+import {
+  filterEvents,
+  formatEventDateRange,
+  getEventContactLabel,
+  getEventTitleOptions,
+  getOrganizationTypeOptions
+} from "../../utils/eventDiscovery";
 import {
   Calendar,
   Clock,
@@ -14,9 +22,8 @@ import {
   ArrowRight,
   CheckCircle,
   Building2,
-  ChevronRight,
-  Shield,
-  Activity
+  Stethoscope,
+  BriefcaseBusiness
 } from 'lucide-react';
 
 const formatTokenNumber = (tokenValue) => {
@@ -44,6 +51,13 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData })
   const [events, setEvents] = useState([]);
   const [eventsLoading, setEventsLoading] = useState(true);
   const [joinError, setJoinError] = useState('');
+  const [eventFilters, setEventFilters] = useState({
+    searchTerm: '',
+    organizationType: '',
+    eventTitle: '',
+    fromDate: '',
+    toDate: ''
+  });
 
   // Fetch events from API
   useEffect(() => {
@@ -150,6 +164,27 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData })
     setSelectedService('');
     setTokenData(null);
   };
+
+  const handleEventFilterChange = (key, value) => {
+    setEventFilters((current) => ({
+      ...current,
+      [key]: value
+    }));
+  };
+
+  const clearEventFilters = () => {
+    setEventFilters({
+      searchTerm: '',
+      organizationType: '',
+      eventTitle: '',
+      fromDate: '',
+      toDate: ''
+    });
+  };
+
+  const filteredEvents = filterEvents(events, eventFilters);
+  const organizationTypeOptions = getOrganizationTypeOptions(events);
+  const eventTitleOptions = getEventTitleOptions(events);
 
   // Render Functions
   const renderProgressBar = () => (
@@ -341,8 +376,31 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData })
 
           {/* Step 1: Events List */}
           {step === 1 && (
+            <>
+              <EventDiscoveryToolbar
+                filters={eventFilters}
+                onFiltersChange={handleEventFilterChange}
+                onClear={clearEventFilters}
+                organizationTypes={organizationTypeOptions}
+                eventTitles={eventTitleOptions}
+                filteredCount={filteredEvents.length}
+                totalCount={events.length}
+              />
+              {eventsLoading ? (
+                <div className="event-empty-state">
+                  <div className="event-empty-title">Loading scheduled events</div>
+                  <p className="event-empty-copy">We are preparing the latest events you can join.</p>
+                </div>
+              ) : filteredEvents.length === 0 ? (
+                <div className="event-empty-state">
+                  <div className="event-empty-title">No events match these filters</div>
+                  <p className="event-empty-copy">
+                    Adjust the search, organization type, title, or date range to explore more events.
+                  </p>
+                </div>
+              ) : (
             <div className="events-grid">
-              {events.map(event => (
+              {filteredEvents.map(event => (
                 <div
                   key={event.id}
                   className="event-card"
@@ -370,10 +428,25 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData })
                     </span>
                   </div>
                   <h3 className="event-title">{event.title}</h3>
+                  <div className="event-spotlight-row">
+                    <span className="event-spotlight-chip">
+                      {event.doctorName ? <Stethoscope size={14} /> : <BriefcaseBusiness size={14} />}
+                      {getEventContactLabel(event)}
+                    </span>
+                  </div>
+                  {Array.isArray(event.serviceTypes) && event.serviceTypes.length > 0 && (
+                    <div className="event-service-tags">
+                      {event.serviceTypes.map((service) => (
+                        <span key={`${event.id}-${service}`} className="event-service-tag">
+                          {service}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                   <div className="event-details">
                     <div className="event-detail-item">
                       <span><Calendar size={16} /></span>
-                      <span>{new Date(event.startDate || event.date).toLocaleDateString()}</span>
+                      <span>{formatEventDateRange(event)}</span>
                     </div>
                     <div className="event-detail-item">
                       <span><Clock size={16} /></span>
@@ -396,6 +469,8 @@ const JoinQueue = ({ onNavigate, goBack, currentPage, eventData, customerData })
                 </div>
               ))}
             </div>
+              )}
+            </>
           )}
 
           {/* Step 2: Guest Details */}

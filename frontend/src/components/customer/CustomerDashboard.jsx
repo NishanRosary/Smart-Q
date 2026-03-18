@@ -4,7 +4,15 @@ import { API_BASE_URL } from '../../config/api';
 import Header from '../shared/Header';
 import QRCodeDisplay from '../shared/QRCodeDisplay';
 import { onQueueUpdate, getQueueStatus, connectSocket, disconnectSocket } from '../../services/queueService';
+import EventDiscoveryToolbar from './EventDiscoveryToolbar';
 import '../../styles/customer.css';
+import {
+  filterEvents,
+  formatEventDateRange,
+  getEventContactLabel,
+  getEventTitleOptions,
+  getOrganizationTypeOptions
+} from '../../utils/eventDiscovery';
 import {
   Brain,
   Clock,
@@ -20,7 +28,9 @@ import {
   Users,
   Timer,
   Zap,
-  RefreshCw
+  RefreshCw,
+  Stethoscope,
+  BriefcaseBusiness
 } from 'lucide-react';
 
 const normalizeTokenNumber = (tokenValue) => {
@@ -48,6 +58,13 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [events, setEvents] = useState([]);
   const [eventsLoading, setEventsLoading] = useState(true);
+  const [eventFilters, setEventFilters] = useState({
+    searchTerm: '',
+    organizationType: '',
+    eventTitle: '',
+    fromDate: '',
+    toDate: ''
+  });
 
   // Fetch events from API
   useEffect(() => {
@@ -213,6 +230,27 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
     if (event?.isFull) return;
     onNavigate('join-queue', { event, isCustomer: true });
   };
+
+  const handleEventFilterChange = (key, value) => {
+    setEventFilters((current) => ({
+      ...current,
+      [key]: value
+    }));
+  };
+
+  const clearEventFilters = () => {
+    setEventFilters({
+      searchTerm: '',
+      organizationType: '',
+      eventTitle: '',
+      fromDate: '',
+      toDate: ''
+    });
+  };
+
+  const filteredEvents = filterEvents(events, eventFilters);
+  const organizationTypeOptions = getOrganizationTypeOptions(events);
+  const eventTitleOptions = getEventTitleOptions(events);
 
   // Use real data or fallback
   const displayStatus = queueStatus || {
@@ -557,8 +595,30 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
         {/* Scheduled Events Section */}
         <div className="dashboard-section">
           <h2 className="section-title">Scheduled Events</h2>
+          <EventDiscoveryToolbar
+            filters={eventFilters}
+            onFiltersChange={handleEventFilterChange}
+            onClear={clearEventFilters}
+            organizationTypes={organizationTypeOptions}
+            eventTitles={eventTitleOptions}
+            filteredCount={filteredEvents.length}
+            totalCount={events.length}
+          />
+          {eventsLoading ? (
+            <div className="event-empty-state">
+              <div className="event-empty-title">Loading scheduled events</div>
+              <p className="event-empty-copy">We are preparing the latest event list for you.</p>
+            </div>
+          ) : filteredEvents.length === 0 ? (
+            <div className="event-empty-state">
+              <div className="event-empty-title">No events match these filters</div>
+              <p className="event-empty-copy">
+                Try a broader search term or clear one of the active filters to see more scheduled events.
+              </p>
+            </div>
+          ) : (
           <div className="events-grid">
-            {events.map(event => (
+            {filteredEvents.map(event => (
               <div key={event.id} className="event-card">
                 {(() => {
                   const tokenStats = getEventTokenStats(event);
@@ -576,12 +636,25 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
                   <span className={`badge ${event.isFull ? 'badge-red' : 'badge-green'}`}>Available: {tokenStats.available}</span>
                 </div>
                 <h3 className="event-title">{event.title}</h3>
+                <div className="event-spotlight-row">
+                  <span className="event-spotlight-chip">
+                    {event.doctorName ? <Stethoscope size={14} /> : <BriefcaseBusiness size={14} />}
+                    {getEventContactLabel(event)}
+                  </span>
+                </div>
+                {Array.isArray(event.serviceTypes) && event.serviceTypes.length > 0 && (
+                  <div className="event-service-tags">
+                    {event.serviceTypes.map((service) => (
+                      <span key={`${event.id}-${service}`} className="event-service-tag">
+                        {service}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <div className="event-details">
                   <div className="event-detail-item">
                     <span><Calendar size={16} /></span>
-                    <span>{new Date(event.startDate || event.date).toLocaleDateString('en-US', {
-                      weekday: 'short', year: 'numeric', month: 'short', day: 'numeric'
-                    })}</span>
+                    <span>{formatEventDateRange(event)}</span>
                   </div>
                   <div className="event-detail-item">
                     <span><Clock size={16} /></span>
@@ -626,6 +699,7 @@ const CustomerDashboard = ({ onNavigate, goBack, currentPage, customerData, onLo
               </div>
             ))}
           </div>
+          )}
         </div>
       </div>
 
