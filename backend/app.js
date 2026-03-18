@@ -239,7 +239,26 @@ const runExpiredEventCleanup = async () => {
 
 /* ================= START SERVER ================= */
 
-const startServer = async (port = process.env.PORT || 5000) => {
+const resolvePort = (value) => {
+  const fallbackPort = 5000;
+
+  if (value === undefined || value === null || value === "") {
+    return fallbackPort;
+  }
+
+  const parsedPort = Number.parseInt(value, 10);
+
+  if (!Number.isInteger(parsedPort) || parsedPort < 0 || parsedPort > 65535) {
+    console.warn(
+      `Invalid PORT value "${value}" provided. Falling back to ${fallbackPort}.`
+    );
+    return fallbackPort;
+  }
+
+  return parsedPort;
+};
+
+const startServer = async (port = resolvePort(process.env.PORT)) => {
   await connectDB();
   await Queue.syncIndexes();
 

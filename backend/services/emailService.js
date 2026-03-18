@@ -22,6 +22,9 @@ const getTransporter = () => {
       host: SMTP_HOST,
       port: SMTP_PORT,
       secure: SMTP_SECURE,
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
       auth: {
         user: SMTP_USER,
         pass: SMTP_PASS
@@ -29,6 +32,38 @@ const getTransporter = () => {
     });
   }
   return transporter;
+};
+
+const mapSmtpErrorReason = (error) => {
+  const code = String(error?.code || "").toUpperCase();
+  const responseCode = Number(error?.responseCode || 0);
+
+  if (code === "EAUTH" || responseCode === 534 || responseCode === 535) {
+    return "smtp-auth-failed";
+  }
+  if (code === "ETIMEDOUT") {
+    return "smtp-timeout";
+  }
+  if (["ECONNECTION", "ESOCKET", "ENOTFOUND", "EHOSTUNREACH", "ECONNREFUSED"].includes(code)) {
+    return "smtp-connection-failed";
+  }
+  return "smtp-send-failed";
+};
+
+const sendMailSafe = async (mailOptions, context) => {
+  try {
+    await getTransporter().sendMail(mailOptions);
+    return { sent: true };
+  } catch (error) {
+    const reason = mapSmtpErrorReason(error);
+    console.error(`[email:${context}] send failed`, {
+      reason,
+      code: error?.code || null,
+      responseCode: error?.responseCode || null,
+      command: error?.command || null
+    });
+    return { sent: false, reason };
+  }
 };
 
 const buildHtmlTemplate = ({ userName, tokenNumber, serviceName, estimatedWaitTime }) => {
@@ -59,7 +94,6 @@ const sendQueueRegistrationEmail = async ({
   if (!isValidEmail(toEmail)) return { sent: false, reason: "invalid-recipient" };
   if (!hasSmtpConfig()) return { sent: false, reason: "smtp-not-configured" };
 
-  const transporterInstance = getTransporter();
   const mailOptions = {
     from: SMTP_FROM,
     to: toEmail,
@@ -76,15 +110,13 @@ const sendQueueRegistrationEmail = async ({
     html: buildHtmlTemplate({ userName, tokenNumber, serviceName, estimatedWaitTime })
   };
 
-  await transporterInstance.sendMail(mailOptions);
-  return { sent: true };
+  return sendMailSafe(mailOptions, "queue-registration");
 };
 
 const sendLoginOtpEmail = async ({ toEmail, userName, otp }) => {
   if (!isValidEmail(toEmail)) return { sent: false, reason: "invalid-recipient" };
   if (!hasSmtpConfig()) return { sent: false, reason: "smtp-not-configured" };
 
-  const transporterInstance = getTransporter();
   const safeName = userName || "User";
   const mailOptions = {
     from: SMTP_FROM,
@@ -108,8 +140,7 @@ const sendLoginOtpEmail = async ({ toEmail, userName, otp }) => {
     `
   };
 
-  await transporterInstance.sendMail(mailOptions);
-  return { sent: true };
+  return sendMailSafe(mailOptions, "login-otp");
 };
 
 module.exports = {
